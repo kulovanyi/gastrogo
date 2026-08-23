@@ -1,0 +1,2767 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GastroGo - Étterem Vezérlőpult (Desktop)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF9F1C;
+            --primary-hover: #e58d16;
+            --secondary: #FFC107;
+            --accent: #2EC4B6;
+            --danger: #E71D36;
+            --bg-dark: #0A0E17;
+            --bg-light: #F4F6F9;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        body:not(.desktop-authenticated) .desktop-header,
+        body:not(.desktop-authenticated) .dashboard-grid {
+            display: none;
+        }
+
+        .desktop-login {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #16212b;
+        }
+
+        .desktop-login::before {
+            content: "";
+            position: absolute;
+            inset: -24px;
+            background: url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1800&auto=format&fit=crop&q=85") center / cover;
+            filter: blur(9px);
+            transform: scale(1.06);
+            opacity: 0.72;
+        }
+
+        .desktop-login::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(9, 18, 27, 0.58);
+        }
+
+        .desktop-login-card {
+            position: relative;
+            z-index: 1;
+            width: min(360px, calc(100% - 32px));
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+        }
+
+        .desktop-login-brand {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .desktop-login-brand h1 {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .desktop-login-brand h1 span {
+            color: var(--primary);
+        }
+
+        .desktop-login-brand p {
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .desktop-login-card .input-group {
+            margin-bottom: 14px;
+        }
+
+        .desktop-login-error {
+            min-height: 18px;
+            margin-top: 10px;
+            color: var(--danger);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* ================= DESKTOP HEADER ================= */
+        .desktop-header {
+            background-color: #FFFFFF;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #E2E8F0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .header-logo h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header-logo h1 span {
+            color: var(--primary);
+        }
+
+        .restaurant-selector-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .res-select {
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid #CBD5E1;
+            border-radius: 10px;
+            outline: none;
+            background-color: #FFFFFF;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .res-select:focus {
+            border-color: var(--primary);
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid #CBD5E1;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            color: var(--danger);
+            border-color: var(--danger);
+            background-color: #FFF5F5;
+        }
+
+        /* ================= MAIN GRID ================= */
+        .dashboard-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 260px 1fr 380px;
+            gap: 24px;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 220px 1fr 320px;
+                gap: 16px;
+                padding: 16px;
+            }
+        }
+
+        /* Left column layout */
+        .sidebar-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-menu-btn {
+            width: 100%;
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            padding: 16px 20px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .sidebar-menu-btn:hover {
+            background-color: #F8FAFC;
+            border-color: #CBD5E1;
+            transform: translateX(4px);
+        }
+
+        .sidebar-menu-btn.active {
+            background-color: var(--primary);
+            color: #FFFFFF;
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px rgba(255, 159, 28, 0.2);
+        }
+
+        .sidebar-menu-btn.active:hover {
+            transform: none;
+        }
+
+        .grid-column {
+            background-color: #FFFFFF;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .column-header {
+            padding: 20px;
+            border-bottom: 1px solid #F1F5F9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .column-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .column-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* Toggled Views */
+        .dashboard-view {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .dashboard-view.active {
+            display: flex;
+        }
+
+        /* ================= COMPONENT CARDS & FORMS ================= */
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* Form elements styling */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #CBD5E1;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            background-color: #FFFFFF;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 159, 28, 0.1);
+        }
+
+        /* CSV excel drop area */
+        .csv-upload-zone {
+            border: 2px dashed #CBD5E1;
+            padding: 24px;
+            text-align: center;
+            border-radius: 12px;
+            background-color: #F8FAFC;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: var(--transition);
+            margin-bottom: 20px;
+        }
+
+        .csv-upload-zone:hover {
+            border-color: var(--primary);
+            background-color: #FFFDF5;
+            color: var(--primary);
+        }
+
+        /* Orders component */
+        .order-card {
+            background-color: #F8FAFC;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.01);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed #E2E8F0;
+            padding-bottom: 8px;
+        }
+
+        .order-card-header h4 {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .order-time {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .order-status-badge {
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .order-status-badge.received {
+            background-color: #FEF3C7;
+            color: #D97706;
+        }
+
+        .order-status-badge.preparing {
+            background-color: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .order-status-badge.dispatched {
+            background-color: #D1FAE5;
+            color: #059669;
+        }
+
+        .order-card-items {
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .order-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dashed #E2E8F0;
+            padding-top: 8px;
+        }
+
+        .order-total-lbl {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Menu card grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .menu-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.01);
+            transition: var(--transition);
+        }
+
+        .menu-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        .menu-card-img {
+            height: 110px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .menu-card-details {
+            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .menu-card-details h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .menu-card-details p {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .menu-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #F1F5F9;
+            padding-top: 8px;
+            margin-top: auto;
+        }
+
+        .menu-card-price {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .btn-action-small {
+            padding: 4px 8px;
+            font-size: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-edit {
+            background-color: #E2E8F0;
+            color: var(--text-dark);
+        }
+
+        .btn-delete {
+            background-color: #FFE4E6;
+            color: var(--danger);
+        }
+
+        /* Review and Category layout lists */
+        .category-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #F8FAFC;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .review-card {
+            background-color: #F8FAFC;
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #E2E8F0;
+            margin-bottom: 12px;
+        }
+
+        .review-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .review-stars-gold {
+            color: var(--secondary);
+            font-size: 13px;
+        }
+
+        .review-comment-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .stats-banner {
+            background-color: #FFFDF5;
+            border: 1px solid #FEF3C7;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .badge-count {
+            background-color: var(--danger);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        /* Popular item list styles */
+        .popular-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            background-color: #F8FAFC;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+        }
+
+        /* Dispatch log feed */
+        .log-item-row {
+            font-size: 10px;
+            padding: 8px;
+            border-left: 3px solid var(--accent);
+            background-color: #F0FDF4;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= OWNER LOGIN ================= -->
+    <section class="desktop-login" id="desktop-login-screen">
+        <form class="desktop-login-card" id="desktop-login-form">
+            <div class="desktop-login-brand">
+                <h1>Gastro<span>Go</span></h1>
+                <p>Étterem tulajdonosi vezérlőpult</p>
+            </div>
+            <div class="input-group">
+                <label for="desktop-login-restaurant">Étterem</label>
+                <select id="desktop-login-restaurant">
+                    <option value="r1">Vár Pizzéria</option>
+                    <option value="r2">Burger Haven</option>
+                    <option value="r3">Istambul Gyros & Grill</option>
+                    <option value="r4">Központi Étkezde</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="desktop-login-password">Jelszó</label>
+                <input id="desktop-login-password" type="password" value="admin123" placeholder="Írd be a jelszavad">
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">Belépés</button>
+            <div class="desktop-login-error" id="desktop-login-error" aria-live="polite"></div>
+        </form>
+    </section>
+
+    <!-- ================= DESKTOP HEADER ================= -->
+    <header class="desktop-header">
+        <div class="header-logo">
+            <h1>Gastro<span>Go</span> Portal</h1>
+        </div>
+        <div class="restaurant-selector-wrapper">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Aktív étterem:</span>
+            <select id="desktop-restaurant-select" class="res-select">
+                <option value="r1">Vár Pizzéria</option>
+                <option value="r2">Burger Haven</option>
+                <option value="r3">Istambul Gyros</option>
+                <option value="r4">Központi Étkezde</option>
+            </select>
+            <button class="logout-btn" id="desktop-logout" type="button" style="background:#E71D36; border-color:#E71D36; color:#FFFFFF;">Kilépés</button>
+        </div>
+    </header>
+
+    <!-- ================= MAIN GRID ================= -->
+    <main class="dashboard-grid">
+
+        <!-- LEFT COLUMN: SIDEBAR MENU -->
+        <section class="sidebar-column">
+            <button class="sidebar-menu-btn prominent-btn" data-view="add-food" style="background-color: var(--primary); color: white; font-weight: 700; margin-bottom: 8px; border-radius: 8px; font-size: 13px; border:none; padding: 12px; display: flex; align-items: center; justify-content: center; width: 100%; cursor: pointer;">
+                <span>➕ Új étel vagy ital</span>
+            </button>
+            <button class="sidebar-menu-btn prominent-btn" data-view="add-combo" style="background-color: var(--accent); color: #000; font-weight: 700; margin-bottom: 16px; border-radius: 8px; font-size: 13px; border:none; padding: 12px; display: flex; align-items: center; justify-content: center; width: 100%; cursor: pointer;">
+                <span>🍱 Menü Összeállítása</span>
+            </button>
+            
+            <div style="height: 1px; background: #CBD5E1; margin: 8px 0 16px 0;"></div>
+
+            <button class="sidebar-menu-btn active" data-view="menu">
+                <span>🍽️ Étlapom</span>
+            </button>
+            <button class="sidebar-menu-btn" data-view="orders">
+                <span>📥 Rendelések</span>
+                <span class="badge-count" id="dash-orders-badge" style="display: none;">0</span>
+            </button>
+            <button class="sidebar-menu-btn" data-view="reviews">
+                <span>⭐ Értékelések</span>
+            </button>
+            <button class="sidebar-menu-btn" data-view="categories-toppings">
+                <span>⚙️ Kategóriák & Feltétek</span>
+            </button>
+            <button class="sidebar-menu-btn" data-view="settings">
+                <span>🛠️ Beállítások</span>
+            </button>
+        </section>
+
+        <!-- MIDDLE COLUMN: ACTIVE SECTION TABS WORKSPACE -->
+        <section class="grid-column">
+            
+            <!-- VIEW 1: MY MENU CATALOG -->
+            <div id="view-menu" class="dashboard-view active" style="height:100%;">
+                <div class="column-header" style="border-bottom: none;">
+                    <h3 id="middle-view-title">🍽️ Étlapom (<span id="menu-items-count">0</span> db étel)</h3>
+                </div>
+                <div class="column-content" style="padding-top: 0;">
+                    <div class="menu-grid" id="menu-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: ORDERS MANAGER -->
+            <div id="view-orders" class="dashboard-view" style="height:100%;">
+                <div class="column-header">
+                    <h3>📥 Beérkező Rendelések</h3>
+                    <span style="font-size: 11px; color: var(--primary); font-weight:700;" id="refresh-timer">Következő frissítés: 10:00</span>
+                </div>
+                <div class="column-content">
+                    <div class="stats-banner">
+                        <strong style="display: block; margin-bottom: 8px; font-size:13px;">⏱ Napszaki átlagos futárnak adási idő:</strong>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                            <span>Reggel/Délelőtt: <strong id="stat-morning" style="color:var(--accent);">~15p</strong></span>
+                            <span>Délután (Csúcs): <strong id="stat-afternoon" style="color:var(--accent);">~25p</strong></span>
+                            <span>Este/Éjjel: <strong id="stat-evening" style="color:var(--accent);">~20p</strong></span>
+                        </div>
+                    </div>
+                    <div id="orders-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: REVIEWS VIEWER -->
+            <div id="view-reviews" class="dashboard-view" style="height:100%;">
+                <div class="column-header" style="border-bottom: none;">
+                    <h3>⭐ Vevők Visszajelzései</h3>
+                </div>
+                <div class="column-content" style="padding-top: 0;" id="reviews-container">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- VIEW 4: ADD INDIVIDUAL FOOD/DRINK -->
+            <div id="view-add-food" class="dashboard-view" style="height:100%;">
+                <div class="column-header" style="border-bottom: none;">
+                    <h3>➕ Új termék (étel/ital) felvétele</h3>
+                </div>
+                <div class="column-content" style="padding-top: 0; display: flex; flex-direction: column; gap: 20px;">
+                    
+                    <!-- Product Creator Card -->
+                    <div class="editor-form-card" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 20px; border-radius: 12px;">
+                        <h4 id="form-action-title" style="margin-bottom: 15px; font-size: 14px; font-weight: 700; color: var(--text-dark);">🍽️ Új étel hozzáadása</h4>
+                        
+                        <input type="hidden" id="edit-food-id">
+
+                        <div class="input-group">
+                            <label for="food-name">Megnevezés</label>
+                            <input type="text" id="food-name" placeholder="pl. Margaréta Pizza vagy Csirke Tál">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="input-group">
+                                <label for="food-category-select">Kategória</label>
+                                <select id="food-category-select">
+                                    <!-- Loaded dynamically -->
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="food-price">Ár (Ft)</label>
+                                <input type="number" id="food-price" placeholder="pl. 2190">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="food-desc">Leírás / Összetevők</label>
+                            <input type="text" id="food-desc" placeholder="pl. paradicsomalap, mozzarella...">
+                        </div>
+
+                        <div class="input-group">
+                            <label style="font-size: 11px; font-weight: 700; color: var(--text-dark); display: block; margin-bottom: 8px;">Választható plusz feltétek ehhez a termékhez</label>
+                            <div id="food-toppings-checkboxes-container" style="display: flex; flex-wrap: wrap; gap: 8px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E1; min-height: 40px; margin-bottom: 8px;">
+                                <!-- Dynamically loaded toppings based on category -->
+                            </div>
+                            
+                            <!-- Ad-hoc custom topping input row -->
+                            <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: flex-end; margin-top: 8px; padding: 8px; background: #F1F5F9; border-radius: 8px;">
+                                <div class="input-group" style="margin:0;">
+                                    <label for="food-custom-topping-name" style="font-size: 10px; font-weight:700; color:var(--text-dark); margin-bottom:4px;">Egyedi feltét neve</label>
+                                    <input type="text" id="food-custom-topping-name" placeholder="pl. Kaviár" style="padding: 6px; font-size:12px; border-radius: 6px; border:1px solid #CBD5E1; background:white; color:black; height:32px;">
+                                </div>
+                                <div class="input-group" style="margin:0;">
+                                    <label for="food-custom-topping-price" style="font-size: 10px; font-weight:700; color:var(--text-dark); margin-bottom:4px;">Ár (Ft)</label>
+                                    <input type="number" id="food-custom-topping-price" placeholder="pl. 500" style="padding: 6px; font-size:12px; border-radius: 6px; border:1px solid #CBD5E1; background:white; color:black; height:32px;">
+                                </div>
+                                <button type="button" class="btn btn-primary" id="btn-add-food-custom-topping" style="padding: 0 12px; font-size: 11px; border-radius: 6px; height: 32px; background-color: var(--primary);">Hozzáadás</button>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="food-img-file">Kép feltöltése (Tallózás)</label>
+                            <!-- File Browser input -->
+                            <input type="file" id="food-img-file" accept="image/*" style="padding: 6px; font-size:12px; background:white; border-radius:8px; border:1px solid #CBD5E1;">
+                            <input type="hidden" id="food-img-base64">
+                        </div>
+
+                        <!-- Mobile Card Preview -->
+                        <div style="margin-top: 20px; padding: 12px; background: #FFFFFF; border: 1px dashed #CBD5E1; border-radius: 8px;">
+                            <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 8px;">📱 Előnézet a mobil alkalmazásban</label>
+                            <div class="menu-card" id="food-preview-card" style="margin: 0; max-width: 100%;">
+                                <div class="menu-card-img" id="food-preview-img" style="background-image: url('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3')"></div>
+                                <div class="menu-card-details">
+                                    <div>
+                                        <h4 id="food-preview-title">Termék neve</h4>
+                                        <p id="food-preview-desc">Termék leírása...</p>
+                                    </div>
+                                    <div class="menu-card-footer">
+                                        <span class="menu-card-price" id="food-preview-price">0 Ft</span>
+                                        <button class="btn-add-cart" style="pointer-events: none;">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button class="btn btn-primary btn-block" id="btn-save-food">Mentés</button>
+                            <button class="btn btn-secondary btn-block" id="btn-cancel-edit" style="display: none;">Mégse</button>
+                        </div>
+                    </div>
+
+                    <!-- Excel/CSV card -->
+                    <div style="background-color:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:12px;">
+                        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">📊 Csoportos importálás (Excel/CSV)</h4>
+                        <button class="btn btn-secondary btn-block" id="btn-export-csv" style="margin-bottom: 12px; font-size:12px; padding: 10px;">📥 Étlap Exportálása / Minta letöltése</button>
+                        <div class="csv-upload-zone" id="csv-drop-zone">
+                            📂 Kattints ide vagy húzz ide egy CSV fájlt az importáláshoz
+                        </div>
+                        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VIEW 5: COMBO BUILDER WORKSPACE -->
+            <div id="view-add-combo" class="dashboard-view" style="height:100%;">
+                <div class="column-header" style="border-bottom: none;">
+                    <h3>🍱 Akciós Menü Összeállítása</h3>
+                </div>
+                <div class="column-content" style="padding-top: 0;">
+                    <div class="editor-form-card" style="background-color: #FDFBF7; border: 1px solid #FEF3C7; padding: 20px; border-radius: 12px;">
+                        <h4 id="combo-form-title" style="margin-bottom: 15px; font-size: 14px; font-weight: 700; color: #92400E;">🍱 Új akciós menü (csomag) létrehozása</h4>
+                        
+                        <input type="hidden" id="edit-combo-id">
+
+                        <div class="input-group">
+                            <label for="combo-name" style="color: #92400E;">Akciós Menü Neve</label>
+                            <input type="text" id="combo-name" placeholder="pl. Hétvégi Páros Pizza Menü">
+                        </div>
+
+                        <!-- Checkbox list of items -->
+                        <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 8px;">Válassz ételeket/italokat a menübe</label>
+                        <div id="combo-builder-items-checklist" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #CBD5E1;">
+                            <!-- Checkboxes of menu items dynamically loaded -->
+                        </div>
+
+                        <!-- Discount details -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 16px;">
+                            <div class="input-group">
+                                <label for="combo-builder-discount-type">Kedvezmény típusa</label>
+                                <select id="combo-builder-discount-type">
+                                    <option value="percent">Százalék (%)</option>
+                                    <option value="fixed">Fix összeg (Ft)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="combo-builder-discount-value">Kedvezmény mértéke</label>
+                                <input type="number" id="combo-builder-discount-value" value="10">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 16px; align-items: center;">
+                            <div class="input-group" style="margin:0;">
+                                <label style="color:#92400E;">Kalkulált végső ár (Ft)</label>
+                                <input type="number" id="combo-builder-final-price" readonly style="background: #F8FAFC; border-color: #E2E8F0; font-weight:700;">
+                            </div>
+                            <div style="font-size: 11px; font-weight: 700; color: #92400E; text-align: right;" id="combo-builder-price-preview">
+                                Eredeti ár: 0 Ft | Akciós ár: 0 Ft
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="combo-builder-toppings">Választható feltétek/extrák a menühöz (opcionális)</label>
+                            <input type="text" id="combo-builder-toppings" placeholder="pl. Plusz üdítő:400, Extra szósz:150" style="margin-bottom: 8px;">
+                            
+                            <!-- Ad-hoc custom topping input row for combo -->
+                            <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: flex-end; padding: 8px; background: #FDFBF7; border:1px solid #FEF3C7; border-radius: 8px;">
+                                <div class="input-group" style="margin:0;">
+                                    <label for="combo-custom-topping-name" style="font-size: 10px; font-weight:700; color:#92400E; margin-bottom:4px;">Egyedi feltét neve</label>
+                                    <input type="text" id="combo-custom-topping-name" placeholder="pl. Dupla desszert" style="padding: 6px; font-size:12px; border-radius: 6px; border:1px solid #CBD5E1; background:white; color:black; height:32px;">
+                                </div>
+                                <div class="input-group" style="margin:0;">
+                                    <label for="combo-custom-topping-price" style="font-size: 10px; font-weight:700; color:#92400E; margin-bottom:4px;">Ár (Ft)</label>
+                                    <input type="number" id="combo-custom-topping-price" placeholder="pl. 600" style="padding: 6px; font-size:12px; border-radius: 6px; border:1px solid #CBD5E1; background:white; color:black; height:32px;">
+                                </div>
+                                <button type="button" class="btn" id="btn-add-combo-custom-topping" style="padding: 0 12px; font-size: 11px; border-radius: 6px; height: 32px; background-color: var(--accent); color:#000;">Hozzáadás</button>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Card Preview -->
+                        <div style="margin-top: 20px; padding: 12px; background: #FFFFFF; border: 1px dashed #FEF3C7; border-radius: 8px;">
+                            <label style="font-size: 10px; font-weight: 700; color: #B45309; text-transform: uppercase; display: block; margin-bottom: 8px;">📱 Előnézet a mobil alkalmazásban</label>
+                            <div class="menu-card" id="combo-preview-card" style="margin: 0; max-width: 100%;">
+                                <div class="menu-card-img" id="combo-preview-img" style="background-image: url('https://images.unsplash.com/photo-1547592180-85f173990554?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3')"></div>
+                                <div class="menu-card-details">
+                                    <div>
+                                        <h4 id="combo-preview-title">Menü neve</h4>
+                                        <p id="combo-preview-desc">Menü tartalma...</p>
+                                    </div>
+                                    <div class="menu-card-footer">
+                                        <span class="menu-card-price" id="combo-preview-price">0 Ft</span>
+                                        <button class="btn-add-cart" style="pointer-events: none;">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button class="btn btn-primary btn-block" id="btn-save-combo" style="background-color: var(--accent); color:#000;">Akciós Menü Mentése</button>
+                            <button class="btn btn-secondary btn-block" id="btn-cancel-combo-edit" style="display: none;">Mégse</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 6: CATEGORIES & TOPPINGS MANAGER -->
+            <div id="view-categories-toppings" class="dashboard-view" style="height:100%;">
+                <div class="column-header" style="border-bottom: none;">
+                    <h3>⚙️ Kategóriák & Feltétek Kezelése</h3>
+                </div>
+                <div class="column-content" style="padding-top: 0; display: flex; flex-direction: column; gap: 20px;">
+                    
+                    <!-- Categories manager card -->
+                    <div style="background-color:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:12px;">
+                        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text-dark);">🛠️ Kategóriák Hozzáadása / Törlése</h4>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" id="new-category-name" placeholder="Új kategória..." style="flex:1; padding: 8px; border-radius: 8px; border:1px solid #CBD5E1; font-size:12px;">
+                            <button class="btn btn-primary" id="btn-add-cat" style="padding: 8px 12px; font-size: 12px; border-radius: 8px;">Kategória Hozzáadása</button>
+                        </div>
+                        <div id="categories-container">
+                            <!-- Category items loaded dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Toppings Preset Manager card -->
+                    <div style="background-color:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:12px;">
+                        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text-dark);">🍕 Kategória szintű Plusz Feltétek beállítása</h4>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Válassz ki egy kategóriát, majd állítsd be, milyen alapértelmezett feltétek tartozzanak hozzá.</p>
+                        
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <label for="topping-preset-category-select">Válassz kategóriát</label>
+                            <select id="topping-preset-category-select" style="padding: 8px; font-size: 12px; border-radius: 8px; border: 1px solid #CBD5E1; width: 100%;">
+                                <!-- Loaded dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Current mapped toppings for category -->
+                        <div id="topping-presets-list-container" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #E2E8F0; min-height: 40px;">
+                            <!-- Mapped toppings loaded dynamically -->
+                        </div>
+
+                        <!-- Add topping to preset form -->
+                        <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: flex-end;">
+                            <div class="input-group" style="margin:0;">
+                                <label for="new-topping-name" style="font-size: 10px; margin-bottom:4px; font-weight:700;">Új feltét neve</label>
+                                <input type="text" id="new-topping-name" placeholder="pl. Kukorica" style="padding: 8px; font-size:12px; border-radius: 8px; border:1px solid #CBD5E1;">
+                            </div>
+                            <div class="input-group" style="margin:0;">
+                                <label for="new-topping-price" style="font-size: 10px; margin-bottom:4px; font-weight:700;">Ár (Ft)</label>
+                                <input type="number" id="new-topping-price" placeholder="pl. 200" style="padding: 8px; font-size:12px; border-radius: 8px; border:1px solid #CBD5E1;">
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-topping-preset" style="padding: 10px 14px; font-size: 12px; border-radius: 8px; height: 38px;">Hozzáadás</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VIEW 7: RESTAURANT SETTINGS -->
+            <div id="view-settings" class="dashboard-view" style="height:100%;">
+                <div class="column-header" style="border-bottom: none;">
+                    <h3>🛠️ Étterem beállításai</h3>
+                </div>
+                <div class="column-content" style="padding-top: 0;">
+                    <form id="restaurant-settings-form" style="display:flex; flex-direction:column; gap:18px;">
+                        <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:12px;">
+                            <h4 style="font-size:13px; margin-bottom:12px;">Étterem profilja</h4>
+                            <div class="input-group">
+                                <label for="settings-image-url">Fő kép URL-je</label>
+                                <input type="url" id="settings-image-url" placeholder="https://...">
+                            </div>
+                            <div class="input-group">
+                                <label for="settings-image-file">Vagy tölts fel új képet</label>
+                                <input type="file" id="settings-image-file" accept="image/*" style="padding:8px; font-size:12px; background:#FFF; border:1px solid #CBD5E1; border-radius:8px;">
+                            </div>
+                            <div id="settings-image-preview" style="height:150px; border-radius:10px; background:center / cover; background-color:#E2E8F0;"></div>
+                        </div>
+
+                        <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:12px;">
+                            <h4 style="font-size:13px; margin-bottom:12px;">Kiszállítás</h4>
+                            <div class="input-group">
+                                <label for="settings-delivery-fee">Kiszállítási díj (Ft)</label>
+                                <input type="number" id="settings-delivery-fee" min="0" step="50" placeholder="pl. 300">
+                            </div>
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label for="settings-delivery-locations">Kiszállítási helyek</label>
+                                <textarea id="settings-delivery-locations" rows="3" placeholder="Pl. Belváros, Kertváros, Felsőváros" style="padding:12px; border:1px solid #CBD5E1; border-radius:10px; font:inherit; font-size:14px; resize:vertical;"></textarea>
+                                <span style="font-size:10px; color:var(--text-muted);">A helyeket vesszővel válaszd el.</span>
+                            </div>
+                        </div>
+
+                        <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:12px;">
+                            <h4 style="font-size:13px; margin-bottom:12px;">Egyéb rendelési díjak</h4>
+                            <div id="settings-extra-fees-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"></div>
+                            <button type="button" class="btn btn-secondary" id="settings-add-fee" style="font-size:12px; padding:9px 12px;">+ Díj hozzáadása</button>
+                            <span style="display:block; margin-top:8px; font-size:10px; color:var(--text-muted);">Példa: Szervízdíj, Rendszerhasználati díj.</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Beállítások mentése</button>
+                        <div id="settings-save-status" style="min-height:18px; color:var(--accent); font-size:12px; text-align:center;"></div>
+                    </form>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: DESKTOP LIVE ANALYTICS PANEL -->
+        <section class="grid-column">
+            <div class="column-header">
+                <h3>📊 Élő Értékesítési Analitika</h3>
+            </div>
+            <div class="column-content" style="background-color: #FFFFFF;">
+                
+                <!-- Section 1: Purchases & Spending by Time-of-Day -->
+                <div style="margin-bottom: 24px;">
+                    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text-dark);">Napszaki Vásárlások & Kosárérték</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #E2E8F0; color: var(--text-muted); font-weight:600;">
+                                <th style="padding: 6px 0;">Napszak</th>
+                                <th style="padding: 6px 0; text-align: center;">Rendelések</th>
+                                <th style="padding: 6px 0; text-align: right;">Átlagos kosár</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #F1F5F9;">
+                                <td style="padding: 8px 0; font-weight:600;">Délelőtt (6-12)</td>
+                                <td style="padding: 8px 0; text-align: center; font-weight:700; color:var(--accent);" id="analytics-orders-morning">0 db</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight:700; color:var(--primary);" id="analytics-spend-morning">0 Ft</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #F1F5F9;">
+                                <td style="padding: 8px 0; font-weight:600;">Délután (12-18)</td>
+                                <td style="padding: 8px 0; text-align: center; font-weight:700; color:var(--accent);" id="analytics-orders-afternoon">0 db</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight:700; color:var(--primary);" id="analytics-spend-afternoon">0 Ft</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #F1F5F9;">
+                                <td style="padding: 8px 0; font-weight:600;">Este/Éjjel (18-6)</td>
+                                <td style="padding: 8px 0; text-align: center; font-weight:700; color:var(--accent);" id="analytics-orders-evening">0 db</td>
+                                <td style="padding: 8px 0; text-align: right; font-weight:700; color:var(--primary);" id="analytics-spend-evening">0 Ft</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Section 2: Popular Foods -->
+                <div style="margin-bottom: 24px;">
+                    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text-dark);">Népszerű Ételek (Top Kereslet)</h4>
+                    <div id="analytics-popular-items" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Dynamic popular foods loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Section 3: Popular Toppings -->
+                <div style="margin-bottom: 24px;">
+                    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text-dark);">Legnépszerűbb Plusz Feltétek</h4>
+                    <div id="analytics-popular-toppings" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Dynamic toppings loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Section 4: Upsell & Sales Optimization Tips -->
+                <div style="margin-bottom: 24px; padding: 14px; background-color: #F0FDF4; border: 1px solid #DCFCE7; border-radius: 12px;">
+                    <h4 style="font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #166534; display: flex; align-items: center; gap: 6px;">📈 Intelligens Eladás-Ösztönzés</h4>
+                    <div id="analytics-upsell-tips" style="font-size: 11px; line-height: 1.5; color: #14532d; display: flex; flex-direction: column; gap: 6px;">
+                        <!-- Dynamic tips loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Section 5: Dispatch Hand-off Log -->
+                <div>
+                    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text-dark);">Legutóbbi Átadások a Futárnak</h4>
+                    <div id="analytics-dispatch-log" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+                        <!-- Dynamic log feeds -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Shared database code syncing with app.js in localStorage / memory -->
+    <script>
+        // Helper to safely access opener properties under file:// security policies
+        function getOpenerData(key, fallback) {
+            try {
+                if (window.opener && window.opener[key]) {
+                    return window.opener[key];
+                }
+            } catch (e) {
+                console.warn("Szülő ablak elérése blokkolva a böngésző biztonsági házirendje miatt (pl. helyi fájlként futtatás). Alapértelmezett adatbázis használata.", e);
+            }
+            return fallback;
+        }
+
+        // Check standard model databases
+        const restaurants = getOpenerData("restaurants", [
+            {
+                id: "r1",
+                name: "Vár Pizzéria",
+                category: "pizza",
+                description: "Kemencés nápolyi pizzák és olasz tészta különlegességek.",
+                rating: "4.8",
+                time: "20-30 perc",
+                image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                deliveryFee: 300,
+                phone: "+36 35 301 245",
+                categories: ["Akciós Menük", "Pizza", "Tészták", "Desszertek", "Italok"],
+                menu: [
+                    {
+                        id: "r1-f1",
+                        name: "Margaréta Pizza",
+                        category: "Pizza",
+                        description: "Paradicsomszósz, bivaly mozzarella, friss bazsalikom, olívaolaj.",
+                        price: 1990,
+                        image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra sajt", price: 300 },
+                            { name: "Kukorica", price: 200 },
+                            { name: "Gomba", price: 200 },
+                            { name: "Sonka", price: 400 }
+                        ]
+                    },
+                    {
+                        id: "r1-f2",
+                        name: "Diavola Spicy Pizza",
+                        category: "Pizza",
+                        description: "Csípős olasz szalámi, jalapeño karikák, mozzarella, paradicsomszósz.",
+                        price: 2390,
+                        image: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra sajt", price: 300 },
+                            { name: "Erős paprika", price: 150 },
+                            { name: "Sonka", price: 400 }
+                        ]
+                    },
+                    {
+                        id: "r1-f3",
+                        name: "Coca-Cola",
+                        category: "Italok",
+                        description: "0.33l dobozos klasszikus szénsavas üdítőital.",
+                        price: 490,
+                        image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: []
+                    },
+                    {
+                        id: "r1-f4",
+                        name: "Somlói Galuska",
+                        category: "Desszertek",
+                        description: "Klasszikus magyar édesség gazdag csokoládéöntettel és tejszínhabbal.",
+                        price: 1290,
+                        image: "https://images.unsplash.com/photo-1579372786545-d24232daf58c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra tejszínhab", price: 150 },
+                            { name: "Reszelt dió", price: 200 }
+                        ]
+                    },
+                    {
+                        id: "r1-f5",
+                        name: "Prosciutto e Funghi Pizza",
+                        category: "Pizza",
+                        description: "Paradicsomszósz, mozzarella, érlelt olasz sonka, friss szeletelt csiperkegomba.",
+                        price: 2390,
+                        image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra sajt", price: 300 },
+                            { name: "Fokhagymás olaj", price: 100 },
+                            { name: "Gomba", price: 200 }
+                        ]
+                    },
+                    {
+                        id: "r1-f6",
+                        name: "Quattro Formaggi Pizza",
+                        category: "Pizza",
+                        description: "Négyféle sajtos csoda: gorgonzola, mozzarella, parmezán, pecorino.",
+                        price: 2490,
+                        image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Rukola", price: 200 },
+                            { name: "Dió", price: 250 }
+                        ]
+                    },
+                    {
+                        id: "r1-f7",
+                        name: "Tonno e Cipolla Pizza",
+                        category: "Pizza",
+                        description: "Paradicsomos alap, mozzarella sajt, tonhaldarabok, lilahagyma karikák, olívabogyó.",
+                        price: 2490,
+                        image: "https://images.unsplash.com/photo-1573821663912-569905455b1c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Citrom karika", price: 100 },
+                            { name: "Kapribogyó", price: 200 }
+                        ]
+                    },
+                    {
+                        id: "r1-f8",
+                        name: "Ungherese Pizza (Magyaros)",
+                        category: "Pizza",
+                        description: "Fűszeres paradicsomos alap, házi kolbász, bacon szeletek, lilahagyma, hegyes erős paprika.",
+                        price: 2590,
+                        image: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra kolbász", price: 350 },
+                            { name: "Tükörtojás", price: 200 }
+                        ]
+                    },
+                    {
+                        id: "r1-f9",
+                        name: "Calzone (Félbehajtott Pizza)",
+                        category: "Pizza",
+                        description: "Félbehajtott kemencés tészta sonkával, gombával, ricottával és mozzarellával töltve.",
+                        price: 2590,
+                        image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Paradicsomszósz a tetejére", price: 150 }
+                        ]
+                    },
+                    {
+                        id: "r1-f10",
+                        name: "Bolognai Spagetti",
+                        category: "Tészták",
+                        description: "Lassan főzött marhahúsos ragu, spagetti tészta, reszelt parmezán sajt.",
+                        price: 2290,
+                        image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra parmezán", price: 250 }
+                        ]
+                    },
+                    {
+                        id: "r1-f11",
+                        name: "Carbonara Spagetti",
+                        category: "Tészták",
+                        description: "Tejszín nélkül! Pirított guanciale (tokaszalonna), tojássárgája, pecorino sajt.",
+                        price: 2390,
+                        image: "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra bacon", price: 300 }
+                        ]
+                    },
+                    {
+                        id: "r1-f12",
+                        name: "Lasagne Al Forno",
+                        category: "Tészták",
+                        description: "Tésztalapok közé rétegezett bolognai ragu, krémes besamel mártás, kemencében sütve.",
+                        price: 2690,
+                        image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Dupla sajt a tetejére", price: 300 }
+                        ]
+                    },
+                    {
+                        id: "r1-f13",
+                        name: "Gnocchi Sorrento",
+                        category: "Tészták",
+                        description: "Burgonyás gnocchi gazdag paradicsomszószban, friss mozzarellával egybesütve.",
+                        price: 2290,
+                        image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Friss bazsalikom", price: 100 }
+                        ]
+                    },
+                    {
+                        id: "r1-f14",
+                        name: "Klasszikus Olasz Tiramisu",
+                        category: "Desszertek",
+                        description: "Mascarpone krém, kávéba és amarattóba áztatott babapiskóta, holland kakaópor.",
+                        price: 1190,
+                        image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: []
+                    },
+                    {
+                        id: "r1-f15",
+                        name: "Erdei Gyümölcsös Panna Cotta",
+                        category: "Desszertek",
+                        description: "Főzött krémdesszert vanília rúd darabkákkal, savanykás piros bogyós gyümölcsöntettel.",
+                        price: 1090,
+                        image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: []
+                    },
+                    {
+                        id: "r1-f16",
+                        name: "Folyékony Csokoládés Szuflé",
+                        category: "Desszertek",
+                        description: "Meleg csokoládés piskóta lágy, folyós belsővel, vanília fagylalttal szervírozva.",
+                        price: 1290,
+                        image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra fagylalt", price: 200 }
+                        ]
+                    },
+                    {
+                        id: "r1-f17",
+                        name: "Fanta Narancs",
+                        category: "Italok",
+                        description: "0.33l dobozos szénsavas narancsízű üdítőital.",
+                        price: 490,
+                        image: "https://images.unsplash.com/photo-1624552184280-9e9631bbeee9?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: []
+                    },
+                    {
+                        id: "r1-f18",
+                        name: "Sprite Lemon-Lime",
+                        category: "Italok",
+                        description: "0.33l dobozos citrom-limonádé ízű frissítő szénsavas ital.",
+                        price: 490,
+                        image: "https://images.unsplash.com/photo-1625772290748-390939a2001e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: []
+                    },
+                    {
+                        id: "r1-f19",
+                        name: "Krémes Cappuccino",
+                        category: "Italok",
+                        description: "Házias espresso kávé sűrű, meleg tejhabbal és kakaóporral meghintve.",
+                        price: 690,
+                        image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Laktózmentes tejjel", price: 100 },
+                            { name: "Kókusztejjel", price: 150 }
+                        ]
+                    },
+                    {
+                        id: "r1-f20",
+                        name: "Családi Pizza Menü",
+                        category: "Akciós Menük",
+                        description: "2 db kemencés Margaréta pizza és 1 db ajándék 0.33l-es Coca-Cola.",
+                        price: 3990,
+                        image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Plusz üdítő", price: 400 },
+                            { name: "Extra sajt mindkettőre", price: 500 }
+                        ]
+                    },
+                    {
+                        id: "r1-f21",
+                        name: "Spagetti & Tiramisu Menü",
+                        category: "Akciós Menük",
+                        description: "1 adag Bolognai spagetti, 1 adag Klasszikus Olasz tiramisu és 1 db krémes Cappuccino.",
+                        price: 3490,
+                        image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra tészta", price: 400 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "r2",
+                name: "Burger Haven",
+                category: "burger",
+                description: "Prémium marhahúsból készült szaftos kézműves burgerek.",
+                rating: "4.9",
+                time: "15-25 perc",
+                image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                deliveryFee: 0,
+                phone: "+36 35 412 879",
+                categories: ["Burger", "Köretek", "Italok"],
+                menu: [
+                    {
+                        id: "r2-f1",
+                        name: "Haven Classic Burger",
+                        category: "Burger",
+                        description: "150g marhahúspogácsa, cheddar sajt, házi szósz, csemegeuborka, pirított briós zsemle.",
+                        price: 2490,
+                        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Plusz Bacon", price: 300 },
+                            { name: "Dupla sajt", price: 250 },
+                            { name: "Tükörtojás", price: 200 }
+                        ]
+                    },
+                    {
+                        id: "r2-f2",
+                        name: "Füstös Bacon Burger",
+                        category: "Burger",
+                        description: "150g marhahúspogácsa, dupla ropogós bacon, füstös BBQ szósz, pirított hagyma, cheddar.",
+                        price: 2890,
+                        image: "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Plusz Bacon", price: 300 },
+                            { name: "Dupla sajt", price: 250 },
+                            { name: "Hagyma karikák", price: 200 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "r3",
+                name: "Istambul Gyros & Grill",
+                category: "gyros",
+                description: "Autentikus fűszerezésű tálak, wrapok és frissen sült húsok.",
+                rating: "4.7",
+                time: "15-20 perc",
+                image: "https://images.unsplash.com/photo-1626700051175-6518c4793fde?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                deliveryFee: 200,
+                phone: "+36 35 523 961",
+                categories: ["Főétel", "Gyors étel", "Italok"],
+                menu: [
+                    {
+                        id: "r3-f1",
+                        name: "Gyros Tál",
+                        category: "Főétel",
+                        description: "Fűszeres csirkehús, hasábburgonya, friss kevert saláta, választható öntet, házi pita.",
+                        price: 2290,
+                        image: "https://images.unsplash.com/photo-1626700051175-6518c4793fde?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Plusz sajt", price: 250 },
+                            { name: "Feta sajt", price: 300 },
+                            { name: "Extra hús", price: 600 }
+                        ]
+                    },
+                    {
+                        id: "r3-f2",
+                        name: "Gyros Kifliben",
+                        category: "Gyors étel",
+                        description: "Fűszeres hús csíkok, saláta, paradicsom, hagyma, fokhagymás és csípős szósz, friss ropogós kifli.",
+                        price: 1490,
+                        image: "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Csípős szósz", price: 100 },
+                            { name: "Olívabogyó", price: 200 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "r4",
+                name: "Központi Étkezde",
+                category: "menu",
+                description: "Házias ebédmenük és hagyományos magyar fogások minden nap.",
+                rating: "4.6",
+                time: "10-15 perc",
+                image: "https://images.unsplash.com/photo-1547592180-85f173990554?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                deliveryFee: 400,
+                phone: "+36 35 634 012",
+                categories: ["Napi Menü", "Levesek", "Desszertek"],
+                menu: [
+                    {
+                        id: "r4-f1",
+                        name: "A Menü (Húsleves + Rántott szelet)",
+                        category: "Napi Menü",
+                        description: "Húsleves cérnametélttel, rántott sertéskaraj burgonyapürével és házi csemegeuborkával.",
+                        price: 2190,
+                        image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Extra uborka", price: 150 },
+                            { name: "Plusz burgonyapüré", price: 300 }
+                        ]
+                    },
+                    {
+                        id: "r4-f2",
+                        name: "B Menü (Gulyásleves + Túrós csusza)",
+                        category: "Napi Menü",
+                        description: "Házias bográcsos gulyásleves marhahúsból, túrós csusza pörccel.",
+                        price: 2390,
+                        image: "https://images.unsplash.com/photo-1594756202469-9ff9799b2e4e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+                        toppings: [
+                            { name: "Dupla tepertő", price: 200 }
+                        ]
+                    }
+                ]
+            }
+        ]);
+
+        let orders = getOpenerData("ordersDb", []);
+        try {
+            const savedOrders = JSON.parse(localStorage.getItem("gastrogoOrders") || "null");
+            if (Array.isArray(savedOrders)) orders = savedOrders;
+        } catch (error) {
+            console.warn("A mentett rendelések nem tölthetők be.", error);
+        }
+        let reviews = getOpenerData("reviewsDb", []);
+
+        // ================= DYNAMIC DATA GENERATOR FOR FALLBACK PORTAL ANALYTICS =================
+        const mockNames = ["Nagy Gábor", "Kiss Eszter", "Kovács Péter", "Szabó Anna", "Tóth Bence", "Horváth Réka", "Varga Zoltán", "Molnár Dóra", "Farkas Balázs", "Németh Luca", "Papp Dániel", "Balogh Zsófia"];
+        const mockTimes = ["08:15", "09:40", "11:20", "12:10", "13:30", "14:50", "16:15", "17:40", "19:00", "20:30", "21:15", "22:00"];
+        const mockComments = [
+            { rating: 5, comment: "Abszolút fantasztikus! Az ételek forróak és szuperek voltak!" },
+            { rating: 5, comment: "Kedvenc helyem lett, nagyon gyors a kiszállítás." },
+            { rating: 4, comment: "Nagyon finom volt, talán egy picit több szószt elbírt volna." },
+            { rating: 5, comment: "Korrekt adagok, finom ízek, csak ajánlani tudom!" },
+            { rating: 4, comment: "Gyorsan kiért, meleg volt és ízlett az egész családnak." },
+            { rating: 3, comment: "Finom volt, de a futár egy kicsit késett." },
+            { rating: 5, comment: "Minden tökéletes volt, a csomagolás is nagyon tiszta." },
+            { rating: 4, comment: "Jó minőségű alapanyagok, ízletes fűszerezés." }
+        ];
+
+        restaurants.forEach(res => {
+            // Generate orders if there are less than 10
+            const existingOrdersCount = orders.filter(o => o.restaurantId === res.id).length;
+            if (existingOrdersCount < 10) {
+                const toGenerate = 10 - existingOrdersCount;
+                for (let i = 0; i < toGenerate; i++) {
+                    const name = mockNames[(i + res.id.charCodeAt(1)) % mockNames.length];
+                    const time = mockTimes[(i * 3 + res.id.charCodeAt(1)) % mockTimes.length];
+                    
+                    // Pick a random menu item from restaurant
+                    const menuItem = res.menu[i % res.menu.length] || { name: "Finomság", price: 1500 };
+                    const quantity = (i % 2) + 1;
+                    const itemPrice = menuItem.price;
+                    const total = itemPrice * quantity + res.deliveryFee;
+                    
+                    orders.push({
+                        id: `ord-gen-${res.id}-${i}`,
+                        restaurantId: res.id,
+                        customerName: name,
+                        time: time,
+                        createdTimestamp: Date.now() - (i * 2 + 1) * 3600 * 1000,
+                        items: [
+                            { name: menuItem.name, price: itemPrice, quantity: quantity }
+                        ],
+                        total: total,
+                        status: i % 3 === 0 ? "preparing" : (i % 3 === 1 ? "dispatched" : "received")
+                    });
+                }
+            }
+
+            // Generate reviews if there are less than 8
+            const existingReviewsCount = reviews.filter(r => r.restaurantId === res.id).length;
+            if (existingReviewsCount < 8) {
+                const toGenerate = 8 - existingReviewsCount;
+                for (let i = 0; i < toGenerate; i++) {
+                    const name = mockNames[(i + 5 + res.id.charCodeAt(1)) % mockNames.length];
+                    const comm = mockComments[(i + res.id.charCodeAt(1)) % mockComments.length];
+                    
+                    reviews.push({
+                        id: `rev-gen-${res.id}-${i}`,
+                        restaurantId: res.id,
+                        customerName: name,
+                        rating: comm.rating,
+                        comment: comm.comment,
+                        date: "2026. 08. 22."
+                    });
+                }
+            }
+        });
+
+        let napszakStats = getOpenerData("napszakStats", {
+            morning: [15, 12, 17],
+            afternoon: [25, 28, 22],
+            evening: [20, 18, 23]
+        });
+
+        let activeRestaurant = restaurants[0];
+        let refreshTimeLeft = 10 * 60;
+
+        // Category to Toppings Mappings database
+        let categoryToppings = getOpenerData("categoryToppings", {
+            "Pizza": [
+                { name: "Extra sajt", price: 300 },
+                { name: "Kukorica", price: 200 },
+                { name: "Gomba", price: 200 },
+                { name: "Sonka", price: 400 },
+                { name: "Erős paprika", price: 150 },
+                { name: "Fokhagymás olaj", price: 100 },
+                { name: "Rukola", price: 200 }
+            ],
+            "Tészták": [
+                { name: "Extra parmezán", price: 250 },
+                { name: "Extra bacon", price: 300 },
+                { name: "Friss bazsalikom", price: 100 }
+            ],
+            "Desszertek": [
+                { name: "Extra tejszínhab", price: 150 },
+                { name: "Reszelt dió", price: 200 },
+                { name: "Extra fagylalt", price: 200 }
+            ],
+            "Italok": [
+                { name: "Laktózmentes tejjel", price: 100 },
+                { name: "Kókusztejjel", price: 150 }
+            ],
+            "Akciós Menük": [
+                { name: "Plusz üdítő", price: 400 },
+                { name: "Extra sajt mindkettőre", price: 500 }
+            ]
+        });
+
+        try {
+            if (window.opener && !window.opener.categoryToppings) {
+                window.opener.categoryToppings = categoryToppings;
+            }
+        } catch (e) {}
+
+        function getCurrentNapszak() {
+            const hours = new Date().getHours();
+            if (hours >= 6 && hours < 12) return "morning";
+            if (hours >= 12 && hours < 18) return "afternoon";
+            return "evening";
+        }
+
+        function getAveragePrepTime(napszakKey) {
+            const list = napszakStats[napszakKey];
+            if (!list || list.length === 0) return 20;
+            return Math.round(list.reduce((s, v) => s + v, 0) / list.length);
+        }
+
+        // ================= IMAGE TALLÓZÁS FILE LOADER =================
+        document.getElementById("food-img-file").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById("food-img-base64").value = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // ================= COMBO BUILDER DYNAMIC HANDLERS =================
+        const comboItemsChecklist = document.getElementById("combo-builder-items-checklist");
+        
+        function renderComboBuilderChecklist() {
+            if (!comboItemsChecklist) return;
+            comboItemsChecklist.innerHTML = "";
+            const currentEditingId = document.getElementById("edit-combo-id").value;
+            // List all current items of the active restaurant except the combo itself and other combos
+            const items = activeRestaurant.menu.filter(m => m.id !== currentEditingId && m.category !== "Akciós Menük");
+            
+            if (items.length === 0) {
+                comboItemsChecklist.innerHTML = `<div style="font-size:10px; color:var(--text-muted); padding: 5px;">Először vegyél fel különálló ételeket!</div>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const row = document.createElement("label");
+                row.style.display = "flex";
+                row.style.alignItems = "center";
+                row.style.gap = "8px";
+                row.style.fontSize = "11px";
+                row.style.cursor = "pointer";
+                row.innerHTML = `
+                    <input type="checkbox" class="combo-builder-cb" data-price="${item.price}" value="${item.name}">
+                    <span>${item.name} (${item.price} Ft)</span>
+                `;
+                row.querySelector("input").addEventListener("change", calculateComboBuilderPrice);
+                comboItemsChecklist.appendChild(row);
+            });
+
+            calculateComboBuilderPrice();
+        }
+
+        document.getElementById("combo-builder-discount-type").addEventListener("change", calculateComboBuilderPrice);
+        document.getElementById("combo-builder-discount-value").addEventListener("input", calculateComboBuilderPrice);
+
+        function calculateComboBuilderPrice() {
+            let originalPrice = 0;
+            const selectedNames = [];
+            document.querySelectorAll(".combo-builder-cb:checked").forEach(cb => {
+                originalPrice += parseInt(cb.getAttribute("data-price"));
+                selectedNames.push(cb.value);
+            });
+
+            const discountType = document.getElementById("combo-builder-discount-type").value;
+            const discountVal = parseInt(document.getElementById("combo-builder-discount-value").value) || 0;
+            
+            let finalPrice = originalPrice;
+            if (discountType === "percent") {
+                finalPrice = Math.max(0, Math.round(originalPrice * (1 - discountVal / 100)));
+            } else {
+                finalPrice = Math.max(0, originalPrice - discountVal);
+            }
+
+            document.getElementById("combo-builder-price-preview").textContent = 
+                `Eredeti ár: ${originalPrice} Ft | Akciós ár: ${finalPrice} Ft`;
+
+            // Set final price input
+            document.getElementById("combo-builder-final-price").value = finalPrice;
+            updateComboPreview();
+        }
+
+        document.getElementById("btn-save-combo").addEventListener("click", () => {
+            const id = document.getElementById("edit-combo-id").value;
+            const name = document.getElementById("combo-name").value.trim();
+            const price = parseInt(document.getElementById("combo-builder-final-price").value) || 0;
+            const discountType = document.getElementById("combo-builder-discount-type").value;
+            const discountVal = parseInt(document.getElementById("combo-builder-discount-value").value) || 0;
+            
+            const selectedNames = [];
+            document.querySelectorAll(".combo-builder-cb:checked").forEach(cb => {
+                selectedNames.push(cb.value);
+            });
+
+            if (!name) {
+                alert("Kérlek írd be a menü nevét!");
+                return;
+            }
+            if (selectedNames.length === 0) {
+                alert("Kérlek válassz legalább egy ételt a menübe!");
+                return;
+            }
+
+            const discountText = discountType === "percent" ? `${discountVal}% kedvezmény!` : `${discountVal} Ft kedvezmény!`;
+            const desc = `Menü tartalma: ${selectedNames.join(", ")}. Megtakarítás: ${discountText}`;
+            
+            const toppingsInput = document.getElementById("combo-builder-toppings").value.trim();
+            const toppings = [];
+            if (toppingsInput) {
+                toppingsInput.split(",").forEach(t => {
+                    const sub = t.split(":");
+                    if (sub.length === 2) {
+                        toppings.push({ name: sub[0].trim(), price: parseInt(sub[1].trim()) || 0 });
+                    }
+                });
+            }
+
+            // Ensure categories includes "Akciós Menük"
+            if (!activeRestaurant.categories.includes("Akciós Menük")) {
+                activeRestaurant.categories.push("Akciós Menük");
+            }
+
+            if (id) {
+                const item = activeRestaurant.menu.find(m => m.id === id);
+                if (item) {
+                    item.name = name;
+                    item.price = price;
+                    item.description = desc;
+                    item.toppings = toppings;
+                }
+            } else {
+                activeRestaurant.menu.push({
+                    id: `${activeRestaurant.id}-f-${Date.now()}`,
+                    name,
+                    category: "Akciós Menük",
+                    price,
+                    description: desc,
+                    toppings,
+                    image: "https://images.unsplash.com/photo-1547592180-85f173990554?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
+                });
+            }
+
+            clearComboForm();
+            initDashboard();
+            syncData();
+            
+            // Switch back to menu catalog tab
+            document.querySelector(".sidebar-menu-btn[data-view='menu']").click();
+        });
+
+        document.getElementById("btn-cancel-combo-edit").addEventListener("click", () => {
+            clearComboForm();
+        });
+
+        function clearComboForm() {
+            document.getElementById("edit-combo-id").value = "";
+            document.getElementById("combo-name").value = "";
+            document.getElementById("combo-builder-discount-value").value = "10";
+            document.getElementById("combo-builder-toppings").value = "";
+            document.getElementById("btn-cancel-combo-edit").style.display = "none";
+            document.getElementById("combo-form-title").textContent = "🍱 Új akciós menü (csomag) létrehozása";
+            // Reset custom per-combo toppings
+            window._comboCustomToppings = [];
+            const tagsEl = document.getElementById("combo-custom-topping-tags");
+            if (tagsEl) tagsEl.innerHTML = "";
+            renderComboBuilderChecklist();
+            updateComboPreview();
+        }
+
+        // ================= CSV TEMPLATE EXPORT & DOWNLOAD =================
+        document.getElementById("btn-export-csv").addEventListener("click", () => {
+            if (!activeRestaurant) return;
+            
+            // UTF-8 BOM to guarantee Excel parses accented characters correctly
+            let csvContent = "\ufeffMegnevezés,Kategória,Ár,Leírás,Feltétek\n";
+            
+            activeRestaurant.menu.forEach(item => {
+                const toppingsStr = item.toppings ? item.toppings.map(t => `${t.name}:${t.price}`).join('|') : '';
+                const row = [
+                    `"${item.name.replace(/"/g, '""')}"`,
+                    `"${(item.category || '').replace(/"/g, '""')}"`,
+                    item.price,
+                    `"${(item.description || '').replace(/"/g, '""')}"`,
+                    `"${toppingsStr.replace(/"/g, '""')}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${activeRestaurant.name.toLowerCase().replace(/\s+/g, '_')}_etlap_sablon.csv`);
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // ================= RESTAURANT SETTINGS =================
+        function renderRestaurantSettings() {
+            const restaurant = activeRestaurant;
+            if (!restaurant) return;
+            restaurant.deliveryLocations = restaurant.deliveryLocations || [];
+            restaurant.extraFees = restaurant.extraFees || [];
+            document.getElementById("settings-image-url").value = restaurant.image || "";
+            document.getElementById("settings-delivery-fee").value = restaurant.deliveryFee || 0;
+            document.getElementById("settings-delivery-locations").value = restaurant.deliveryLocations.join(", ");
+            document.getElementById("settings-image-preview").style.backgroundImage = restaurant.image ? `url('${restaurant.image}')` : "none";
+            renderExtraFeeRows();
+        }
+
+        function renderExtraFeeRows() {
+            const list = document.getElementById("settings-extra-fees-list");
+            list.innerHTML = "";
+            (activeRestaurant.extraFees || []).forEach((fee, index) => {
+                const row = document.createElement("div");
+                row.style.cssText = "display:grid;grid-template-columns:1fr 130px auto;gap:8px;align-items:center;";
+                row.innerHTML = `<input type="text" value="${fee.name || ""}" data-fee-name="${index}" placeholder="Díj neve" style="padding:9px;border:1px solid #CBD5E1;border-radius:8px;font:inherit;font-size:13px;"><input type="number" min="0" value="${fee.amount || 0}" data-fee-amount="${index}" placeholder="Összeg" style="padding:9px;border:1px solid #CBD5E1;border-radius:8px;font:inherit;font-size:13px;"><button type="button" class="btn-action-small btn-delete" data-fee-remove="${index}">Törlés</button>`;
+                list.appendChild(row);
+            });
+        }
+
+        document.getElementById("settings-image-url").addEventListener("input", (event) => {
+            document.getElementById("settings-image-preview").style.backgroundImage = event.target.value ? `url('${event.target.value}')` : "none";
+        });
+
+        document.getElementById("settings-image-file").addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                document.getElementById("settings-image-url").value = reader.result;
+                document.getElementById("settings-image-preview").style.backgroundImage = `url('${reader.result}')`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById("settings-add-fee").addEventListener("click", () => {
+            activeRestaurant.extraFees = activeRestaurant.extraFees || [];
+            activeRestaurant.extraFees.push({ name: "", amount: 0 });
+            renderExtraFeeRows();
+        });
+
+        document.getElementById("settings-extra-fees-list").addEventListener("click", (event) => {
+            const button = event.target.closest("[data-fee-remove]");
+            if (!button) return;
+            activeRestaurant.extraFees.splice(Number(button.dataset.feeRemove), 1);
+            renderExtraFeeRows();
+        });
+
+        document.getElementById("restaurant-settings-form").addEventListener("submit", (event) => {
+            event.preventDefault();
+            activeRestaurant.image = document.getElementById("settings-image-url").value.trim() || null;
+            activeRestaurant.deliveryFee = Math.max(0, Number(document.getElementById("settings-delivery-fee").value) || 0);
+            activeRestaurant.deliveryLocations = document.getElementById("settings-delivery-locations").value.split(",").map(location => location.trim()).filter(Boolean);
+            activeRestaurant.extraFees = [...document.querySelectorAll("[data-fee-name]")].map((input, index) => ({
+                name: input.value.trim(),
+                amount: Math.max(0, Number(document.querySelector(`[data-fee-amount='${index}']`).value) || 0)
+            })).filter(fee => fee.name && fee.amount > 0);
+            const savedSettings = JSON.parse(localStorage.getItem("gastrogoRestaurantSettings") || "{}");
+            savedSettings[activeRestaurant.id] = {
+                image: activeRestaurant.image,
+                deliveryFee: activeRestaurant.deliveryFee,
+                deliveryLocations: activeRestaurant.deliveryLocations,
+                extraFees: activeRestaurant.extraFees
+            };
+            localStorage.setItem("gastrogoRestaurantSettings", JSON.stringify(savedSettings));
+            renderRestaurantSettings();
+            syncData();
+            document.getElementById("settings-save-status").textContent = "Beállítások mentve.";
+        });
+
+        // ================= SIDEBAR TABS CONTROLLERS =================
+        const sidebarBtns = document.querySelectorAll(".sidebar-menu-btn");
+        const viewPanels = document.querySelectorAll(".dashboard-view");
+
+        sidebarBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                sidebarBtns.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+
+                const targetView = btn.getAttribute("data-view");
+                viewPanels.forEach(p => p.classList.remove("active"));
+                
+                const activePanel = document.getElementById(`view-${targetView}`);
+                if (activePanel) {
+                    activePanel.classList.add("active");
+                }
+                if (targetView === "settings") renderRestaurantSettings();
+            });
+        });
+
+        // ================= RENDERING =================
+        function initDashboard() {
+            renderDashboardMenu();
+            renderDashboardOrders();
+            renderDashboardReviews();
+            renderDashboardStats();
+            renderCategoryDropdown();
+            renderCategoryManagerList();
+            renderAnalytics();
+            renderComboBuilderChecklist();
+            renderToppingPresetCategorySelect();
+            updateOrdersBadge();
+        }
+
+        function updateOrdersBadge() {
+            const count = orders.filter(o => o.restaurantId === activeRestaurant.id && o.status === "received").length;
+            const badge = document.getElementById("dash-orders-badge");
+            if (count > 0) {
+                badge.style.display = "flex";
+                badge.textContent = count;
+            } else {
+                badge.style.display = "none";
+            }
+        }
+
+        function renderDashboardStats() {
+            document.getElementById("stat-morning").textContent = `~${getAveragePrepTime("morning")} perc`;
+            document.getElementById("stat-afternoon").textContent = `~${getAveragePrepTime("afternoon")} perc`;
+            document.getElementById("stat-evening").textContent = `~${getAveragePrepTime("evening")} perc`;
+        }
+
+        function renderCategoryDropdown() {
+            const select = document.getElementById("food-category-select");
+            select.innerHTML = "";
+            activeRestaurant.categories.forEach(cat => {
+                const opt = document.createElement("option");
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            });
+            renderFoodToppingsCheckboxes();
+        }
+
+        // Render toppings checklist in food form based on selected category
+        function renderFoodToppingsCheckboxes() {
+            const select = document.getElementById("food-category-select");
+            const container = document.getElementById("food-toppings-checkboxes-container");
+            if (!select || !container) return;
+            
+            const category = select.value;
+            container.innerHTML = "";
+            
+            const toppings = categoryToppings[category] || [];
+            if (toppings.length === 0) {
+                container.innerHTML = `<span style="font-size: 10px; color: var(--text-muted);">Nincs alapértelmezett feltét ehhez a kategóriához.</span>`;
+                return;
+            }
+            
+            toppings.forEach(t => {
+                const label = document.createElement("label");
+                label.style.display = "inline-flex";
+                label.style.alignItems = "center";
+                label.style.gap = "4px";
+                label.style.fontSize = "11px";
+                label.style.background = "#F1F5F9";
+                label.style.padding = "4px 8px";
+                label.style.borderRadius = "4px";
+                label.style.cursor = "pointer";
+                label.innerHTML = `
+                    <input type="checkbox" class="food-topping-checkbox" data-name="${t.name}" data-price="${t.price}">
+                    <span>${t.name} (+${t.price} Ft)</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+        
+        document.getElementById("food-category-select").addEventListener("change", renderFoodToppingsCheckboxes);
+
+        // ── Custom ad-hoc topping: Új étel form ──────────────────────────────
+        // Keeps per-item custom toppings in a temporary array cleared on form reset
+        window._foodCustomToppings = [];
+
+        function renderFoodCustomToppingTags() {
+            const container = document.getElementById("food-toppings-checkboxes-container");
+            // Remove previously injected custom tags (data-custom="1")
+            container.querySelectorAll("[data-custom='1']").forEach(el => el.remove());
+
+            window._foodCustomToppings.forEach((t, idx) => {
+                const label = document.createElement("label");
+                label.setAttribute("data-custom", "1");
+                label.style.cssText = "display:inline-flex;align-items:center;gap:4px;font-size:11px;background:#FEF3C7;padding:4px 8px;border-radius:4px;cursor:pointer;border:1px solid #FCD34D;";
+                label.innerHTML = `
+                    <input type="checkbox" class="food-topping-checkbox" data-name="${t.name}" data-price="${t.price}" checked>
+                    <span>${t.name} (+${t.price} Ft)</span>
+                    <span onclick="window._foodCustomToppings.splice(${idx},1);renderFoodCustomToppingTags();" style="margin-left:4px;color:#92400E;font-weight:900;cursor:pointer;">✕</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        document.getElementById("btn-add-food-custom-topping").addEventListener("click", () => {
+            const nameEl = document.getElementById("food-custom-topping-name");
+            const priceEl = document.getElementById("food-custom-topping-price");
+            const name = nameEl.value.trim();
+            const price = parseInt(priceEl.value) || 0;
+            if (!name) { nameEl.focus(); return; }
+            window._foodCustomToppings.push({ name, price });
+            nameEl.value = "";
+            priceEl.value = "";
+            renderFoodCustomToppingTags();
+        });
+
+        // ── Custom ad-hoc topping: Menü összeállítás form ────────────────────
+        window._comboCustomToppings = [];
+
+        function renderComboCustomToppingTags() {
+            // Rebuild the toppings text input from combo items + custom toppings
+            const existing = document.getElementById("combo-builder-toppings").value
+                .split(",").map(s => s.trim()).filter(s => s && !window._comboCustomToppings.some(ct => s.startsWith(ct.name)));
+            const customParts = window._comboCustomToppings.map(t => `${t.name}:${t.price}`);
+            document.getElementById("combo-builder-toppings").value = [...existing, ...customParts].filter(Boolean).join(", ");
+
+            // Show tags below the input
+            let tagsEl = document.getElementById("combo-custom-topping-tags");
+            if (!tagsEl) {
+                tagsEl = document.createElement("div");
+                tagsEl.id = "combo-custom-topping-tags";
+                tagsEl.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;";
+                document.getElementById("combo-builder-toppings").insertAdjacentElement("afterend", tagsEl);
+            }
+            tagsEl.innerHTML = "";
+            window._comboCustomToppings.forEach((t, idx) => {
+                const tag = document.createElement("span");
+                tag.style.cssText = "display:inline-flex;align-items:center;gap:4px;font-size:11px;background:#FEF3C7;padding:3px 8px;border-radius:4px;border:1px solid #FCD34D;";
+                tag.innerHTML = `${t.name} (+${t.price} Ft) <span onclick="window._comboCustomToppings.splice(${idx},1);renderComboCustomToppingTags();" style="color:#92400E;font-weight:900;cursor:pointer;">✕</span>`;
+                tagsEl.appendChild(tag);
+            });
+        }
+
+        document.getElementById("btn-add-combo-custom-topping").addEventListener("click", () => {
+            const nameEl = document.getElementById("combo-custom-topping-name");
+            const priceEl = document.getElementById("combo-custom-topping-price");
+            const name = nameEl.value.trim();
+            const price = parseInt(priceEl.value) || 0;
+            if (!name) { nameEl.focus(); return; }
+            window._comboCustomToppings.push({ name, price });
+            nameEl.value = "";
+            priceEl.value = "";
+            renderComboCustomToppingTags();
+        });
+
+        function renderToppingPresetCategorySelect() {
+            const select = document.getElementById("topping-preset-category-select");
+            if (!select) return;
+            const currentVal = select.value;
+            select.innerHTML = "";
+            activeRestaurant.categories.forEach(cat => {
+                const opt = document.createElement("option");
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            });
+            if (currentVal && activeRestaurant.categories.includes(currentVal)) {
+                select.value = currentVal;
+            } else if (select.options.length > 0) {
+                select.value = select.options[0].value;
+            }
+            renderToppingsPresetsList();
+        }
+
+        function renderToppingsPresetsList() {
+            const select = document.getElementById("topping-preset-category-select");
+            const container = document.getElementById("topping-presets-list-container");
+            if (!select || !container) return;
+            
+            const category = select.value;
+            container.innerHTML = "";
+            if (!category) return;
+            
+            if (!categoryToppings[category]) {
+                categoryToppings[category] = [];
+            }
+            
+            const toppings = categoryToppings[category];
+            if (toppings.length === 0) {
+                container.innerHTML = `<span style="font-size: 11px; color: var(--text-muted); padding: 5px;">Még nincs mentett feltét-sablon ehhez a kategóriához.</span>`;
+                return;
+            }
+            
+            toppings.forEach((t, index) => {
+                const row = document.createElement("div");
+                row.className = "category-row";
+                row.style.display = "flex";
+                row.style.justifyContent = "space-between";
+                row.style.alignItems = "center";
+                row.style.fontSize = "11px";
+                row.style.padding = "4px 8px";
+                row.style.borderBottom = "1px solid #F1F5F9";
+                row.innerHTML = `
+                    <span><strong>${t.name}</strong> (+${t.price} Ft)</span>
+                    <button class="btn-action-small btn-delete" onclick="deleteToppingPreset('${category}', ${index})">Törlés</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function deleteToppingPreset(category, index) {
+            if (categoryToppings[category]) {
+                categoryToppings[category].splice(index, 1);
+                renderToppingsPresetsList();
+                renderFoodToppingsCheckboxes();
+            }
+        }
+
+        document.getElementById("topping-preset-category-select").addEventListener("change", renderToppingsPresetsList);
+
+        document.getElementById("btn-add-topping-preset").addEventListener("click", () => {
+            const select = document.getElementById("topping-preset-category-select");
+            const nameInput = document.getElementById("new-topping-name");
+            const priceInput = document.getElementById("new-topping-price");
+            
+            const category = select.value;
+            const name = nameInput.value.trim();
+            const price = parseInt(priceInput.value) || 0;
+            
+            if (!category || !name) {
+                alert("Kérlek add meg a kategóriát és a feltét nevét!");
+                return;
+            }
+            
+            if (!categoryToppings[category]) {
+                categoryToppings[category] = [];
+            }
+            
+            categoryToppings[category].push({ name, price });
+            nameInput.value = "";
+            priceInput.value = "";
+            
+            renderToppingsPresetsList();
+            renderFoodToppingsCheckboxes();
+        });
+
+        function renderCategoryManagerList() {
+            const container = document.getElementById("categories-container");
+            container.innerHTML = "";
+            activeRestaurant.categories.forEach(cat => {
+                const el = document.createElement("div");
+                el.className = "category-row";
+                el.innerHTML = `
+                    <span>${cat}</span>
+                    <button class="btn-action-small btn-delete" onclick="deleteCategory('${cat}')">Törlés</button>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function deleteCategory(catName) {
+            if (!confirm(`Biztosan törlöd a(z) "${catName}" kategóriát?`)) return;
+            activeRestaurant.categories = activeRestaurant.categories.filter(c => c !== catName);
+            activeRestaurant.menu.forEach(item => {
+                if (item.category === catName) item.category = "Egyéb";
+            });
+            if (activeRestaurant.menu.some(i => i.category === "Egyéb") && !activeRestaurant.categories.includes("Egyéb")) {
+                activeRestaurant.categories.push("Egyéb");
+            }
+            initDashboard();
+            syncData();
+        }
+
+        document.getElementById("btn-add-cat").addEventListener("click", () => {
+            const name = document.getElementById("new-category-name").value.trim();
+            if (!name) return;
+            if (!activeRestaurant.categories.includes(name)) {
+                activeRestaurant.categories.push(name);
+                document.getElementById("new-category-name").value = "";
+                initDashboard();
+                syncData();
+            }
+        });
+
+        function renderDashboardMenu() {
+            const container = document.getElementById("menu-container");
+            container.innerHTML = "";
+
+            const items = activeRestaurant.menu;
+            document.getElementById("menu-items-count").textContent = items.length;
+
+            if (items.length === 0) {
+                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:30px;">Nincs még felvett ételed.</div>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const imgUrl = item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3";
+                const card = document.createElement("div");
+                card.className = "menu-card";
+                card.innerHTML = `
+                    <div class="menu-card-img" style="background-image: url('${imgUrl}')"></div>
+                    <div class="menu-card-details">
+                        <div>
+                            <h4>${item.name}</h4>
+                            <p>${item.description || 'Nincs leírás'}</p>
+                            <span style="font-size:10px; font-weight:700; color:var(--accent); background:#E6FFFA; padding:2px 6px; border-radius:4px;">${item.category || 'Egyéb'}</span>
+                        </div>
+                        <div class="menu-card-footer">
+                            <span class="menu-card-price">${item.price} Ft</span>
+                            <div>
+                                <button class="btn-action-small btn-edit" onclick="populateEditForm('${item.id}')">Szerkeszt</button>
+                                <button class="btn-action-small btn-delete" onclick="deleteFood('${item.id}')">Töröl</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function populateEditForm(id) {
+            const item = activeRestaurant.menu.find(m => m.id === id);
+            if (!item) return;
+
+            if (item.category === "Akciós Menük") {
+                // Populate combo form
+                document.getElementById("edit-combo-id").value = item.id;
+                document.getElementById("combo-name").value = item.name;
+                
+                renderComboBuilderChecklist();
+                if (item.description) {
+                    const checkboxes = document.querySelectorAll(".combo-builder-cb");
+                    checkboxes.forEach(cb => {
+                        if (item.description.includes(cb.value)) {
+                            cb.checked = true;
+                        }
+                    });
+                    calculateComboBuilderPrice();
+                }
+                
+                let tops = "";
+                if (item.toppings) {
+                    tops = item.toppings.map(t => `${t.name}:${t.price}`).join(', ');
+                }
+                document.getElementById("combo-builder-toppings").value = tops;
+                
+                document.getElementById("combo-form-title").textContent = "✏️ Akciós menü szerkesztése";
+                document.getElementById("btn-cancel-combo-edit").style.display = "inline-flex";
+
+                updateComboPreview();
+                // Switch tab to add-combo
+                document.querySelector(".sidebar-menu-btn[data-view='add-combo']").click();
+            } else {
+                // Populate normal food form
+                document.getElementById("edit-food-id").value = item.id;
+                document.getElementById("food-name").value = item.name;
+                document.getElementById("food-price").value = item.price;
+                document.getElementById("food-desc").value = item.description || "";
+                document.getElementById("food-img-base64").value = item.image || "";
+                document.getElementById("food-category-select").value = item.category || "";
+
+                // Render checkboxes
+                renderFoodToppingsCheckboxes();
+                if (item.toppings) {
+                    const checkboxes = document.querySelectorAll(".food-topping-checkbox");
+                    checkboxes.forEach(cb => {
+                        const hasTopping = item.toppings.some(t => t.name === cb.getAttribute("data-name"));
+                        if (hasTopping) {
+                            cb.checked = true;
+                        }
+                    });
+                }
+
+                document.getElementById("form-action-title").textContent = "✏️ Étel szerkesztése";
+                document.getElementById("btn-cancel-edit").style.display = "inline-flex";
+                
+                updateFoodPreview();
+                // Switch tabs to add-food
+                document.querySelector(".sidebar-menu-btn[data-view='add-food']").click();
+            }
+        }
+
+        document.getElementById("btn-cancel-edit").addEventListener("click", () => {
+            clearForm();
+        });
+
+        function clearForm() {
+            document.getElementById("edit-food-id").value = "";
+            document.getElementById("food-name").value = "";
+            document.getElementById("food-price").value = "";
+            document.getElementById("food-desc").value = "";
+            document.getElementById("food-img-base64").value = "";
+            document.getElementById("food-img-file").value = "";
+            
+            // Reset custom per-item toppings
+            window._foodCustomToppings = [];
+            
+            document.getElementById("form-action-title").textContent = "🍽️ Új étel hozzáadása";
+            document.getElementById("btn-cancel-edit").style.display = "none";
+            renderFoodToppingsCheckboxes();
+            updateFoodPreview();
+        }
+
+        document.getElementById("btn-save-food").addEventListener("click", () => {
+            const id = document.getElementById("edit-food-id").value;
+            const name = document.getElementById("food-name").value.trim();
+            const category = document.getElementById("food-category-select").value || "Egyéb";
+            const price = parseInt(document.getElementById("food-price").value);
+            const desc = document.getElementById("food-desc").value.trim();
+            const img = document.getElementById("food-img-base64").value;
+
+            if (!name || isNaN(price)) {
+                alert("Kérlek töltsd ki a Megnevezést és az Árat!");
+                return;
+            }
+
+            const toppings = [];
+            document.querySelectorAll(".food-topping-checkbox:checked").forEach(cb => {
+                toppings.push({
+                    name: cb.getAttribute("data-name"),
+                    price: parseInt(cb.getAttribute("data-price")) || 0
+                });
+            });
+
+            if (id) {
+                const item = activeRestaurant.menu.find(m => m.id === id);
+                if (item) {
+                    item.name = name;
+                    item.category = category;
+                    item.price = price;
+                    item.description = desc;
+                    item.toppings = toppings;
+                    item.image = img || null;
+                }
+            } else {
+                activeRestaurant.menu.push({
+                    id: `${activeRestaurant.id}-f-${Date.now()}`,
+                    name,
+                    category,
+                    price,
+                    description: desc,
+                    toppings,
+                    image: img || null
+                });
+            }
+
+            clearForm();
+            initDashboard();
+            syncData();
+        });
+
+        function deleteFood(id) {
+            if (!confirm("Biztosan törlöd ezt az ételt?")) return;
+            activeRestaurant.menu = activeRestaurant.menu.filter(m => m.id !== id);
+            initDashboard();
+            syncData();
+        }
+
+        window.addEventListener("storage", (event) => {
+            if (event.key !== "gastrogoOrders" || !event.newValue) return;
+            try {
+                const updatedOrders = JSON.parse(event.newValue);
+                if (!Array.isArray(updatedOrders)) return;
+                orders = updatedOrders;
+                renderDashboardOrders();
+                renderAnalytics();
+                updateOrdersBadge();
+            } catch (error) {
+                console.warn("Az új rendelés nem tölthető be.", error);
+            }
+        });
+
+        // ================= RENDERING REVIEWS =================
+        function renderDashboardReviews() {
+            const container = document.getElementById("reviews-container");
+            container.innerHTML = "";
+
+            const resReviews = reviews.filter(r => r.restaurantId === activeRestaurant.id);
+            if (resReviews.length === 0) {
+                container.innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:30px 0;">Nincs még értékelés ehhez a helyhez.</div>`;
+                return;
+            }
+
+            resReviews.slice().reverse().forEach(rev => {
+                const card = document.createElement("div");
+                card.className = "review-card";
+                card.innerHTML = `
+                    <div class="review-card-header">
+                        <strong>${rev.customerName}</strong>
+                        <span class="review-stars-gold">${"★".repeat(rev.rating)}</span>
+                    </div>
+                    <p class="review-comment-text">${rev.comment}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ================= RENDERING LIVE ANALYTICS =================
+        function renderAnalytics() {
+            const resOrders = orders.filter(o => o.restaurantId === activeRestaurant.id);
+            
+            // 1. Time-of-day order metrics classification
+            const classes = {
+                morning: { count: 0, sum: 0 },
+                afternoon: { count: 0, sum: 0 },
+                evening: { count: 0, sum: 0 }
+            };
+
+            resOrders.forEach(o => {
+                const hr = parseInt(o.time.split(":")[0]) || 12;
+                let napszak = "evening";
+                if (hr >= 6 && hr < 12) napszak = "morning";
+                else if (hr >= 12 && hr < 18) napszak = "afternoon";
+
+                classes[napszak].count++;
+                classes[napszak].sum += o.total;
+            });
+
+            // Set dynamic text labels in columns
+            let overallOrders = 0;
+            let overallSum = 0;
+            ["morning", "afternoon", "evening"].forEach(n => {
+                const countCell = document.getElementById(`analytics-orders-${n}`);
+                const spendCell = document.getElementById(`analytics-spend-${n}`);
+                
+                const data = classes[n];
+                overallOrders += data.count;
+                overallSum += data.sum;
+                countCell.textContent = `${data.count} db`;
+                spendCell.textContent = data.count > 0 ? `${Math.round(data.sum / data.count)} Ft` : "0 Ft";
+            });
+
+            // 2. Popular dishes ranking
+            const popMap = {};
+            resOrders.forEach(o => {
+                o.items.forEach(item => {
+                    popMap[item.name] = (popMap[item.name] || 0) + item.quantity;
+                });
+            });
+
+            const popularContainer = document.getElementById("analytics-popular-items");
+            popularContainer.innerHTML = "";
+
+            const sortedDishes = Object.entries(popMap).sort((a,b) => b[1] - a[1]).slice(0, 3);
+
+            if (sortedDishes.length === 0) {
+                popularContainer.innerHTML = `<div style="font-size:10px; color:var(--text-muted); text-align:center;">Nincs még értékesítési adat.</div>`;
+            } else {
+                sortedDishes.forEach(([name, qty]) => {
+                    const el = document.createElement("div");
+                    el.className = "popular-item-row";
+                    el.innerHTML = `
+                        <strong>${name}</strong>
+                        <span style="font-weight:700; color:var(--primary);">${qty}x eladva</span>
+                    `;
+                    popularContainer.appendChild(el);
+                });
+            }
+
+            // 3. Popular toppings ranking
+            const toppingsMap = {};
+            resOrders.forEach(o => {
+                o.items.forEach(item => {
+                    if (item.toppingsText) {
+                        item.toppingsText.split(",").forEach(t => {
+                            const name = t.trim();
+                            if (name) {
+                                toppingsMap[name] = (toppingsMap[name] || 0) + item.quantity;
+                            }
+                        });
+                    }
+                });
+            });
+
+            const toppingsContainer = document.getElementById("analytics-popular-toppings");
+            toppingsContainer.innerHTML = "";
+
+            const sortedToppings = Object.entries(toppingsMap).sort((a,b) => b[1] - a[1]).slice(0, 3);
+
+            if (sortedToppings.length === 0) {
+                toppingsContainer.innerHTML = `<div style="font-size:10px; color:var(--text-muted); text-align:center;">Nem rendeltek még plusz feltétet.</div>`;
+            } else {
+                sortedToppings.forEach(([name, qty]) => {
+                    const el = document.createElement("div");
+                    el.className = "popular-item-row";
+                    el.style.backgroundColor = "#F0F9FF";
+                    el.style.borderColor = "#BAE6FD";
+                    el.innerHTML = `
+                        <strong>${name}</strong>
+                        <span style="font-weight:700; color:#0369a1;">${qty}x választva</span>
+                    `;
+                    toppingsContainer.appendChild(el);
+                });
+            }
+
+            // 4. Upsell & Sales Optimization Tips
+            const tipsContainer = document.getElementById("analytics-upsell-tips");
+            tipsContainer.innerHTML = "";
+
+            const averageSpend = overallOrders > 0 ? Math.round(overallSum / overallOrders) : 2300;
+            const threshold = Math.round(averageSpend * 1.25); // Set 25% higher for free delivery trigger
+
+            // Compile dynamic tips
+            const tips = [
+                `💡 <strong>Kosárérték (AOV) növelés:</strong> Az átlagos rendelésed ${averageSpend} Ft. Kínálj ingyenes szállítást <strong>${threshold} Ft felett</strong>, hogy nagyobb vásárlásra ösztönözd a vevőket!`,
+                `🔥 <strong>Plusz feltét ajánló:</strong> A legnépszerűbb feltéted a(z) <strong>${sortedToppings[0] ? sortedToppings[0][0] : 'Extra sajt'}</strong>. A vevőknél tedd kiemelt ajánlattá a kosár gomb mellett!`,
+                `🥤 <strong>Keresztértékesítés (Cross-sell):</strong> A főételt rendelők 60%-a nem rakott üdítőt a kosárba. Ajánlj fel egy kedvezményes pizza+ital menüt a rendelési felületen!`
+            ];
+
+            tips.forEach(tip => {
+                const el = document.createElement("div");
+                el.style.marginBottom = "8px";
+                el.innerHTML = tip;
+                tipsContainer.appendChild(el);
+            });
+
+            // 5. Dispatch hand-off log feed
+            const logContainer = document.getElementById("analytics-dispatch-log");
+            logContainer.innerHTML = "";
+
+            const completedOrders = resOrders.filter(o => o.status === "dispatched");
+
+            if (completedOrders.length === 0) {
+                logContainer.innerHTML = `<div style="font-size:10px; color:var(--text-muted); text-align:center;">Nincs még lezárt átadás.</div>`;
+            } else {
+                completedOrders.slice().reverse().forEach(o => {
+                    const elapsed = Math.round((Date.now() - o.createdTimestamp) / 1000);
+                    const simMins = Math.max(12, Math.min(38, Math.round(elapsed * 2.5) + 12));
+                    
+                    const row = document.createElement("div");
+                    row.className = "log-item-row";
+                    row.innerHTML = `
+                        <strong>${o.customerName}</strong> rendelése <strong>~${simMins} perc</strong> alatt átadva a futárnak. (${o.time})
+                    `;
+                    logContainer.appendChild(row);
+                });
+            }
+        }
+
+        // ================= ORDERS HANDLING =================
+        function renderDashboardOrders() {
+            const container = document.getElementById("orders-container");
+            container.innerHTML = "";
+
+            const resOrders = orders.filter(o => o.restaurantId === activeRestaurant.id);
+            updateOrdersBadge();
+
+            if (resOrders.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:20px;">Nincs még beérkező rendelésed.</div>`;
+                return;
+            }
+
+            resOrders.slice().reverse().forEach(order => {
+                let statusText = "Új";
+                if (order.status === "preparing") statusText = "Készítés alatt";
+                if (order.status === "dispatched") statusText = "Futárnál";
+
+                let itemsStr = order.items.map(i => `<strong>${i.quantity}x</strong> ${i.name}`).join(', ');
+
+                let buttons = "";
+                if (order.status === "received") {
+                    buttons = `<button class="btn-action-small btn-primary" onclick="setOrderStatus('${order.id}', 'preparing')">Megnéztem</button>`;
+                } else if (order.status === "preparing") {
+                    buttons = `<button class="btn-action-small btn-primary" style="background-color:var(--accent);" onclick="setOrderStatus('${order.id}', 'dispatched')">Futárnak átadva</button>`;
+                } else {
+                    buttons = `<span style="font-size:10px; color:var(--text-muted); font-weight:600;">✓ Kézbesítve</span>`;
+                }
+
+                const card = document.createElement("div");
+                card.className = "order-card";
+                card.innerHTML = `
+                    <div class="order-card-header">
+                        <div>
+                            <h4>${order.customerName}</h4>
+                            <span class="order-time">${order.time}</span>
+                        </div>
+                        <span class="order-status-badge ${order.status}">${statusText}</span>
+                    </div>
+                    <div class="order-card-items">${itemsStr}</div>
+                    <div class="order-card-footer">
+                        <span class="order-total-lbl">${order.total} Ft</span>
+                        <div>${buttons}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function setOrderStatus(id, newStatus) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                order.status = newStatus;
+                if (newStatus === "dispatched") {
+                    const elapsed = Math.round((Date.now() - order.createdTimestamp) / 1000);
+                    const simMins = Math.max(12, Math.min(38, Math.round(elapsed * 2.5) + 12));
+                    napszakStats[getCurrentNapszak()].push(simMins);
+                }
+                initDashboard();
+                syncData();
+            }
+        }
+
+        // ================= CSV PARSER =================
+        const csvDropZone = document.getElementById("csv-drop-zone");
+        const csvFileInput = document.getElementById("csv-file-input");
+
+        csvDropZone.addEventListener("click", () => csvFileInput.click());
+        csvFileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) handleCSV(file);
+        });
+
+        csvDropZone.addEventListener("dragover", (e) => { e.preventDefault(); csvDropZone.style.borderColor = "var(--primary)"; });
+        csvDropZone.addEventListener("dragleave", () => { csvDropZone.style.borderColor = ""; });
+        csvDropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            csvDropZone.style.borderColor = "";
+            const file = e.dataTransfer.files[0];
+            if (file) handleCSV(file);
+        });
+
+        function handleCSV(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const text = event.target.result;
+                const lines = text.split(/\r?\n/);
+                let count = 0;
+                for(let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const cols = line.split(",");
+                    if (cols.length < 4) continue;
+
+                    const name = cols[0].trim();
+                    const category = cols[1].trim() || "Egyéb";
+                    const price = parseInt(cols[2].trim()) || 0;
+                    const desc = cols[3].trim();
+
+                    if (!activeRestaurant.categories.includes(category)) {
+                        activeRestaurant.categories.push(category);
+                    }
+
+                    const toppings = [];
+                    if (cols[4]) {
+                        cols[4].trim().split("|").forEach(t => {
+                            const sub = t.split(":");
+                            if (sub.length === 2) toppings.push({ name: sub[0].trim(), price: parseInt(sub[1].trim()) || 0 });
+                        });
+                    }
+
+                    activeRestaurant.menu.push({
+                        id: `${activeRestaurant.id}-f-import-${Date.now()}-${i}`,
+                        name, category, price, description: desc, toppings, image: null
+                    });
+                    count++;
+                }
+                alert(`Importálva: ${count} db termék!`);
+                initDashboard();
+                syncData();
+            };
+            reader.readAsText(file, "UTF-8");
+        }
+
+        // ================= SYNC TO PARENT FRAME =================
+        function syncData() {
+            if (window.opener) {
+                if (window.opener.renderRestaurants) window.opener.renderRestaurants();
+                if (window.opener.renderDashboardMenu) window.opener.renderDashboardMenu();
+                if (window.opener.renderDashboardOrders) window.opener.renderDashboardOrders();
+                if (window.opener.renderDashboardStats) window.opener.renderDashboardStats();
+            }
+        }
+
+        // Restaurant selector change
+        document.getElementById("desktop-restaurant-select").addEventListener("change", (e) => {
+            const val = e.target.value;
+            activeRestaurant = restaurants.find(r => r.id === val);
+            initDashboard();
+        });
+
+        // 10 minute interval
+        setInterval(() => {
+            refreshTimeLeft--;
+            if (refreshTimeLeft <= 0) {
+                refreshTimeLeft = 10 * 60;
+                renderDashboardStats();
+            }
+            const m = String(Math.floor(refreshTimeLeft / 60)).padStart(2, '0');
+            const s = String(refreshTimeLeft % 60).padStart(2, '0');
+            document.getElementById("refresh-timer").textContent = `Következő frissítés: ${m}:${s}`;
+        }, 1000);
+
+        // ================= LIVE PREVIEWS AUTO-UPDATE BINDINGS =================
+        function updateFoodPreview() {
+            const name = document.getElementById("food-name").value || "Termék neve";
+            const desc = document.getElementById("food-desc").value || "Termék leírása...";
+            const price = document.getElementById("food-price").value || "0";
+            const imgBase64 = document.getElementById("food-img-base64").value || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3";
+
+            document.getElementById("food-preview-title").textContent = name;
+            document.getElementById("food-preview-desc").textContent = desc;
+            document.getElementById("food-preview-price").textContent = `${price} Ft`;
+            document.getElementById("food-preview-img").style.backgroundImage = `url('${imgBase64}')`;
+        }
+
+        function updateComboPreview() {
+            const name = document.getElementById("combo-name").value || "Menü neve";
+            const price = document.getElementById("combo-builder-final-price").value || "0";
+            
+            // Build selected list
+            const selectedNames = [];
+            document.querySelectorAll(".combo-builder-cb:checked").forEach(cb => {
+                selectedNames.push(cb.value);
+            });
+            const discountType = document.getElementById("combo-builder-discount-type").value;
+            const discountVal = parseInt(document.getElementById("combo-builder-discount-value").value) || 0;
+            const discountText = discountType === "percent" ? `${discountVal}% kedvezmény!` : `${discountVal} Ft kedvezmény!`;
+            
+            let desc = "Menü tartalma...";
+            if (selectedNames.length > 0) {
+                desc = `Menü tartalma: ${selectedNames.join(", ")}. Megtakarítás: ${discountText}`;
+            }
+
+            document.getElementById("combo-preview-title").textContent = name;
+            document.getElementById("combo-preview-desc").textContent = desc;
+            document.getElementById("combo-preview-price").textContent = `${price} Ft`;
+        }
+
+        // Attach listeners for Food preview
+        document.getElementById("food-name").addEventListener("input", updateFoodPreview);
+        document.getElementById("food-desc").addEventListener("input", updateFoodPreview);
+        document.getElementById("food-price").addEventListener("input", updateFoodPreview);
+        document.getElementById("food-img-file").addEventListener("change", () => setTimeout(updateFoodPreview, 150));
+
+        // Attach listeners for Combo preview
+        document.getElementById("combo-name").addEventListener("input", updateComboPreview);
+        document.getElementById("combo-builder-discount-value").addEventListener("input", updateComboPreview);
+        document.getElementById("combo-builder-discount-type").addEventListener("change", updateComboPreview);
+
+        window.onload = function() {
+            initDashboard();
+            updateFoodPreview();
+            updateComboPreview();
+        };
+
+        document.getElementById("desktop-login-form").addEventListener("submit", (event) => {
+            event.preventDefault();
+            const password = document.getElementById("desktop-login-password").value;
+            const error = document.getElementById("desktop-login-error");
+            if (password !== "admin123") {
+                error.textContent = "Hibás jelszó.";
+                return;
+            }
+
+            const restaurantId = document.getElementById("desktop-login-restaurant").value;
+            activeRestaurant = restaurants.find(res => res.id === restaurantId) || restaurants[0];
+            document.getElementById("desktop-restaurant-select").value = activeRestaurant.id;
+            document.body.classList.add("desktop-authenticated");
+            document.getElementById("desktop-login-screen").style.display = "none";
+            initDashboard();
+        });
+
+        document.getElementById("desktop-logout").addEventListener("click", () => {
+            document.body.classList.remove("desktop-authenticated");
+            document.getElementById("desktop-login-screen").style.display = "flex";
+            document.getElementById("desktop-login-password").value = "";
+            document.getElementById("desktop-login-error").textContent = "";
+        });
+    </script>
+</body>
+</html>
