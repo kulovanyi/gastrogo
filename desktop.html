@@ -684,6 +684,9 @@
             <button class="sidebar-menu-btn" data-view="settings">
                 <span>🛠️ Beállítások</span>
             </button>
+            <button class="sidebar-menu-btn" data-view="services">
+                <span>✨ Fizetős szolgáltatások</span>
+            </button>
         </section>
 
         <!-- MIDDLE COLUMN: ACTIVE SECTION TABS WORKSPACE -->
@@ -1021,6 +1024,31 @@
                 </div>
             </div>
 
+            <!-- VIEW 8: PAID SERVICES -->
+            <div id="view-services" class="dashboard-view" style="height:100%;">
+                <div class="column-header" style="border-bottom: none;">
+                    <h3>✨ Fizetős szolgáltatások</h3>
+                </div>
+                <div class="column-content" style="padding-top: 0;">
+                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:18px;">Készíts egységes, nyomtatható és megosztható étlapot az éttermed kínálatából.</p>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;">
+                        <div style="border:1px solid #FDE68A; border-radius:12px; padding:16px; background:#FFFBEB;">
+                            <h4 style="font-size:15px; margin-bottom:8px;">Digitális étlap</h4>
+                            <p style="font-size:11px; color:var(--text-muted); line-height:1.5; min-height:50px;">Színes, márkázott PDF-szerű étlap a teljes kínálatodból.</p>
+                            <strong style="display:block; margin:12px 0; color:#92400E;">4 990 Ft</strong>
+                            <button type="button" class="btn btn-primary btn-block service-order" data-service="digital-menu" data-price="4990">Megrendelem</button>
+                        </div>
+                        <div style="border:1px solid #BAE6FD; border-radius:12px; padding:16px; background:#F0F9FF;">
+                            <h4 style="font-size:15px; margin-bottom:8px;">Prémium étlapcsomag</h4>
+                            <p style="font-size:11px; color:var(--text-muted); line-height:1.5; min-height:50px;">Designos étlap, nyomtatható változat és megosztható online verzió.</p>
+                            <strong style="display:block; margin:12px 0; color:#075985;">9 990 Ft</strong>
+                            <button type="button" class="btn btn-primary btn-block service-order" data-service="premium-menu" data-price="9990">Megrendelem</button>
+                        </div>
+                    </div>
+                    <div id="service-status" style="min-height:20px; margin-top:18px; color:var(--accent); font-size:12px; text-align:center;"></div>
+                </div>
+            </div>
+
         </section>
 
         <!-- RIGHT COLUMN: DESKTOP LIVE ANALYTICS PANEL -->
@@ -1099,6 +1127,7 @@
     </main>
 
     <!-- Shared database code syncing with app.js in localStorage / memory -->
+    <script src="shared-data.js?v=1"></script>
     <script>
         // Helper to safely access opener properties under file:// security policies
         function getOpenerData(key, fallback) {
@@ -1482,7 +1511,7 @@
 
         let orders = getOpenerData("ordersDb", []);
         try {
-            const savedOrders = JSON.parse(localStorage.getItem("gastrogoOrders") || "null");
+            const savedOrders = GastroGoDB.read("orders", null);
             if (Array.isArray(savedOrders)) orders = savedOrders;
         } catch (error) {
             console.warn("A mentett rendelések nem tölthetők be.", error);
@@ -1561,6 +1590,12 @@
 
         let activeRestaurant = restaurants[0];
         let refreshTimeLeft = 10 * 60;
+
+        const savedRestaurants = GastroGoDB.read("restaurants", null);
+        if (Array.isArray(savedRestaurants)) {
+            restaurants.splice(0, restaurants.length, ...savedRestaurants);
+            activeRestaurant = restaurants[0];
+        }
 
         // Category to Toppings Mappings database
         let categoryToppings = getOpenerData("categoryToppings", {
@@ -1816,6 +1851,30 @@
             renderExtraFeeRows();
         }
 
+        function generateRestaurantMenu() {
+            const printWindow = window.open("", "_blank");
+            if (!printWindow || !activeRestaurant) return;
+            const groupedItems = {};
+            activeRestaurant.menu.forEach(item => {
+                const category = item.category || "Egyéb";
+                if (!groupedItems[category]) groupedItems[category] = [];
+                groupedItems[category].push(item);
+            });
+            printWindow.document.write(`<!doctype html><html lang="hu"><head><meta charset="UTF-8"><title>${activeRestaurant.name} - Étlap</title><style>body{margin:0;padding:42px;background:#f6f3ed;color:#23313a;font:15px Georgia,serif}main{max-width:760px;margin:auto;background:#fff;padding:42px;box-shadow:0 12px 35px #0002}h1{margin:0;color:#d86f21;font:700 40px Georgia,serif}h2{margin:30px 0 10px;padding-bottom:6px;border-bottom:2px solid #e9b872;color:#285c56}p{color:#64747d}article{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid #edf0ee}article strong{font-size:17px}article span{white-space:nowrap;color:#d86f21;font-weight:bold}.info{margin:18px 0;padding:12px 14px;background:#f2f8f5;border-left:4px solid #2ec4b6}@media print{body{padding:0;background:#fff}main{box-shadow:none}}</style></head><body><main><h1>${activeRestaurant.name}</h1><p>${activeRestaurant.description || ""}</p>${activeRestaurant.deliveryFee !== undefined ? `<div class="info">Kiszállítás: ${activeRestaurant.deliveryFee === 0 ? "ingyenes" : activeRestaurant.deliveryFee + " Ft"}${activeRestaurant.deliveryLocations && activeRestaurant.deliveryLocations.length ? ` · ${activeRestaurant.deliveryLocations.join(", ")}` : ""}</div>` : ""}${Object.entries(groupedItems).map(([category, items]) => `<section><h2>${category}</h2>${items.map(item => `<article><div><strong>${item.name}</strong><p>${item.description || ""}</p></div><span>${item.price} Ft</span></article>`).join("")}</section>`).join("")}</main></body></html>`);
+            printWindow.document.close();
+            printWindow.focus();
+        }
+
+        document.querySelectorAll(".service-order").forEach(button => {
+            button.addEventListener("click", () => {
+                const serviceOrders = GastroGoDB.read("serviceOrders", []);
+                serviceOrders.push({ id: `service-${Date.now()}`, restaurantId: activeRestaurant.id, service: button.dataset.service, price: Number(button.dataset.price), status: "megrendelve", createdAt: new Date().toISOString() });
+                GastroGoDB.write("serviceOrders", serviceOrders);
+                document.getElementById("service-status").textContent = "A szolgáltatás megrendelése rögzítve. Az étlap generálása megnyílik.";
+                generateRestaurantMenu();
+            });
+        });
+
         function renderExtraFeeRows() {
             const list = document.getElementById("settings-extra-fees-list");
             list.innerHTML = "";
@@ -1871,7 +1930,7 @@
                 deliveryLocations: activeRestaurant.deliveryLocations,
                 extraFees: activeRestaurant.extraFees
             };
-            localStorage.setItem("gastrogoRestaurantSettings", JSON.stringify(savedSettings));
+            GastroGoDB.write("restaurantSettings", savedSettings);
             renderRestaurantSettings();
             syncData();
             document.getElementById("settings-save-status").textContent = "Beállítások mentve.";
@@ -2352,18 +2411,11 @@
             syncData();
         }
 
-        window.addEventListener("storage", (event) => {
-            if (event.key !== "gastrogoOrders" || !event.newValue) return;
-            try {
-                const updatedOrders = JSON.parse(event.newValue);
-                if (!Array.isArray(updatedOrders)) return;
-                orders = updatedOrders;
-                renderDashboardOrders();
-                renderAnalytics();
-                updateOrdersBadge();
-            } catch (error) {
-                console.warn("Az új rendelés nem tölthető be.", error);
-            }
+        GastroGoDB.subscribe("orders", updatedOrders => {
+            orders = updatedOrders;
+            renderDashboardOrders();
+            renderAnalytics();
+            updateOrdersBadge();
         });
 
         // ================= RENDERING REVIEWS =================
@@ -2659,6 +2711,8 @@
 
         // ================= SYNC TO PARENT FRAME =================
         function syncData() {
+            GastroGoDB.write("restaurants", restaurants);
+            GastroGoDB.write("orders", orders);
             if (window.opener) {
                 if (window.opener.renderRestaurants) window.opener.renderRestaurants();
                 if (window.opener.renderDashboardMenu) window.opener.renderDashboardMenu();

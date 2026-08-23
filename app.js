@@ -366,9 +366,14 @@ const restaurants = [
     }
 ];
 
+const savedRestaurantData = GastroGoDB.read("restaurants", null);
+if (Array.isArray(savedRestaurantData)) {
+    restaurants.splice(0, restaurants.length, ...savedRestaurantData);
+}
+
 // ================= GLOBAL ORDERS STATE =================
 try {
-    const savedOrders = JSON.parse(localStorage.getItem("gastrogoOrders") || "null");
+    const savedOrders = GastroGoDB.read("orders", null);
     if (Array.isArray(savedOrders)) window.ordersDb = savedOrders;
 } catch (error) {
     console.warn("A mentett rendelések nem tölthetők be.", error);
@@ -492,10 +497,13 @@ restaurants.forEach(res => {
 });
 
 try {
-    const savedRestaurantSettings = JSON.parse(localStorage.getItem("gastrogoRestaurantSettings") || "{}");
+    const savedRestaurantSettings = GastroGoDB.read("restaurantSettings", {});
     Object.entries(savedRestaurantSettings).forEach(([restaurantId, settings]) => {
         const restaurant = restaurants.find(item => item.id === restaurantId);
-        if (restaurant) Object.assign(restaurant, settings);
+        if (restaurant) {
+            Object.assign(restaurant, settings);
+            restaurant.deliveryConfigured = true;
+        }
     });
 } catch (error) {
     console.warn("Az éttermi beállítások nem tölthetők be.", error);
@@ -674,6 +682,46 @@ document.getElementById("nav-btn-saved").addEventListener("click", () => {
     renderRestaurants();
 });
 
+document.getElementById("nav-btn-orders").addEventListener("click", () => {
+    renderCustomerOrders();
+    navigateTo("screen-orders");
+});
+
+document.getElementById("nav-orders-back-home").addEventListener("click", () => {
+    navigateTo("screen-home");
+});
+
+document.getElementById("nav-orders-saved").addEventListener("click", () => {
+    activeTab = "saved";
+    document.getElementById("nav-btn-saved").classList.add("active");
+    document.getElementById("nav-btn-explore").classList.remove("active");
+    document.getElementById("home-section-title").textContent = "Elmentett éttermeim";
+    renderRestaurants();
+    navigateTo("screen-home");
+});
+
+document.getElementById("nav-orders-logout").addEventListener("click", handleLogout);
+
+function renderCustomerOrders() {
+    const container = document.getElementById("customer-orders-list");
+    const customerName = currentUser ? currentUser.charAt(0).toUpperCase() + currentUser.slice(1) : "Vendég";
+    const activeOrders = orders.filter(order => {
+        const isCurrentCustomer = order.customerName === customerName || currentUser === "guest" && order.customerName === "Guest";
+        return isCurrentCustomer && order.status !== "dispatched" && order.status !== "delivered";
+    });
+    if (activeOrders.length === 0) {
+        container.innerHTML = `<div class="empty-cart-message"><span class="empty-cart-icon">📦</span><p>Nincs folyamatban lévő rendelésed.</p></div>`;
+        return;
+    }
+
+    const statusLabels = { received: "Beérkezett", preparing: "Készítés alatt" };
+    container.innerHTML = activeOrders.slice().reverse().map(order => {
+        const restaurant = restaurants.find(item => item.id === order.restaurantId);
+        const items = (order.items || []).map(item => `<div>${item.quantity || 1}x ${item.name}</div>`).join("");
+        return `<article class="order-card"><div class="order-card-header"><div><h4>${restaurant ? restaurant.name : "Étterem"}</h4><span class="order-time">${order.time || ""}</span></div><span class="order-status-badge ${order.status}">${statusLabels[order.status] || "Folyamatban"}</span></div><div class="order-card-items">${items}</div><div class="order-card-footer"><span class="order-total-lbl">${order.total || 0} Ft</span><span style="font-size:11px;color:var(--text-muted);">Folyamatban</span></div></article>`;
+    }).join("");
+}
+
 function handleLogout() {
     currentUser = null;
     activeRestaurant = null;
@@ -705,6 +753,13 @@ document.querySelectorAll("#category-tabs-container .category-item").forEach(ite
 // ================= CUSTOMER: RENDER RESTAURANTS =================
 function renderRestaurants() {
     const container = document.getElementById("restaurants-list-container");
+    const promoBanner = document.querySelector("#screen-home .promo-banner");
+    const searchContainer = document.querySelector("#screen-home .search-container");
+    const categoriesSection = document.querySelector("#screen-home .categories-section");
+    const isSavedView = activeTab === "saved";
+    if (promoBanner) promoBanner.style.display = isSavedView ? "none" : "flex";
+    if (searchContainer) searchContainer.style.display = isSavedView ? "none" : "block";
+    if (categoriesSection) categoriesSection.style.display = isSavedView ? "none" : "block";
     container.innerHTML = "";
 
     const searchQuery = document.getElementById("restaurant-search").value.toLowerCase();
@@ -749,7 +804,7 @@ function renderRestaurants() {
             </button>
             <div class="restaurant-img" style="background-image: url('${res.image}')">
                 <span class="restaurant-badge">★ ${liveRating}</span>
-                <span class="restaurant-badge badge-delivery">${res.deliveryFee === 0 ? 'Ingyenes szállítás' : `Szállítás: ${res.deliveryFee} Ft`}</span>
+                ${res.deliveryConfigured ? `<span class="restaurant-badge badge-delivery">${res.deliveryFee === 0 ? 'Ingyenes szállítás' : `Szállítás: ${res.deliveryFee} Ft`}</span>` : ''}
             </div>
             <div class="restaurant-info">
                 <h4>${res.name}</h4>
@@ -889,6 +944,21 @@ function openRestaurantMenu(restaurant) {
 
 document.getElementById("btn-back-to-home").addEventListener("click", () => {
     navigateTo("screen-home");
+});
+
+document.getElementById("btn-generate-menu").addEventListener("click", () => {
+    if (!activeRestaurant) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    const groupedItems = {};
+    activeRestaurant.menu.forEach(item => {
+        const category = item.category || "Egyéb";
+        if (!groupedItems[category]) groupedItems[category] = [];
+        groupedItems[category].push(item);
+    });
+    printWindow.document.write(`<!doctype html><html lang="hu"><head><meta charset="UTF-8"><title>${activeRestaurant.name} - Étlap</title><style>body{margin:0;padding:42px;background:#f6f3ed;color:#23313a;font:15px Georgia,serif}main{max-width:760px;margin:auto;background:#fff;padding:42px;box-shadow:0 12px 35px #0002}h1{margin:0;color:#d86f21;font:700 40px Georgia,serif}h2{margin:30px 0 10px;padding-bottom:6px;border-bottom:2px solid #e9b872;color:#285c56}p{color:#64747d}article{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid #edf0ee}article strong{font-size:17px}article span{white-space:nowrap;color:#d86f21;font-weight:bold}.info{margin:18px 0;padding:12px 14px;background:#f2f8f5;border-left:4px solid #2ec4b6}@media print{body{padding:0;background:#fff}main{box-shadow:none}}</style></head><body><main><h1>${activeRestaurant.name}</h1><p>${activeRestaurant.description || ""}</p>${activeRestaurant.deliveryConfigured ? `<div class="info">Kiszállítás: ${activeRestaurant.deliveryFee === 0 ? "ingyenes" : activeRestaurant.deliveryFee + " Ft"}${activeRestaurant.deliveryLocations && activeRestaurant.deliveryLocations.length ? ` · ${activeRestaurant.deliveryLocations.join(", ")}` : ""}</div>` : ""}${Object.entries(groupedItems).map(([category, items]) => `<section><h2>${category}</h2>${items.map(item => `<article><div><strong>${item.name}</strong><p>${item.description || ""}</p></div><span>${item.price} Ft</span></article>`).join("")}</section>`).join("")}</main></body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
 });
 
 // ================= CUSTOMER REVIEW FORM & LIST BINDINGS =================
@@ -1896,7 +1966,8 @@ function renderCartItems() {
     let subtotal = 0;
     const cartResId = cart[0].restaurantId;
     const cartRes = restaurants.find(r => r.id === cartResId);
-    const deliveryFee = cartRes ? cartRes.deliveryFee : 0;
+    const deliveryConfigured = Boolean(cartRes && cartRes.deliveryConfigured);
+    const deliveryFee = deliveryConfigured ? cartRes.deliveryFee : 0;
     const extraFees = cartRes && cartRes.extraFees ? cartRes.extraFees : [];
 
     cart.forEach(item => {
@@ -1927,6 +1998,8 @@ function renderCartItems() {
     });
 
     document.getElementById("cart-subtotal").textContent = `${subtotal} Ft`;
+    const deliveryRow = document.getElementById("cart-delivery").closest(".summary-row");
+    deliveryRow.style.display = deliveryConfigured ? "flex" : "none";
     document.getElementById("cart-delivery").textContent = deliveryFee === 0 ? "Ingyenes" : `${deliveryFee} Ft`;
     const extraFeesContainer = document.getElementById("cart-extra-fees");
     const extraTotal = extraFees.reduce((sum, fee) => sum + fee.amount, 0);
@@ -1955,7 +2028,7 @@ if (checkoutButton) checkoutButton.addEventListener("click", () => {
     const orderId = `ord-${Date.now()}`;
     const cartResId = cart[0].restaurantId;
     const cartRes = restaurants.find(r => r.id === cartResId);
-    const deliveryFee = cartRes ? cartRes.deliveryFee : 0;
+    const deliveryFee = cartRes && cartRes.deliveryConfigured ? cartRes.deliveryFee : 0;
     const extraFees = cartRes && cartRes.extraFees ? cartRes.extraFees : [];
     
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1978,7 +2051,7 @@ if (checkoutButton) checkoutButton.addEventListener("click", () => {
     };
 
     orders.push(newOrder);
-    localStorage.setItem("gastrogoOrders", JSON.stringify(orders));
+    GastroGoDB.write("orders", orders);
     lastPlacedOrderId = orderId;
 
     cart = [];
@@ -1989,6 +2062,29 @@ if (checkoutButton) checkoutButton.addEventListener("click", () => {
 
 document.getElementById("btn-back-home-success").addEventListener("click", () => {
     navigateTo("screen-home");
+});
+
+GastroGoDB.subscribe("orders", updatedOrders => {
+    orders.splice(0, orders.length, ...updatedOrders);
+    updateCartBadges();
+    if (currentScreen === "screen-orders") renderCustomerOrders();
+    if (currentScreen === "screen-success") updateTrackingTimeline();
+});
+
+GastroGoDB.subscribe("restaurants", updatedRestaurants => {
+    restaurants.splice(0, restaurants.length, ...updatedRestaurants);
+    renderRestaurants();
+});
+
+GastroGoDB.subscribe("restaurantSettings", updatedSettings => {
+    Object.entries(updatedSettings).forEach(([restaurantId, settings]) => {
+        const restaurant = restaurants.find(item => item.id === restaurantId);
+        if (restaurant) {
+            Object.assign(restaurant, settings);
+            restaurant.deliveryConfigured = true;
+        }
+    });
+    renderRestaurants();
 });
 
 // ================= INITIALIZE =================
