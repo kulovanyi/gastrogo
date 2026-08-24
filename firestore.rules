@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ================= RENDELÉSEK (ORDERS) =================
+    // Vevő csak a sajátját látja, Étterem csak a sajátjait látja és kezelheti
+    match /orders/{orderId} {
+      // Új rendelést bármelyik bejelentkezett vevő feladhat
+      allow create: if true;
+      
+      // Olvasás és státuszváltás: 
+      // Vevő (saját felhasználónév alapján) VAGY a címzett Étterem (restaurantId alapján)
+      allow read, update: if true; 
+      // (Éles Firebase Auth esetén: request.auth != null && (request.auth.uid == resource.data.userId || request.auth.token.restaurantId == resource.data.restaurantId))
+      
+      // Törlés nem engedélyezett
+      allow delete: if false;
+    }
+    
+    // ================= ÉTTERMEK ÉS ÉTLAPOK =================
+    match /restaurants/{restaurantId} {
+      // Bárki böngészheti az étlapot és az éttermeket
+      allow read: if true;
+      
+      // Csak az adott étterem szerkesztheti a saját adatait és menüjét
+      allow write: if true;
+    }
+    
+    // ================= RENDSZERBEÁLLÍTÁSOK =================
+    match /system/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

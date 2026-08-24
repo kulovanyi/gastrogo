@@ -1126,8 +1126,14 @@
 
     </main>
 
-    <!-- Shared database code syncing with app.js in localStorage / memory -->
-    <script src="shared-data.js?v=1"></script>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <!-- Cloud Adapter & App Scripts -->
+    <script src="firebase-config.js?v=3"></script>
+    <script src="shared-data.js?v=6"></script>
     <script>
         // Helper to safely access opener properties under file:// security policies
         function getOpenerData(key, fallback) {
@@ -1162,12 +1168,7 @@
                         description: "Paradicsomszósz, bivaly mozzarella, friss bazsalikom, olívaolaj.",
                         price: 1990,
                         image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra sajt", price: 300 },
-                            { name: "Kukorica", price: 200 },
-                            { name: "Gomba", price: 200 },
-                            { name: "Sonka", price: 400 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f2",
@@ -1176,11 +1177,7 @@
                         description: "Csípős olasz szalámi, jalapeño karikák, mozzarella, paradicsomszósz.",
                         price: 2390,
                         image: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra sajt", price: 300 },
-                            { name: "Erős paprika", price: 150 },
-                            { name: "Sonka", price: 400 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f3",
@@ -1198,10 +1195,7 @@
                         description: "Klasszikus magyar édesség gazdag csokoládéöntettel és tejszínhabbal.",
                         price: 1290,
                         image: "https://images.unsplash.com/photo-1579372786545-d24232daf58c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra tejszínhab", price: 150 },
-                            { name: "Reszelt dió", price: 200 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f5",
@@ -1210,11 +1204,7 @@
                         description: "Paradicsomszósz, mozzarella, érlelt olasz sonka, friss szeletelt csiperkegomba.",
                         price: 2390,
                         image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra sajt", price: 300 },
-                            { name: "Fokhagymás olaj", price: 100 },
-                            { name: "Gomba", price: 200 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f6",
@@ -1223,10 +1213,7 @@
                         description: "Négyféle sajtos csoda: gorgonzola, mozzarella, parmezán, pecorino.",
                         price: 2490,
                         image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Rukola", price: 200 },
-                            { name: "Dió", price: 250 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f7",
@@ -1235,10 +1222,7 @@
                         description: "Paradicsomos alap, mozzarella sajt, tonhaldarabok, lilahagyma karikák, olívabogyó.",
                         price: 2490,
                         image: "https://images.unsplash.com/photo-1573821663912-569905455b1c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Citrom karika", price: 100 },
-                            { name: "Kapribogyó", price: 200 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f8",
@@ -1247,10 +1231,7 @@
                         description: "Fűszeres paradicsomos alap, házi kolbász, bacon szeletek, lilahagyma, hegyes erős paprika.",
                         price: 2590,
                         image: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra kolbász", price: 350 },
-                            { name: "Tükörtojás", price: 200 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f9",
@@ -1259,9 +1240,7 @@
                         description: "Félbehajtott kemencés tészta sonkával, gombával, ricottával és mozzarellával töltve.",
                         price: 2590,
                         image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Paradicsomszósz a tetejére", price: 150 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f10",
@@ -1270,9 +1249,7 @@
                         description: "Lassan főzött marhahúsos ragu, spagetti tészta, reszelt parmezán sajt.",
                         price: 2290,
                         image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra parmezán", price: 250 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f11",
@@ -1281,9 +1258,7 @@
                         description: "Tejszín nélkül! Pirított guanciale (tokaszalonna), tojássárgája, pecorino sajt.",
                         price: 2390,
                         image: "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra bacon", price: 300 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f12",
@@ -1292,9 +1267,7 @@
                         description: "Tésztalapok közé rétegezett bolognai ragu, krémes besamel mártás, kemencében sütve.",
                         price: 2690,
                         image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Dupla sajt a tetejére", price: 300 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f13",
@@ -1303,9 +1276,7 @@
                         description: "Burgonyás gnocchi gazdag paradicsomszószban, friss mozzarellával egybesütve.",
                         price: 2290,
                         image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Friss bazsalikom", price: 100 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f14",
@@ -1332,9 +1303,7 @@
                         description: "Meleg csokoládés piskóta lágy, folyós belsővel, vanília fagylalttal szervírozva.",
                         price: 1290,
                         image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra fagylalt", price: 200 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f17",
@@ -1361,10 +1330,7 @@
                         description: "Házias espresso kávé sűrű, meleg tejhabbal és kakaóporral meghintve.",
                         price: 690,
                         image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Laktózmentes tejjel", price: 100 },
-                            { name: "Kókusztejjel", price: 150 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f20",
@@ -1373,10 +1339,7 @@
                         description: "2 db kemencés Margaréta pizza és 1 db ajándék 0.33l-es Coca-Cola.",
                         price: 3990,
                         image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Plusz üdítő", price: 400 },
-                            { name: "Extra sajt mindkettőre", price: 500 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r1-f21",
@@ -1385,9 +1348,7 @@
                         description: "1 adag Bolognai spagetti, 1 adag Klasszikus Olasz tiramisu és 1 db krémes Cappuccino.",
                         price: 3490,
                         image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra tészta", price: 400 }
-                        ]
+                        toppings: []
                     }
                 ]
             },
@@ -1410,11 +1371,7 @@
                         description: "150g marhahúspogácsa, cheddar sajt, házi szósz, csemegeuborka, pirított briós zsemle.",
                         price: 2490,
                         image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Plusz Bacon", price: 300 },
-                            { name: "Dupla sajt", price: 250 },
-                            { name: "Tükörtojás", price: 200 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r2-f2",
@@ -1423,11 +1380,7 @@
                         description: "150g marhahúspogácsa, dupla ropogós bacon, füstös BBQ szósz, pirított hagyma, cheddar.",
                         price: 2890,
                         image: "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Plusz Bacon", price: 300 },
-                            { name: "Dupla sajt", price: 250 },
-                            { name: "Hagyma karikák", price: 200 }
-                        ]
+                        toppings: []
                     }
                 ]
             },
@@ -1450,11 +1403,7 @@
                         description: "Fűszeres csirkehús, hasábburgonya, friss kevert saláta, választható öntet, házi pita.",
                         price: 2290,
                         image: "https://images.unsplash.com/photo-1626700051175-6518c4793fde?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Plusz sajt", price: 250 },
-                            { name: "Feta sajt", price: 300 },
-                            { name: "Extra hús", price: 600 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r3-f2",
@@ -1463,10 +1412,7 @@
                         description: "Fűszeres hús csíkok, saláta, paradicsom, hagyma, fokhagymás és csípős szósz, friss ropogós kifli.",
                         price: 1490,
                         image: "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Csípős szósz", price: 100 },
-                            { name: "Olívabogyó", price: 200 }
-                        ]
+                        toppings: []
                     }
                 ]
             },
@@ -1489,10 +1435,7 @@
                         description: "Húsleves cérnametélttel, rántott sertéskaraj burgonyapürével és házi csemegeuborkával.",
                         price: 2190,
                         image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Extra uborka", price: 150 },
-                            { name: "Plusz burgonyapüré", price: 300 }
-                        ]
+                        toppings: []
                     },
                     {
                         id: "r4-f2",
@@ -1501,86 +1444,20 @@
                         description: "Házias bográcsos gulyásleves marhahúsból, túrós csusza pörccel.",
                         price: 2390,
                         image: "https://images.unsplash.com/photo-1594756202469-9ff9799b2e4e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                        toppings: [
-                            { name: "Dupla tepertő", price: 200 }
-                        ]
+                        toppings: []
                     }
                 ]
             }
         ]);
 
-        let orders = getOpenerData("ordersDb", []);
+        let orders = [];
         try {
-            const savedOrders = GastroGoDB.read("orders", null);
+            const savedOrders = GastroGoDB.read("orders", []);
             if (Array.isArray(savedOrders)) orders = savedOrders;
         } catch (error) {
-            console.warn("A mentett rendelések nem tölthetők be.", error);
+            orders = [];
         }
         let reviews = getOpenerData("reviewsDb", []);
-
-        // ================= DYNAMIC DATA GENERATOR FOR FALLBACK PORTAL ANALYTICS =================
-        const mockNames = ["Nagy Gábor", "Kiss Eszter", "Kovács Péter", "Szabó Anna", "Tóth Bence", "Horváth Réka", "Varga Zoltán", "Molnár Dóra", "Farkas Balázs", "Németh Luca", "Papp Dániel", "Balogh Zsófia"];
-        const mockTimes = ["08:15", "09:40", "11:20", "12:10", "13:30", "14:50", "16:15", "17:40", "19:00", "20:30", "21:15", "22:00"];
-        const mockComments = [
-            { rating: 5, comment: "Abszolút fantasztikus! Az ételek forróak és szuperek voltak!" },
-            { rating: 5, comment: "Kedvenc helyem lett, nagyon gyors a kiszállítás." },
-            { rating: 4, comment: "Nagyon finom volt, talán egy picit több szószt elbírt volna." },
-            { rating: 5, comment: "Korrekt adagok, finom ízek, csak ajánlani tudom!" },
-            { rating: 4, comment: "Gyorsan kiért, meleg volt és ízlett az egész családnak." },
-            { rating: 3, comment: "Finom volt, de a futár egy kicsit késett." },
-            { rating: 5, comment: "Minden tökéletes volt, a csomagolás is nagyon tiszta." },
-            { rating: 4, comment: "Jó minőségű alapanyagok, ízletes fűszerezés." }
-        ];
-
-        restaurants.forEach(res => {
-            // Generate orders if there are less than 10
-            const existingOrdersCount = orders.filter(o => o.restaurantId === res.id).length;
-            if (existingOrdersCount < 10) {
-                const toGenerate = 10 - existingOrdersCount;
-                for (let i = 0; i < toGenerate; i++) {
-                    const name = mockNames[(i + res.id.charCodeAt(1)) % mockNames.length];
-                    const time = mockTimes[(i * 3 + res.id.charCodeAt(1)) % mockTimes.length];
-                    
-                    // Pick a random menu item from restaurant
-                    const menuItem = res.menu[i % res.menu.length] || { name: "Finomság", price: 1500 };
-                    const quantity = (i % 2) + 1;
-                    const itemPrice = menuItem.price;
-                    const total = itemPrice * quantity + res.deliveryFee;
-                    
-                    orders.push({
-                        id: `ord-gen-${res.id}-${i}`,
-                        restaurantId: res.id,
-                        customerName: name,
-                        time: time,
-                        createdTimestamp: Date.now() - (i * 2 + 1) * 3600 * 1000,
-                        items: [
-                            { name: menuItem.name, price: itemPrice, quantity: quantity }
-                        ],
-                        total: total,
-                        status: i % 3 === 0 ? "preparing" : (i % 3 === 1 ? "dispatched" : "received")
-                    });
-                }
-            }
-
-            // Generate reviews if there are less than 8
-            const existingReviewsCount = reviews.filter(r => r.restaurantId === res.id).length;
-            if (existingReviewsCount < 8) {
-                const toGenerate = 8 - existingReviewsCount;
-                for (let i = 0; i < toGenerate; i++) {
-                    const name = mockNames[(i + 5 + res.id.charCodeAt(1)) % mockNames.length];
-                    const comm = mockComments[(i + res.id.charCodeAt(1)) % mockComments.length];
-                    
-                    reviews.push({
-                        id: `rev-gen-${res.id}-${i}`,
-                        restaurantId: res.id,
-                        customerName: name,
-                        rating: comm.rating,
-                        comment: comm.comment,
-                        date: "2026. 08. 22."
-                    });
-                }
-            }
-        });
 
         let napszakStats = getOpenerData("napszakStats", {
             morning: [15, 12, 17],
@@ -1851,16 +1728,19 @@
             renderExtraFeeRows();
         }
 
-        function generateRestaurantMenu() {
+        function generateRestaurantMenu(serviceKey = "digital-menu") {
             const printWindow = window.open("", "_blank");
             if (!printWindow || !activeRestaurant) return;
+            const isPremium = serviceKey === "premium-menu";
             const groupedItems = {};
             activeRestaurant.menu.forEach(item => {
                 const category = item.category || "Egyéb";
                 if (!groupedItems[category]) groupedItems[category] = [];
                 groupedItems[category].push(item);
             });
-            printWindow.document.write(`<!doctype html><html lang="hu"><head><meta charset="UTF-8"><title>${activeRestaurant.name} - Étlap</title><style>body{margin:0;padding:42px;background:#f6f3ed;color:#23313a;font:15px Georgia,serif}main{max-width:760px;margin:auto;background:#fff;padding:42px;box-shadow:0 12px 35px #0002}h1{margin:0;color:#d86f21;font:700 40px Georgia,serif}h2{margin:30px 0 10px;padding-bottom:6px;border-bottom:2px solid #e9b872;color:#285c56}p{color:#64747d}article{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid #edf0ee}article strong{font-size:17px}article span{white-space:nowrap;color:#d86f21;font-weight:bold}.info{margin:18px 0;padding:12px 14px;background:#f2f8f5;border-left:4px solid #2ec4b6}@media print{body{padding:0;background:#fff}main{box-shadow:none}}</style></head><body><main><h1>${activeRestaurant.name}</h1><p>${activeRestaurant.description || ""}</p>${activeRestaurant.deliveryFee !== undefined ? `<div class="info">Kiszállítás: ${activeRestaurant.deliveryFee === 0 ? "ingyenes" : activeRestaurant.deliveryFee + " Ft"}${activeRestaurant.deliveryLocations && activeRestaurant.deliveryLocations.length ? ` · ${activeRestaurant.deliveryLocations.join(", ")}` : ""}</div>` : ""}${Object.entries(groupedItems).map(([category, items]) => `<section><h2>${category}</h2>${items.map(item => `<article><div><strong>${item.name}</strong><p>${item.description || ""}</p></div><span>${item.price} Ft</span></article>`).join("")}</section>`).join("")}</main></body></html>`);
+            const hero = isPremium && activeRestaurant.image ? `<header class="hero"><div class="hero-image" style="background-image:url('${activeRestaurant.image}')"></div><div class="hero-overlay"><div class="eyebrow">GASTROGO PREMIUM ÉTLAP</div><h1>${activeRestaurant.name}</h1><p>${activeRestaurant.description || ""}</p></div></header>` : `<header class="simple-header"><div class="eyebrow">GASTROGO ÉTLAP</div><h1>${activeRestaurant.name}</h1><p>${activeRestaurant.description || ""}</p></header>`;
+            const premiumClass = isPremium ? " premium" : "";
+            printWindow.document.write(`<!doctype html><html lang="hu"><head><meta charset="UTF-8"><title>${activeRestaurant.name} - Étlap</title><style>body{margin:0;padding:42px;background:#e9eeeb;color:#23313a;font:15px 'Trebuchet MS',sans-serif}main{max-width:800px;margin:auto;background:#fff;box-shadow:0 18px 45px #172b3a25;overflow:hidden}.simple-header{padding:44px 46px 24px}.hero{height:310px;position:relative;color:#fff}.hero-image{position:absolute;inset:0;background-position:center;background-size:cover}.hero-overlay{position:absolute;inset:0;padding:42px 46px;display:flex;flex-direction:column;justify-content:end;background:linear-gradient(0deg,rgba(12,28,35,.8),transparent 75%)}h1{margin:6px 0;color:#d86f21;font:700 42px Georgia,serif}.hero h1{color:#fff;font-size:48px;text-shadow:0 2px 12px #0008}.eyebrow{color:#168c73;font-size:11px;font-weight:700;letter-spacing:2px}.hero .eyebrow{color:#f8c66c}.simple-header p,.hero p{margin:6px 0;color:#64747d;line-height:1.5}.hero p{color:#eaf2ef}.content{padding:0 46px 46px}h2{margin:30px 0 10px;padding-bottom:8px;border-bottom:2px solid #e9b872;color:#285c56;font:700 23px Georgia,serif}article{display:flex;justify-content:space-between;gap:20px;padding:15px 0;border-bottom:1px solid #edf0ee}article strong{font-size:17px}article span{white-space:nowrap;color:#d86f21;font-weight:bold}article p{margin:4px 0;color:#64747d;font-size:12px;line-height:1.5}.info{margin:4px 0 20px;padding:13px 15px;background:#f2f8f5;border-left:4px solid #2ec4b6;color:#285c56}@media print{body{padding:0;background:#fff}main{box-shadow:none}}${premiumClass ? ".premium h2{letter-spacing:.4px}.premium article{padding:18px 0}.premium article strong{font-size:18px}" : ""}</style></head><body><main>${hero}<div class="content">${activeRestaurant.deliveryFee !== undefined ? `<div class="info">Kiszállítás: ${activeRestaurant.deliveryFee === 0 ? "ingyenes" : activeRestaurant.deliveryFee + " Ft"}${activeRestaurant.deliveryLocations && activeRestaurant.deliveryLocations.length ? ` · ${activeRestaurant.deliveryLocations.join(", ")}` : ""}</div>` : ""}${Object.entries(groupedItems).map(([category, items]) => `<section><h2>${category}</h2>${items.map(item => `<article><div><strong>${item.name}</strong><p>${item.description || ""}</p></div><span>${item.price} Ft</span></article>`).join("")}</section>`).join("")}</div></main></body></html>`);
             printWindow.document.close();
             printWindow.focus();
         }
@@ -1871,7 +1751,7 @@
                 serviceOrders.push({ id: `service-${Date.now()}`, restaurantId: activeRestaurant.id, service: button.dataset.service, price: Number(button.dataset.price), status: "megrendelve", createdAt: new Date().toISOString() });
                 GastroGoDB.write("serviceOrders", serviceOrders);
                 document.getElementById("service-status").textContent = "A szolgáltatás megrendelése rögzítve. Az étlap generálása megnyílik.";
-                generateRestaurantMenu();
+                generateRestaurantMenu(button.dataset.service);
             });
         });
 
@@ -2709,22 +2589,18 @@
             reader.readAsText(file, "UTF-8");
         }
 
-        // ================= SYNC TO PARENT FRAME =================
+        // ================= SYNC TO FIRESTORE & DATA =================
         function syncData() {
             GastroGoDB.write("restaurants", restaurants);
             GastroGoDB.write("orders", orders);
-            if (window.opener) {
-                if (window.opener.renderRestaurants) window.opener.renderRestaurants();
-                if (window.opener.renderDashboardMenu) window.opener.renderDashboardMenu();
-                if (window.opener.renderDashboardOrders) window.opener.renderDashboardOrders();
-                if (window.opener.renderDashboardStats) window.opener.renderDashboardStats();
-            }
+            GastroGoDB.write("reviews", reviews);
         }
 
         // Restaurant selector change
         document.getElementById("desktop-restaurant-select").addEventListener("change", (e) => {
             const val = e.target.value;
             activeRestaurant = restaurants.find(r => r.id === val);
+            localStorage.setItem("gastrogo_active_restaurant_id", val);
             initDashboard();
         });
 
@@ -2788,12 +2664,43 @@
         document.getElementById("combo-builder-discount-type").addEventListener("change", updateComboPreview);
 
         window.onload = function() {
+            const isResLoggedIn = localStorage.getItem("gastrogo_restaurant_logged_in");
+            if (!isResLoggedIn) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const storedResId = localStorage.getItem("gastrogo_active_restaurant_id");
+            if (storedResId) {
+                const found = restaurants.find(res => res.id === storedResId);
+                if (found) activeRestaurant = found;
+            }
+
+            document.body.classList.add("desktop-authenticated");
+            const loginScreen = document.getElementById("desktop-login-screen");
+            if (loginScreen) loginScreen.style.display = "none";
+            const selectEl = document.getElementById("desktop-restaurant-select");
+            if (selectEl && activeRestaurant) selectEl.value = activeRestaurant.id;
+
             initDashboard();
             updateFoodPreview();
             updateComboPreview();
+
+            // Live Firebase Cloud Sync on startup
+            const db = window.firestoreDb || (typeof firebase !== "undefined" && firebase.apps && firebase.apps.length > 0 ? firebase.firestore() : null);
+            if (db) {
+                db.collection("orders").onSnapshot(snapshot => {
+                    const cloudOrders = [];
+                    snapshot.forEach(doc => cloudOrders.push(doc.data()));
+                    orders = cloudOrders;
+                    renderDashboardOrders();
+                    renderAnalytics();
+                    updateOrdersBadge();
+                }, err => console.warn("Desktop Firestore orders listener error:", err));
+            }
         };
 
-        document.getElementById("desktop-login-form").addEventListener("submit", (event) => {
+        document.getElementById("desktop-login-form")?.addEventListener("submit", (event) => {
             event.preventDefault();
             const password = document.getElementById("desktop-login-password").value;
             const error = document.getElementById("desktop-login-error");
@@ -2804,6 +2711,8 @@
 
             const restaurantId = document.getElementById("desktop-login-restaurant").value;
             activeRestaurant = restaurants.find(res => res.id === restaurantId) || restaurants[0];
+            localStorage.setItem("gastrogo_restaurant_logged_in", "true");
+            localStorage.setItem("gastrogo_active_restaurant_id", activeRestaurant.id);
             document.getElementById("desktop-restaurant-select").value = activeRestaurant.id;
             document.body.classList.add("desktop-authenticated");
             document.getElementById("desktop-login-screen").style.display = "none";
@@ -2811,10 +2720,9 @@
         });
 
         document.getElementById("desktop-logout").addEventListener("click", () => {
-            document.body.classList.remove("desktop-authenticated");
-            document.getElementById("desktop-login-screen").style.display = "flex";
-            document.getElementById("desktop-login-password").value = "";
-            document.getElementById("desktop-login-error").textContent = "";
+            localStorage.removeItem("gastrogo_restaurant_logged_in");
+            localStorage.removeItem("gastrogo_active_restaurant_id");
+            window.location.href = "index.html";
         });
     </script>
 </body>

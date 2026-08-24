@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GastroGo - Ételrendelés</title>
+    <link rel="stylesheet" href="styles.css?v=30">
+    <style>
+        #tab-login-restaurant,
+        #form-restaurant,
+        #screen-dashboard {
+            display: none !important;
+        }
+    </style>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Desktop Navigation Bar (Visible only on desktop screens) -->
+    <header class="desktop-navbar">
+        <div class="desktop-nav-brand" onclick="window.navigateTo('screen-home')">
+            <svg viewBox="0 0 100 100" width="36" height="36">
+                <path d="M50,10 C30,10 15,25 15,45 C15,70 50,90 50,90 C50,90 85,70 85,45 C85,25 70,10 50,10 Z" fill="#FF9F1C" />
+                <circle cx="50" cy="45" r="28" fill="#FFFFFF" />
+                <path d="M42,32 L42,48 M38,32 L38,42 M46,32 L46,42 M42,48 L42,58" stroke="#FF9F1C" stroke-width="3" stroke-linecap="round" fill="none" />
+                <path d="M56,32 L56,44 C56,48 59,50 60,50 L60,58" stroke="#FF9F1C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+            <h2>Gastro<span>Go</span></h2>
+        </div>
+
+        <div class="desktop-nav-links">
+            <button class="desktop-nav-btn active" id="desk-nav-home" onclick="window.navigateTo('screen-home')">🍽️ Felfedezés & Étlap</button>
+            <button class="desktop-nav-btn" id="desk-nav-orders" onclick="window.navigateTo('screen-orders')">🧾 Rendeléseim</button>
+            <button class="desktop-nav-btn" id="desk-nav-achievements" onclick="window.navigateTo('screen-achievements')">🏆 Eredmények</button>
+            <button class="desktop-nav-btn" id="desk-nav-settings" onclick="window.navigateTo('screen-settings')">⚙️ Beállítások</button>
+        </div>
+
+        <div class="desktop-nav-user">
+            <div class="desktop-user-pill" onclick="window.navigateTo('screen-settings')" title="Fiók és Beállítások" style="cursor: pointer;">
+                <div class="avatar header-avatar">G</div>
+                <strong class="username-display" style="font-size: 13px;">Vendég</strong>
+            </div>
+            <button class="desktop-btn-logout" onclick="window.handleLogout()">🚪 Kilépés</button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- Left Column: Interactive Screens Viewport -->
+        <main class="desktop-main-pane">
+        <section id="screen-login" class="screen active">
+            <div class="login-bg-decor"></div>
+            <div class="login-content">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <path d="M50,10 C30,10 15,25 15,45 C15,70 50,90 50,90 C50,90 85,70 85,45 C85,25 70,10 50,10 Z" fill="#FF9F1C" />
+                            <circle cx="50" cy="45" r="28" fill="#FFFFFF" />
+                            <path d="M42,32 L42,48 M38,32 L38,42 M46,32 L46,42 M42,48 L42,58" stroke="#FF9F1C" stroke-width="3" stroke-linecap="round" fill="none" />
+                            <path d="M56,32 L56,44 C56,48 59,50 60,50 L60,58" stroke="#FF9F1C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                            <path d="M53,32 L59,32" stroke="#FF9F1C" stroke-width="3" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <h1>Gastro<span>Go</span></h1>
+                    <p>A környék legjobb ízei, gyors szállítással!</p>
+                </div>
+
+                <!-- Role & Auth Tabs Switcher -->
+                <div style="display: flex; background: rgba(0,0,0,0.06); padding: 4px; border-radius: 14px; margin-bottom: 16px; gap: 4px;">
+                    <button type="button" id="tab-auth-login" class="btn" onclick="window.switchAuthTab('login')" style="flex: 1; padding: 9px; font-size: 13px; font-weight: 700; border-radius: 10px; background: var(--bg-card); color: var(--text-dark); border: none; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+                        🔑 Belépés
+                    </button>
+                    <button type="button" id="tab-auth-register" class="btn" onclick="window.switchAuthTab('register')" style="flex: 1; padding: 9px; font-size: 13px; font-weight: 600; border-radius: 10px; background: transparent; color: var(--text-muted); border: none;">
+                        ✨ Regisztráció
+                    </button>
+                </div>
+
+                <!-- Customer Login Form -->
+                <div class="login-form" id="form-customer-login">
+                    <div class="input-group">
+                        <label for="username">Felhasználónév</label>
+                        <input type="text" id="username" placeholder="pl. te_felhasznaloneved" autocomplete="username">
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Jelszó</label>
+                        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+                    </div>
+                    
+                    <button id="btn-login" class="btn btn-primary" style="margin-top: 6px;">Belépés a fiókba</button>
+                    <button id="btn-guest" class="btn btn-secondary" style="font-size: 12px; padding: 10px;">Belépés Vendégként</button>
+                </div>
+
+                <!-- Customer Register Form -->
+                <div class="login-form" id="form-customer-register" style="display: none;">
+                    <div class="input-group">
+                        <label for="reg-name">Teljes neved *</label>
+                        <input type="text" id="reg-name" placeholder="pl. Kovács Péter">
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-username">Választott felhasználónév *</label>
+                        <input type="text" id="reg-username" placeholder="pl. kovacspeti">
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-password">Jelszó *</label>
+                        <input type="password" id="reg-password" placeholder="••••••••">
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-phone">Telefonszám *</label>
+                        <input type="tel" id="reg-phone" placeholder="pl. +36 30 123 4567">
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-address">Szállítási cím (város, utca, házszám) *</label>
+                        <input type="text" id="reg-address" placeholder="pl. 1052 Budapest, Kossuth Lajos u. 4.">
+                    </div>
+                    
+                    <button type="button" id="btn-register" onclick="window.handleRegisterCustomer()" class="btn btn-primary" style="margin-top: 8px;">
+                        🎉 Fiók létrehozása és Belépés
+                    </button>
+                </div>
+
+                <!-- Restaurant Login Form -->
+                <div class="login-form" id="form-restaurant" style="display: none;">
+                    <div class="input-group">
+                        <label for="restaurant-select">Válaszd ki az éttermed</label>
+                        <select id="restaurant-select" class="login-select">
+                            <option value="r1">Vár Pizzéria</option>
+                            <option value="r2">Burger Haven</option>
+                            <option value="r3">Istambul Gyros</option>
+                            <option value="r4">Központi Étkezde</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="res-pass">Admin Jelszó</label>
+                        <input type="password" id="res-pass" placeholder="••••••••" value="admin123">
+                    </div>
+                    <button id="btn-login-res" class="btn btn-primary">Étterem Belépés</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HOME SCREEN ================= -->
+        <section id="screen-home" class="screen">
+            <header class="app-header">
+                <div class="user-info user-info-clickable" id="user-profile-trigger" title="Profil és Beállítások megnyitása">
+                    <div class="avatar header-avatar">G</div>
+                    <div>
+                        <span class="welcome-text">Üdvözlünk,</span>
+                        <h3 class="username-display">Vendég</h3>
+                    </div>
+                </div>
+                <div class="cart-trigger" id="cart-icon-btn" onclick="window.toggleCart(true)" style="cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-badge" id="cart-badge-count">0</span>
+                </div>
+            </header>
+
+            <div class="screen-scrollable">
+                <!-- Banner/Promo -->
+                <div class="promo-banner">
+                    <div class="promo-content">
+                        <span class="promo-tag">Kiemelt Ajánlat</span>
+                        <h2>Házhozszállítás a környék legjobb helyeiről!</h2>
+                    </div>
+                    <div class="promo-img">🍕</div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="restaurant-search" placeholder="Keress éttermet vagy ételt...">
+                </div>
+
+                <!-- Categories -->
+                <div class="categories-section">
+                    <h3 class="section-title">Kategóriák</h3>
+                    <div class="categories-list" id="category-tabs-container">
+                        <div class="category-item active" data-category="all">
+                            <span class="cat-icon">🍽️</span>
+                            <span class="cat-name">Mind</span>
+                        </div>
+                        <div class="category-item" data-category="pizza">
+                            <span class="cat-icon">🍕</span>
+                            <span class="cat-name">Pizza</span>
+                        </div>
+                        <div class="category-item" data-category="burger">
+                            <span class="cat-icon">🍔</span>
+                            <span class="cat-name">Burger</span>
+                        </div>
+                        <div class="category-item" data-category="gyros">
+                            <span class="cat-icon">🌯</span>
+                            <span class="cat-name">Gyros</span>
+                        </div>
+                        <div class="category-item" data-category="menu">
+                            <span class="cat-icon">🍲</span>
+                            <span class="cat-name">Napi Menü</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Restaurants List -->
+                <div class="restaurants-section">
+                    <h3 class="section-title" id="home-section-title">Felfedezés a környéken</h3>
+                    <div class="restaurants-list" id="restaurants-list-container">
+                        <!-- Dynamic content loaded via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CUSTOMER ORDERS SCREEN ================= -->
+        <section id="screen-orders" class="screen">
+            <header class="app-header">
+                <div class="user-info user-info-clickable" id="user-profile-trigger-orders" title="Profil és Beállítások megnyitása">
+                    <div class="avatar header-avatar">G</div>
+                    <div>
+                        <span class="welcome-text">Vevői fiók</span>
+                        <h3 class="username-display">Rendeléseim</h3>
+                    </div>
+                </div>
+            </header>
+            <div class="screen-scrollable">
+                <div id="customer-orders-list" class="restaurants-list"></div>
+            </div>
+        </section>
+
+        <!-- ================= CUSTOMER SETTINGS SCREEN ================= -->
+        <section id="screen-settings" class="screen">
+            <header class="app-header">
+                <button class="back-btn" id="btn-back-from-settings" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; color: var(--text-dark); padding: 4px;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <h3 class="username-display" style="font-size: 17px;">Beállítások & Profil</h3>
+                <div style="width: 28px;"></div>
+            </header>
+
+            <div class="screen-scrollable">
+                <!-- Avatar & Profile Settings Card -->
+                <div class="settings-card" style="text-align: center; padding: 24px 18px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div class="avatar" id="settings-avatar-preview" style="width: 76px; height: 76px; font-size: 28px; box-shadow: 0 6px 18px rgba(255,159,28,0.35); border: 3px solid var(--primary);">G</div>
+                        <div>
+                            <h3 class="username-display" style="font-size: 18px; font-weight: 700;">Vendég</h3>
+                            <span style="font-size: 12px; color: var(--text-muted);" id="settings-username-label">Vendég felhasználó</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <label for="avatar-file-input" class="btn btn-primary" style="padding: 9px 16px; font-size: 13px; cursor: pointer; border-radius: 12px;">
+                            📷 Kép feltöltése
+                        </label>
+                        <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
+                        <button id="btn-remove-avatar" class="btn btn-secondary" style="padding: 9px 16px; font-size: 13px; border-radius: 12px;">
+                            ✕ Eltávolítás
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Saved Delivery Addresses Settings -->
+                <div class="settings-card">
+                    <div class="settings-card-title">
+                        <span style="font-size: 20px;">📍</span>
+                        <h4>Elmentett szállítási címek</h4>
+                    </div>
+                    <div id="settings-addresses-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
+                        <!-- Dynamically loaded addresses -->
+                    </div>
+                    
+                    <button id="btn-show-add-address-settings" class="btn btn-secondary btn-block" onclick="window.toggleSettingsAddAddressForm(true)" style="padding: 10px; font-size: 13px; border-radius: 12px; font-weight: 600;">
+                        ➕ Új cím hozzáadása
+                    </button>
+
+                    <!-- Add Address Form (initially hidden) -->
+                    <div id="settings-add-address-form" style="display: none; margin-top: 14px; padding: 14px; background: var(--bg-light); border: 1px solid #E2E8F0; border-radius: 14px; flex-direction: column; gap: 10px;">
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Cím elnevezése (pl. Otthon, Munkahely) *</label>
+                            <input type="text" id="settings-new-addr-label" placeholder="pl. Otthon" style="padding: 9px 12px; font-size: 13px; border-radius: 10px; border: 1px solid #CBD5E1;">
+                        </div>
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Teljes név *</label>
+                            <input type="text" id="settings-new-addr-name" placeholder="pl. Kovács Péter" style="padding: 9px 12px; font-size: 13px; border-radius: 10px; border: 1px solid #CBD5E1;">
+                        </div>
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Pontos lakcím (Város, utca, hsz, emelet/ajtó) *</label>
+                            <input type="text" id="settings-new-addr-address" placeholder="pl. 1052 Budapest, Kossuth Lajos u. 4. 2/5" style="padding: 9px 12px; font-size: 13px; border-radius: 10px; border: 1px solid #CBD5E1;">
+                        </div>
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Telefonszám *</label>
+                            <input type="tel" id="settings-new-addr-phone" placeholder="+36 30 123 4567" style="padding: 9px 12px; font-size: 13px; border-radius: 10px; border: 1px solid #CBD5E1;">
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                            <button class="btn btn-primary" onclick="window.saveNewAddressFromSettings()" style="flex: 1; padding: 9px; font-size: 13px;">💾 Mentés</button>
+                            <button class="btn btn-secondary" onclick="window.toggleSettingsAddAddressForm(false)" style="padding: 9px 14px; font-size: 13px;">Mégse</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appearance Settings -->
+                <div class="settings-card">
+                    <div class="settings-card-title">
+                        <span style="font-size: 20px;">🎨</span>
+                        <h4>Megjelenés</h4>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-item-info">
+                            <span class="setting-label">Sötét mód (Dark Mode)</span>
+                            <span class="setting-desc">Kíméli a szemet és csökkenti az akkumulátorhasználatot</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkModeDirect(this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- App info Card -->
+                <div class="settings-card">
+                    <div class="settings-card-title">
+                        <span style="font-size: 20px;">ℹ️</span>
+                        <h4>Alkalmazás információ</h4>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-item-info">
+                            <span class="setting-label">GastroGo Verzió</span>
+                            <span class="setting-desc">v2.5 Mobil Kliens</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-item-info">
+                            <span class="setting-label">Ügyfélszolgálat</span>
+                            <span class="setting-desc">Hétfő-Vasárnap 08:00 - 23:00</span>
+                        </div>
+                        <a href="tel:+3635123456" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">📞 Hívás</a>
+                    </div>
+                </div>
+
+                <!-- Logout Card / Button -->
+                <div class="settings-card" style="border: 1px solid rgba(231, 29, 54, 0.2); padding: 16px;">
+                    <button id="btn-settings-logout" class="btn btn-block" onclick="window.handleLogout()" style="background: rgba(231, 29, 54, 0.1); color: var(--danger); font-weight: 700; border: 1px solid rgba(231, 29, 54, 0.25); border-radius: 14px; padding: 13px; cursor: pointer;">
+                        🚪 Kijelentkezés a fiókból
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ACHIEVEMENTS (SIKEREK) SCREEN ================= -->
+        <section id="screen-achievements" class="screen">
+            <header class="app-header">
+                <div class="user-info user-info-clickable" id="user-profile-trigger-achievements" title="Profil és Beállítások megnyitása">
+                    <div class="avatar header-avatar">G</div>
+                    <div>
+                        <span class="welcome-text">Jutalmak & Rang</span>
+                        <h3 class="username-display">Mérföldkövek</h3>
+                    </div>
+                </div>
+                <span style="font-size: 26px;">🏆</span>
+            </header>
+
+            <div class="screen-scrollable">
+                <!-- Top Summary Card -->
+                <div class="achievement-stats-card">
+                    <div>
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.9; font-weight: 700;">Hűségprogram</span>
+                        <h2 style="font-size: 21px; font-weight: 800; margin-top: 3px;" id="achievement-rank-title">Kezdő Ínyenc</h2>
+                        <p style="font-size: 12px; opacity: 0.95; margin-top: 2px;" id="achievement-order-stats">0 sikeres rendelés eddig</p>
+                    </div>
+                    <div style="font-size: 42px;">🎖️</div>
+                </div>
+
+                <h3 class="section-title" style="margin-bottom: 14px;">Elérhető Mérföldkövek</h3>
+
+                <!-- 1. Első vásárlás -->
+                <div class="achievement-card" id="achieve-card-1">
+                    <div class="achievement-header">
+                        <div class="achievement-icon-box">🍕</div>
+                        <div class="achievement-info">
+                            <h4 class="achievement-title">Első Vásárlás</h4>
+                            <p class="achievement-desc">Add le a legelső rendelésed a GastroGo-n!</p>
+                        </div>
+                        <span class="achievement-badge-pill" id="achieve-badge-1">1 db</span>
+                    </div>
+                    <div class="achievement-progress-wrapper">
+                        <div class="achievement-progress-bar">
+                            <div class="achievement-progress-fill" id="achieve-progress-1" style="width: 0%;"></div>
+                        </div>
+                        <div class="achievement-meta">
+                            <span id="achieve-status-text-1">0 / 1 rendelés</span>
+                            <span id="achieve-tag-1" style="color: var(--primary);">Kezdő</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Összesen 10 vásárlás -->
+                <div class="achievement-card" id="achieve-card-10">
+                    <div class="achievement-header">
+                        <div class="achievement-icon-box">🍔</div>
+                        <div class="achievement-info">
+                            <h4 class="achievement-title">Rendszeres Vendég</h4>
+                            <p class="achievement-desc">Rendelj összesen 10 alkalommal kedvenc helyeidről!</p>
+                        </div>
+                        <span class="achievement-badge-pill" id="achieve-badge-10">10 db</span>
+                    </div>
+                    <div class="achievement-progress-wrapper">
+                        <div class="achievement-progress-bar">
+                            <div class="achievement-progress-fill" id="achieve-progress-10" style="width: 0%;"></div>
+                        </div>
+                        <div class="achievement-meta">
+                            <span id="achieve-status-text-10">0 / 10 rendelés</span>
+                            <span id="achieve-tag-10" style="color: var(--primary);">Haladó</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Összesen 50 vásárlás -->
+                <div class="achievement-card" id="achieve-card-50">
+                    <div class="achievement-header">
+                        <div class="achievement-icon-box">👑</div>
+                        <div class="achievement-info">
+                            <h4 class="achievement-title">VIP Gastro Legenda</h4>
+                            <p class="achievement-desc">Érd el az 50 leadott rendelést és légy a környék legendája!</p>
+                        </div>
+                        <span class="achievement-badge-pill" id="achieve-badge-50">50 db</span>
+                    </div>
+                    <div class="achievement-progress-wrapper">
+                        <div class="achievement-progress-bar">
+                            <div class="achievement-progress-fill" id="achieve-progress-50" style="width: 0%;"></div>
+                        </div>
+                        <div class="achievement-meta">
+                            <span id="achieve-status-text-50">0 / 50 rendelés</span>
+                            <span id="achieve-tag-50" style="color: var(--primary);">Mester</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= GLOBAL FIXED BOTTOM NAV (NEVER ANIMATES ON TAB SWITCH) ================= -->
+        <nav class="bottom-nav" id="global-customer-bottom-nav" style="display: none; z-index: 60;">
+            <button class="nav-tab active" id="nav-btn-explore">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                </svg>
+                <span>Felfedezés</span>
+            </button>
+            <button class="nav-tab" id="nav-btn-saved">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <span>Mentett</span>
+            </button>
+            <button class="nav-tab" id="nav-btn-orders">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 3h12v18H6z"></path>
+                    <path d="M9 7h6M9 11h6M9 15h4"></path>
+                </svg>
+                <span>Rendelés</span>
+            </button>
+            <button class="nav-tab" id="nav-btn-achievements">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2c-.55 0-1-.45-1-1v-2.34"></path>
+                    <path d="M6 4h12v7a6 6 0 0 1-12 0V4z"></path>
+                </svg>
+                <span>Sikerek</span>
+            </button>
+        </nav>
+
+        <!-- ================= RESTAURANT MENU SCREEN ================= -->
+        <section id="screen-menu" class="screen">
+            <header class="menu-header">
+                <button class="back-btn" id="btn-back-to-home" onclick="window.navigateTo('screen-home')" style="cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <h3 id="menu-title">Étterem neve</h3>
+                <div class="cart-trigger" id="cart-icon-btn-menu" onclick="window.toggleCart(true)" style="cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-badge" id="cart-badge-count-menu">0</span>
+                </div>
+            </header>
+
+            <div class="restaurant-banner-img" id="restaurant-banner-bg">
+                <div class="restaurant-meta-overlay">
+                    <span class="res-meta-rating">★ <span id="res-rating-val">4.8</span></span>
+                    <span class="res-meta-time">⏱ <span id="res-time-val">20-30 perc</span></span>
+                    <span class="res-meta-stats" id="res-prep-stats-val">⏱ Napszaki átlag: ~20 perc</span>
+                </div>
+            </div>
+
+            <div class="screen-scrollable menu-content-container">
+                <div class="menu-intro">
+                    <h2 id="menu-restaurant-name">Étterem</h2>
+                    <p id="menu-restaurant-desc">Különleges gasztronómiai kínálat.</p>
+                    <button id="btn-generate-menu" class="btn btn-secondary" style="margin-top:12px; padding:9px 13px; font-size:12px;">🖨️ Designos étlap megnyitása</button>
+                    
+                    <!-- Clean Helpline Button -->
+                    <div id="menu-helpline-container" style="margin-top: 10px;">
+                        <button id="menu-helpline-phone" class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px; border-radius: 12px; font-weight: 700; color: var(--accent); background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.2); display: inline-flex; align-items: center;">
+                            📞 +36 35 123 456
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sticky Category Navigation Bar (Single page scroll targets) -->
+                <div class="menu-category-sticky-bar" id="menu-category-tabs">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+
+                <!-- Food List -->
+                <div class="menu-section">
+                    <h3 class="section-title">Kínálatunk</h3>
+                    <div class="menu-list" id="menu-items-container">
+                        <!-- Dynamic food list loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Customer Reviews Section -->
+                <div class="menu-section" style="margin-top: 30px; border-top: 1px dashed #CBD5E1; padding-top: 20px;">
+                    <h3 class="section-title">Vélemények és Értékelések</h3>
+                    
+                    <!-- Submission Form -->
+                    <div class="editor-form-card" style="margin-bottom: 20px; background-color: #F8FAFC;">
+                        <h4>Értékeld a helyet!</h4>
+                        <div class="rating-stars-select" id="review-stars-select" style="margin: 10px 0; font-size: 26px; color: #CBD5E1; cursor: pointer; display: flex; gap: 4px;">
+                            <span class="star-select-btn" data-value="1">★</span>
+                            <span class="star-select-btn" data-value="2">★</span>
+                            <span class="star-select-btn" data-value="3">★</span>
+                            <span class="star-select-btn" data-value="4">★</span>
+                            <span class="star-select-btn active" data-value="5">★</span>
+                        </div>
+                        <input type="hidden" id="review-rating-value" value="5">
+                        
+                        <div class="input-group dark-label">
+                            <input type="text" id="review-comment-input" placeholder="Írd le véleményed (pl. Nagyon finom volt!)">
+                        </div>
+                        <button id="btn-submit-review" class="btn btn-primary btn-block" style="margin-top: 12px; padding: 10px;">Vélemény Beküldése</button>
+                    </div>
+
+                    <!-- Reviews List -->
+                    <div id="reviews-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- Dynamic list of comments -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-dashboard" class="screen">
+            <header class="app-header" style="border-bottom: none; padding-bottom: 5px;">
+                <div class="user-info">
+                    <div class="avatar" style="background-color: var(--accent)">🏪</div>
+                    <div>
+                        <span class="welcome-text">Kezelőpult</span>
+                        <h3 id="dash-restaurant-name">Étterem Kezelő</h3>
+                    </div>
+                </div>
+            </header>
+
+            <div class="screen-scrollable" style="padding-top: 10px;">
+                
+                <!-- SECTION 1: MY MENU -->
+                <div id="dash-section-menu" class="dash-section active">
+                    
+                    <!-- Napszak stats banner -->
+                    <div class="editor-form-card" style="padding: 14px; background-color: #F8FAFC; border-color: #E2E8F0; margin-bottom: 16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:700;">
+                            <span>⏱ Átlagos futárnak adási idő</span>
+                            <span style="color:var(--primary); font-size:10px;" id="dash-stats-refresh-timer">Következő frissítés: 10:00</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:11px; text-align:center;">
+                            <div style="flex:1;">
+                                <strong>Délelőtt (6-12)</strong>
+                                <div id="dash-stat-morning" style="color:var(--accent); font-weight:700; margin-top:4px;">~15 perc</div>
+                            </div>
+                            <div style="flex:1; border-left:1px solid #E2E8F0; border-right:1px solid #E2E8F0;">
+                                <strong>Délután (12-18)</strong>
+                                <div id="dash-stat-afternoon" style="color:var(--accent); font-weight:700; margin-top:4px;">~25 perc</div>
+                            </div>
+                            <div style="flex:1;">
+                                <strong>Este/Éjjel (18-6)</strong>
+                                <div id="dash-stat-evening" style="color:var(--accent); font-weight:700; margin-top:4px;">~20 perc</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-menu-section">
+                        <div class="menu-list" id="dash-menu-items-container">
+                            <!-- Dynamic list of editable items -->
+                        </div>
+                    </div>
+
+                    <!-- Restaurant Dashboard Review Viewer -->
+                    <div class="dashboard-menu-section" style="margin-top: 30px; border-top: 1px dashed #CBD5E1; padding-top: 20px;">
+                        <h3 class="section-title">Beérkezett vevői értékelések</h3>
+                        <div id="dash-reviews-list-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                            <!-- Dynamic customer reviews -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: ADD FOOD & EXCEL IMPORT -->
+                <div id="dash-section-add" class="dash-section">
+                    <!-- Add/Edit food form -->
+                    <div class="editor-form-card">
+                        <h3 id="form-action-title">🍽️ Új étel hozzáadása</h3>
+                        
+                        <input type="hidden" id="edit-burger-id">
+                        
+                        <div class="input-group dark-label">
+                            <label for="burger-name">Étel Neve</label>
+                            <input type="text" id="burger-name" placeholder="pl. Margaréta Pizza vagy Gyros Tál">
+                        </div>
+
+                        <div class="input-group dark-label">
+                            <label for="burger-category-select">Kategória / Csoport</label>
+                            <select id="burger-category-select" class="login-select" style="background: white; border-color: #CBD5E1; color: var(--text-dark);">
+                                <!-- Loaded dynamically -->
+                            </select>
+                        </div>
+                        
+                        <div class="input-group dark-label">
+                            <label for="burger-price">Ár (Ft)</label>
+                            <input type="number" id="burger-price" placeholder="pl. 2190">
+                        </div>
+
+                        <div class="input-group dark-label">
+                            <label for="burger-desc">Leírás / Összetevők</label>
+                            <input type="text" id="burger-desc" placeholder="pl. paradicsomszósz, mozzarella sajt, bazsalikom...">
+                        </div>
+
+                        <div class="input-group dark-label">
+                            <label for="burger-toppings">Plusz feltétek (Név:Ár formátumban, vesszővel elválasztva)</label>
+                            <input type="text" id="burger-toppings" placeholder="pl. Kukorica:200, Plusz sajt:300, Sonka:400">
+                        </div>
+
+                        <!-- Ad-hoc custom topping row -->
+                        <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 6px; align-items: flex-end; padding: 8px; background: #F8FAFC; border-radius: 10px; margin-bottom: 8px; border: 1px solid #E2E8F0;">
+                            <div>
+                                <label style="font-size:10px; font-weight:700; color:var(--text-dark); display:block; margin-bottom:3px;">Egyedi feltét neve</label>
+                                <input type="text" id="mob-custom-topping-name" placeholder="pl. Kaviár" style="padding:6px; font-size:12px; border-radius:6px; border:1px solid #CBD5E1; width:100%; background:white; color:black; height:34px;">
+                            </div>
+                            <div>
+                                <label style="font-size:10px; font-weight:700; color:var(--text-dark); display:block; margin-bottom:3px;">Ár (Ft)</label>
+                                <input type="number" id="mob-custom-topping-price" placeholder="500" style="padding:6px; font-size:12px; border-radius:6px; border:1px solid #CBD5E1; width:100%; background:white; color:black; height:34px;">
+                            </div>
+                            <button type="button" id="btn-mob-add-custom-topping" class="btn btn-primary" style="padding:0 10px; font-size:11px; border-radius:6px; height:34px; margin-top:auto;">+ Feltét</button>
+                        </div>
+                        <!-- Custom topping tags container -->
+                        <div id="mob-custom-topping-tags" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+
+                        <div class="input-group dark-label">
+                            <label for="burger-img">Kép URL-je (opcionális)</label>
+                            <input type="text" id="burger-img" placeholder="https://images.unsplash.com/... (üresen hagyható)">
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button id="btn-save-burger" class="btn btn-primary btn-block">Mentés</button>
+                            <button id="btn-cancel-edit" class="btn btn-secondary btn-block" style="display: none;">Mégse</button>
+                        </div>
+                    </div>
+
+                    <!-- Excel / CSV Batch Import -->
+                    <div class="editor-form-card" style="margin-top: 20px;">
+                        <h3>📊 Importálás fájlból (Excel/CSV)</h3>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+                            Húzz be vagy válassz ki egy CSV fájlt. A fejlécek pontosan ezek legyenek:<br>
+                            <strong>Név, Kategória, Ár, Leírás, Feltétek</strong><br>
+                            * A feltétek formátuma: <em>Név:Ár|Név:Ár</em>
+                        </p>
+                        
+                        <div class="csv-upload-zone" id="csv-drop-zone">
+                            <span>📂 Kattints ide vagy húzz ide egy fájlt</span>
+                            <input type="file" id="csv-file-input" accept=".csv, .txt" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: ORDERS LIST -->
+                <div id="dash-section-orders" class="dash-section">
+                    <h3 class="section-title">Beérkező rendelések</h3>
+                    <div class="restaurants-list" id="dash-orders-list-container">
+                        <!-- Dynamic list of orders -->
+                    </div>
+                </div>
+
+                <!-- SECTION 4: ANALYTICS -->
+                <div id="dash-section-analytics" class="dash-section">
+                    <h3 class="section-title" style="margin-bottom:14px;">📊 Értékesítési Analitika</h3>
+
+                    <!-- KPI Cards -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                        <div class="editor-form-card" style="padding:12px; text-align:center; margin-bottom:0;">
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px;">Mai bevétel</div>
+                            <div id="dash-kpi-revenue" style="font-size:22px; font-weight:800; color:var(--primary);">0 Ft</div>
+                        </div>
+                        <div class="editor-form-card" style="padding:12px; text-align:center; margin-bottom:0;">
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px;">Rendelések</div>
+                            <div id="dash-kpi-orders" style="font-size:22px; font-weight:800; color:var(--accent);">0 db</div>
+                        </div>
+                        <div class="editor-form-card" style="padding:12px; text-align:center; margin-bottom:0;">
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px;">Átl. kosár</div>
+                            <div id="dash-kpi-avg" style="font-size:22px; font-weight:800; color:#8B5CF6;">0 Ft</div>
+                        </div>
+                        <div class="editor-form-card" style="padding:12px; text-align:center; margin-bottom:0;">
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px;">Értékelés</div>
+                            <div id="dash-kpi-rating" style="font-size:22px; font-weight:800; color:#F59E0B;">★ 0.0</div>
+                        </div>
+                    </div>
+
+                    <!-- Time of Day breakdown -->
+                    <div class="editor-form-card" style="padding:14px; margin-bottom:14px;">
+                        <div style="font-size:12px; font-weight:700; margin-bottom:10px;">⏰ Napszaki megoszlás</div>
+                        <div id="dash-analytics-timeofday" style="display:flex; flex-direction:column; gap:8px;">
+                            <!-- dynamic bars -->
+                        </div>
+                    </div>
+
+                    <!-- Top selling items -->
+                    <div class="editor-form-card" style="padding:14px; margin-bottom:14px;">
+                        <div style="font-size:12px; font-weight:700; margin-bottom:10px;">🏆 Legnépszerűbb ételek</div>
+                        <div id="dash-analytics-top-items" style="display:flex; flex-direction:column; gap:6px;">
+                            <!-- dynamic list -->
+                        </div>
+                    </div>
+
+                    <!-- Upsell tips -->
+                    <div class="editor-form-card" style="padding:14px; background:#F0FDF4; border-color:#DCFCE7;">
+                        <div style="font-size:12px; font-weight:700; color:#166534; margin-bottom:8px;">📈 Értékesítési tippek</div>
+                        <div id="dash-analytics-tips" style="font-size:11px; color:#14532d; line-height:1.6; display:flex; flex-direction:column; gap:4px;">
+                            <!-- dynamic tips -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 5: CATEGORIES & TOPPINGS EDITOR -->
+                <div id="dash-section-toppings" class="dash-section">
+                    <!-- Category manager -->
+                    <div class="editor-form-card" style="margin-bottom:16px;">
+                        <h3 style="margin-bottom:12px;">🛠️ Kategóriák kezelése</h3>
+                        <div style="display:flex; gap:8px; align-items:flex-end;">
+                            <div style="flex:1;">
+                                <label style="font-size:10px; font-weight:700; display:block; margin-bottom:4px; color:var(--text-dark);">Új kategória neve</label>
+                                <input type="text" id="new-category-name" placeholder="pl. Desszertek" style="background:white; border-color:#CBD5E1; color:var(--text-dark); padding:10px; border-radius:10px; border:1px solid #CBD5E1; width:100%; font-size:13px;">
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-category" style="padding:10px 14px; font-size:13px; white-space:nowrap;">+ Hozzáad</button>
+                        </div>
+                        <div class="toppings-selection-list" id="dash-categories-list-container" style="margin-top:14px;">
+                            <!-- Category items -->
+                        </div>
+                    </div>
+
+                    <!-- Topping presets per category -->
+                    <div class="editor-form-card">
+                        <h3 style="margin-bottom:6px;">🍕 Feltét-sablonok kategóriánként</h3>
+                        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Válassz kategóriát, majd add meg az alapértelmezett feltéteket.</p>
+                        
+                        <div class="input-group dark-label" style="margin-bottom:10px;">
+                            <label for="mob-topping-cat-select">Kategória</label>
+                            <select id="mob-topping-cat-select" class="login-select" style="background:white; border-color:#CBD5E1; color:var(--text-dark);">
+                                <!-- loaded dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Current presets list -->
+                        <div id="mob-topping-presets-list" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px; background:#F8FAFC; padding:10px; border-radius:10px; border:1px solid #E2E8F0; min-height:38px;">
+                            <!-- loaded dynamically -->
+                        </div>
+
+                        <!-- Add new preset topping -->
+                        <div style="display:grid; grid-template-columns:2fr 1fr auto; gap:6px; align-items:flex-end;">
+                            <div>
+                                <label style="font-size:10px; font-weight:700; color:var(--text-dark); display:block; margin-bottom:3px;">Feltét neve</label>
+                                <input type="text" id="mob-new-topping-name" placeholder="pl. Kukorica" style="padding:8px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; width:100%; background:white; color:black; height:36px;">
+                            </div>
+                            <div>
+                                <label style="font-size:10px; font-weight:700; color:var(--text-dark); display:block; margin-bottom:3px;">Ár (Ft)</label>
+                                <input type="number" id="mob-new-topping-price" placeholder="200" style="padding:8px; font-size:12px; border-radius:8px; border:1px solid #CBD5E1; width:100%; background:white; color:black; height:36px;">
+                            </div>
+                            <button class="btn btn-primary" id="btn-mob-add-topping-preset" style="padding:0 10px; font-size:11px; border-radius:8px; height:36px; margin-top:auto;">Hozzáad</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Navigation Bar for Restaurants (5 tabs) -->
+            <nav class="bottom-nav" id="dash-bottom-nav" style="justify-content:space-around;">
+                <button class="nav-tab active" id="nav-btn-dash-menu">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                    </svg>
+                    <span>Étlap</span>
+                </button>
+                <button class="nav-tab" id="nav-btn-dash-add">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Új Étel</span>
+                </button>
+                <button class="nav-tab" id="nav-btn-dash-orders" style="position: relative;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                    </svg>
+                    <span>Rendelések</span>
+                    <span class="cart-badge" id="dash-orders-badge" style="display: none; top: -4px; right: 8px;">0</span>
+                </button>
+                <button class="nav-tab" id="nav-btn-dash-analytics">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span>Statisztika</span>
+                </button>
+                <button class="nav-tab" id="nav-btn-dash-toppings">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"></path>
+                    </svg>
+                    <span>Feltétek</span>
+                </button>
+                <button class="nav-tab" id="nav-btn-dash-logout">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Kilépés</span>
+                </button>
+            </nav>
+        </section>
+
+        <!-- ================= TOPPING SELECTION ================= -->
+        <div id="topping-modal" class="cart-sheet">
+            <div class="cart-sheet-backdrop" id="topping-backdrop"></div>
+            <div class="cart-sheet-content">
+                <div class="cart-sheet-header">
+                    <div class="drag-handle"></div>
+                    <div>
+                        <h2 id="topping-modal-title">Étel testreszabása</h2>
+                        <p id="topping-modal-desc">Válassz hozzá plusz feltéteket!</p>
+                    </div>
+                    <button class="close-cart-btn" id="btn-close-topping">✕</button>
+                </div>
+                <div class="cart-items-wrapper"><div class="toppings-selection-list" id="topping-options-container"></div></div>
+                <div class="cart-summary"><button id="btn-confirm-toppings" class="btn btn-primary btn-block">Kosárba helyezés: 0 Ft</button></div>
+            </div>
+        </div>
+
+        <!-- ================= CART SHEET ================= -->
+        <div id="cart-sheet" class="cart-sheet">
+            <div class="cart-sheet-backdrop" id="cart-backdrop" onclick="window.toggleCart(false)"></div>
+            <div class="cart-sheet-content">
+                <div class="cart-sheet-header">
+                    <div class="drag-handle"></div>
+                    <h2>Kosarad</h2>
+                    <button class="close-cart-btn" id="btn-close-cart" onclick="window.toggleCart(false)" style="cursor: pointer;">✕</button>
+                </div>
+                <div class="cart-items-wrapper" id="cart-items-container"></div>
+
+                <div class="cart-summary" id="cart-summary-section" style="display: none;">
+                    <div class="summary-row"><span>Rendelés összege</span><span id="cart-subtotal">0 Ft</span></div>
+                    <div class="summary-row"><span>Szállítási díj</span><span id="cart-delivery">Ingyenes</span></div>
+                    <div id="cart-extra-fees"></div>
+                    <hr>
+                    <div class="summary-row total"><span>Összesen</span><span id="cart-total">0 Ft</span></div>
+                    <button id="btn-go-to-checkout" class="btn btn-primary btn-block" onclick="window.openCheckoutScreen()" style="padding: 14px; font-size: 15px; font-weight: 700; border-radius: 14px;">Tovább a fizetéshez ➔</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= DEDICATED CHECKOUT & PAYMENT SCREEN ================= -->
+        <section id="screen-checkout" class="screen">
+            <header class="app-header">
+                <button class="back-btn" id="btn-back-from-checkout" onclick="window.toggleCart(true); window.navigateTo('screen-home');" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; color: var(--text-dark); padding: 4px;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <h3 style="font-size: 17px; font-weight: 700;">Fizetés & Szállítás</h3>
+                <div style="width: 28px;"></div>
+            </header>
+
+            <div class="screen-scrollable">
+                <!-- Delivery Address Selection Card -->
+                <div class="settings-card" style="padding: 18px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; color: var(--text-dark); margin: 0;">
+                            <span>📍</span> Szállítási cím
+                        </h4>
+                        <button id="btn-checkout-new-address" class="btn btn-secondary" onclick="window.toggleCheckoutNewAddressMode(true)" style="padding: 5px 12px; font-size: 12px; border-radius: 8px; font-weight: 600;">
+                            ➕ Új cím
+                        </button>
+                    </div>
+
+                    <!-- State A: Saved addresses dropdown & selected address summary card -->
+                    <div id="checkout-saved-address-view" style="display: none;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Válassz a mentett címeid közül:</label>
+                        <select id="checkout-address-select" onchange="window.handleCheckoutAddressSelectChange(this.value)" style="width: 100%; padding: 11px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1px solid #CBD5E1; background: var(--bg-light); color: var(--text-dark); margin-bottom: 10px;">
+                        </select>
+                        
+                        <!-- Selected address info card -->
+                        <div id="checkout-selected-address-card" style="padding: 12px 14px; background: rgba(255,159,28,0.06); border: 1px solid rgba(255,159,28,0.25); border-radius: 12px; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                <span id="selected-addr-badge" style="font-size: 11px; font-weight: 700; background: var(--primary); color: white; padding: 2px 8px; border-radius: 6px;">Otthon</span>
+                                <strong id="selected-addr-name" style="font-size: 13px; color: var(--text-dark);">Kovács Péter</strong>
+                            </div>
+                            <div id="selected-addr-text" style="font-size: 13px; color: var(--text-dark); margin-bottom: 2px;">1052 Budapest, Kossuth L. u. 4. 2/5</div>
+                            <div id="selected-addr-phone" style="font-size: 12px; color: var(--text-muted);">📞 +36 30 123 4567</div>
+                        </div>
+
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Megjegyzés a futárnak (opcionális)</label>
+                            <input type="text" id="checkout-order-note" placeholder="pl. 12-es csengő, kapukód #1234" style="padding: 10px 14px; border-radius: 10px; font-size: 13px; border: 1px solid #CBD5E1; background: var(--bg-light); color: var(--text-dark);">
+                        </div>
+                    </div>
+
+                    <!-- State B: No saved address placeholder -->
+                    <div id="checkout-no-address-view" style="display: none; text-align: center; padding: 14px 10px;">
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px 0;">Még nincs elmentett szállítási címed.</p>
+                        <button type="button" class="btn btn-primary" onclick="window.toggleCheckoutNewAddressMode(true)" style="padding: 10px 18px; font-size: 13px; border-radius: 12px; font-weight: 600;">
+                            ➕ Szállítási cím hozzáadása
+                        </button>
+                    </div>
+
+                    <!-- State C: Add Address Form (initially hidden, expands on demand) -->
+                    <div id="checkout-address-form-container" style="display: none; margin-top: 10px; padding: 14px; background: var(--bg-light); border: 1px solid #CBD5E1; border-radius: 14px; flex-direction: column; gap: 10px;">
+                        <h5 style="margin: 0; font-size: 13px; font-weight: 700; color: var(--text-dark);">Új szállítási cím megadása:</h5>
+                        
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Cím megnevezése (pl. Otthon, Iroda) *</label>
+                            <input type="text" id="checkout-new-addr-label" placeholder="pl. Otthon" style="padding: 9px 12px; border-radius: 10px; font-size: 13px; border: 1px solid #CBD5E1;">
+                        </div>
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Teljes név *</label>
+                            <input type="text" id="checkout-new-name" placeholder="pl. Kovács Péter" style="padding: 9px 12px; border-radius: 10px; font-size: 13px; border: 1px solid #CBD5E1;">
+                        </div>
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Pontos lakcím (Város, utca, hsz, em/ajtó) *</label>
+                            <input type="text" id="checkout-new-address" placeholder="pl. 1052 Budapest, Kossuth Lajos u. 4. 2/5" style="padding: 9px 12px; border-radius: 10px; font-size: 13px; border: 1px solid #CBD5E1;">
+                        </div>
+                        <div class="input-group dark-label" style="gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Telefonszám *</label>
+                            <input type="tel" id="checkout-new-phone" placeholder="+36 30 123 4567" style="padding: 9px 12px; border-radius: 10px; font-size: 13px; border: 1px solid #CBD5E1;">
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px; margin-top: 6px;">
+                            <button type="button" class="btn btn-primary" onclick="window.saveAddressFromCheckout()" style="flex: 1; padding: 10px; font-size: 13px; font-weight: 700; border-radius: 10px;">
+                                💾 Cím mentése
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="window.toggleCheckoutNewAddressMode(false)" style="padding: 10px 14px; font-size: 13px; border-radius: 10px;">
+                                Mégse
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method Card -->
+                <div class="settings-card" style="padding: 18px; margin-bottom: 16px;">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: var(--text-dark); margin-top: 0;">
+                        <span>💳</span> Fizetési mód
+                    </h4>
+                    
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 14px; border: 2px solid #2EC4B6; background: rgba(46,196,182,0.12);">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 28px;">💵</span>
+                            <div>
+                                <strong style="font-size: 14px; display: block; color: var(--text-dark);">Utánvét (Fizetés a futárnál)</strong>
+                                <span style="font-size: 12px; color: var(--text-muted);">Készpénz vagy bankkártya átvételkor</span>
+                            </div>
+                        </div>
+                        <span style="background: #2EC4B6; color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px;">Aktív</span>
+                    </div>
+                </div>
+
+                <!-- Order Summary Card -->
+                <div class="settings-card" style="padding: 18px; margin-bottom: 24px;">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: var(--text-dark); margin-top: 0;">
+                        <span>🧾</span> Rendelés összegzése
+                    </h4>
+                    <div id="checkout-order-items-preview" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;"></div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-muted);">
+                        <span>Részösszeg:</span><span id="checkout-subtotal-val">0 Ft</span>
+                    </div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-muted);">
+                        <span>Kiszállítási díj:</span><span id="checkout-delivery-val">Ingyenes</span>
+                    </div>
+                    <div id="checkout-extra-fees-val"></div>
+                    <hr style="border: none; border-top: 1px dashed #CBD5E1; margin: 10px 0;">
+                    <div class="summary-row total" style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px;">
+                        <span>Fizetendő összeg:</span><span id="checkout-final-total-val" style="color: var(--primary);">0 Ft</span>
+                    </div>
+
+                    <button id="btn-submit-order" class="btn btn-primary btn-block" onclick="window.submitOrder()" style="padding: 15px; font-size: 16px; font-weight: 700; border-radius: 14px;">
+                        Megrendelés jóváhagyása
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ORDER SUCCESS SCREEN ================= -->
+        <section id="screen-success" class="screen">
+            <div class="success-content">
+                <div class="success-animation">
+                    <div class="checkmark-circle">
+                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                    </div>
+                </div>
+                <h2>Köszönjük a rendelést!</h2>
+                <p>A futár már készülődik. Becsült szállítási idő:</p>
+                <div class="delivery-time-estimate">25 perc</div>
+                
+                <!-- Order Delivery & Payment Summary Card -->
+                <div id="success-order-meta-card" style="background: var(--bg-light); border: 1px solid #E2E8F0; border-radius: 14px; padding: 12px 16px; margin: 0 auto 20px auto; text-align: left; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span style="color: var(--text-muted);">Címzett:</span>
+                        <strong id="success-recipient-name" style="color: var(--text-dark);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span style="color: var(--text-muted);">Szállítási cím:</span>
+                        <span id="success-recipient-address" style="color: var(--text-dark); font-weight: 600; max-width: 170px; text-align: right; word-break: break-word;">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Fizetési mód:</span>
+                        <strong id="success-payment-method" style="color: var(--primary);">-</strong>
+                    </div>
+                </div>
+
+                <!-- Clean Helpline Button on Success Tracking page -->
+                <div style="margin: 0 auto 20px auto;">
+                    <button id="success-helpline-phone" class="btn btn-secondary" style="padding: 10px 20px; font-size: 14px; border-radius: 12px; font-weight: 700; color: var(--primary); background: rgba(255, 159, 28, 0.1); border: 1px solid rgba(255, 159, 28, 0.2); display: inline-flex; align-items: center;">
+                        📞 +36 35 123 456
+                    </button>
+                </div>
+
+                <div class="order-status-timeline">
+                    <div class="timeline-step active" id="track-step-received">
+                        <div class="step-dot"></div>
+                        <div class="step-label">Elfogadva</div>
+                    </div>
+                    <div class="timeline-step" id="track-step-preparing">
+                        <div class="step-dot"></div>
+                        <div class="step-label">Készítés alatt</div>
+                    </div>
+                    <div class="timeline-step" id="track-step-dispatched">
+                        <div class="step-dot"></div>
+                        <div class="step-label">Futárnál</div>
+                    </div>
+                </div>
+
+                <button id="btn-back-home-success" class="btn btn-primary" onclick="window.navigateTo('screen-home')" style="cursor: pointer; width: 100%; padding: 14px; font-size: 15px; font-weight: 700; border-radius: 14px; margin-top: 10px;">Vissza a főoldalra</button>
+            </div>
+        </section>
+        </main>
+
+        <!-- Right Column: Dedicated Two-Phase Desktop Sidebar (Cart -> Checkout with Cash on Delivery & Address) -->
+        <aside class="desktop-cart-sidebar" id="desktop-cart-sidebar">
+            <!-- Phase 1: Cart Items & Summary -->
+            <div id="desktop-sidebar-cart-view" class="desktop-sidebar-view active" style="display:flex; flex-direction:column; height:100%;">
+                <div class="desktop-sidebar-header">
+                    <h3><span>🛒</span> Kosarad</h3>
+                    <button onclick="window.clearCart()" style="background:none; border:none; color:var(--danger); font-size:12px; font-weight:700; cursor:pointer; padding:4px 8px;">Törlés</button>
+                </div>
+
+                <div class="desktop-sidebar-items" id="desktop-sidebar-cart-items">
+                    <!-- Cart items dynamic render -->
+                </div>
+
+                <div class="desktop-sidebar-summary">
+                    <div class="summary-row"><span>Részösszeg:</span><span id="desktop-sidebar-subtotal">0 Ft</span></div>
+                    <div class="summary-row"><span>Kiszállítási díj:</span><span id="desktop-sidebar-delivery">Ingyenes</span></div>
+                    <div class="summary-row" style="color:var(--primary); font-weight:600;"><span>Kényelmi díj:</span><span id="desktop-sidebar-convenience">99 Ft</span></div>
+                    <div class="summary-row total"><span>Fizetendő összeg:</span><span id="desktop-sidebar-total" style="color:var(--primary);">0 Ft</span></div>
+                </div>
+
+                <button class="btn-desktop-submit" id="btn-desktop-to-checkout" onclick="window.switchDesktopSidebarView('checkout')">
+                    Tovább a fizetéshez ➔
+                </button>
+            </div>
+
+            <!-- Phase 2: Checkout, Delivery & Payment Method -->
+            <div id="desktop-sidebar-checkout-view" class="desktop-sidebar-view" style="display:none; flex-direction:column; height:100%;">
+                <div class="desktop-sidebar-header">
+                    <button type="button" onclick="window.switchDesktopSidebarView('cart')" style="background:none; border:none; color:var(--text-dark); font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
+                        <span>←</span> Vissza
+                    </button>
+                    <h3 style="margin:0; font-size:15px;"><span>💳</span> Fizetés & Szállítás</h3>
+                    <div style="width:20px;"></div>
+                </div>
+
+                <div class="desktop-sidebar-checkout-scroll" style="flex:1; overflow-y:auto; padding-right:2px; display:flex; flex-direction:column; gap:12px;">
+                    <!-- Address Selector Box -->
+                    <div class="desktop-sidebar-box" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:14px; padding:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin:0;">📍 Szállítási cím</label>
+                            <button type="button" onclick="window.toggleDesktopNewAddressForm()" style="background:none; border:none; font-size:11px; font-weight:700; color:var(--primary); cursor:pointer;">+ Új cím</button>
+                        </div>
+                        <select id="desktop-sidebar-address-select" onchange="window.handleSidebarAddressChange(this.value)" style="width:100%; padding:9px 10px; border-radius:10px; font-size:12px; border:1px solid #CBD5E1; background:#fff; margin-bottom:6px;"></select>
+                        
+                        <!-- Add New Address Form (inline expandable) -->
+                        <div id="desktop-sidebar-new-address-form" style="display:none; flex-direction:column; gap:6px; margin-top:8px; padding-top:8px; border-top:1px dashed #CBD5E1;">
+                            <input type="text" id="desktop-new-addr-label" placeholder="Címke (pl. Otthon, Iroda)" style="padding:8px; border-radius:8px; font-size:12px; border:1px solid #CBD5E1;">
+                            <input type="text" id="desktop-new-addr-name" placeholder="Teljes név" style="padding:8px; border-radius:8px; font-size:12px; border:1px solid #CBD5E1;">
+                            <input type="text" id="desktop-new-addr-text" placeholder="Pontos cím (Város, utca, hsz)" style="padding:8px; border-radius:8px; font-size:12px; border:1px solid #CBD5E1;">
+                            <input type="tel" id="desktop-new-addr-phone" placeholder="Telefonszám" style="padding:8px; border-radius:8px; font-size:12px; border:1px solid #CBD5E1;">
+                            <div style="display:flex; gap:6px; margin-top:2px;">
+                                <button type="button" class="btn btn-primary" onclick="window.saveDesktopNewAddress()" style="flex:1; padding:7px; font-size:11px; font-weight:700; border-radius:8px;">Mentés</button>
+                                <button type="button" class="btn btn-secondary" onclick="window.toggleDesktopNewAddressForm(false)" style="padding:7px 10px; font-size:11px; border-radius:8px;">Mégse</button>
+                            </div>
+                        </div>
+
+                        <input type="text" id="desktop-sidebar-note" placeholder="Megjegyzés a futárnak (pl. kapukód)..." style="width:100%; padding:8px 10px; border-radius:10px; font-size:12px; border:1px solid #CBD5E1; background:#fff; margin-top:4px;">
+                    </div>
+
+                    <!-- Payment Method Box -->
+                    <div class="desktop-sidebar-box" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:14px; padding:12px;">
+                        <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:8px;">💳 Fizetési mód</label>
+                        
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-radius:12px; border:2px solid #2EC4B6; background:rgba(46,196,182,0.12);">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:22px;">💵</span>
+                                <div>
+                                    <strong style="font-size:13px; display:block; color:var(--text-dark);">Utánvét (Fizetés a futárnál)</strong>
+                                    <span style="font-size:11px; color:var(--text-muted);">Készpénz vagy bankkártya átvételkor</span>
+                                </div>
+                            </div>
+                            <span style="background:#2EC4B6; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px;">Aktív</span>
+                        </div>
+                    </div>
+
+                    <!-- Mini Summary Box -->
+                    <div class="desktop-sidebar-summary" style="padding-top:4px;">
+                        <div class="summary-row"><span>Tételek száma:</span><span id="desktop-checkout-items-count">0 db</span></div>
+                        <div class="summary-row"><span>Részösszeg:</span><span id="desktop-checkout-subtotal">0 Ft</span></div>
+                        <div class="summary-row"><span>Kiszállítás:</span><span id="desktop-checkout-delivery">Ingyenes</span></div>
+                        <div class="summary-row" style="color:var(--primary); font-weight:600;"><span>Kényelmi díj:</span><span id="desktop-checkout-convenience">99 Ft</span></div>
+                        <div class="summary-row total"><span>Fizetendő összeg:</span><span id="desktop-checkout-total" style="color:var(--primary);">0 Ft</span></div>
+                    </div>
+                </div>
+
+                <button class="btn-desktop-submit" id="btn-desktop-sidebar-submit" onclick="window.submitOrderFromSidebar()" style="margin-top:10px;">
+                    Megrendelés jóváhagyása ➔
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <!-- Cloud Adapter & App Scripts -->
+    <script src="firebase-config.js?v=3"></script>
+    <script src="shared-data.js?v=6"></script>
+    <script src="app.js?v=71"></script>
+</body>
+</html>
