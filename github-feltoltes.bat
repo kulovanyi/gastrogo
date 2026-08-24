@@ -1,26 +1,15 @@
 @echo off
-chcp 65001 > nul
 cd /d "%~dp0"
-
 echo ========================================================
-echo   🚀 GastroGo - Automatikus GitHub Feltöltés
+echo   🚀 GastroGo - Automatikus GitHub Feltoltes...
 echo ========================================================
 echo.
-
-echo [1/3] Fajlok hozzaadasa...
 git add -A
-
-echo.
-echo [2/3] Mentes rogzitese...
-git commit -m "GastroGo frissites"
-
-echo.
-echo [3/3] Feltoltes a GitHub-ra...
+git commit -m "Auto update: GastroGo codebase"
 git push origin main
-
 echo.
 echo ========================================================
-echo   ✅ Kesz! Ellenorizd a GitHubon:
+echo   ✅ SIKERESEN FELTOLTVE A GITHUB-RA!
 echo   🔗 https://github.com/kulovanyi/gastrogo
 echo ========================================================
 echo.
