@@ -397,51 +397,197 @@
             font-weight: 700;
         }
 
+        /* Multi-Section Orders Container & 2-Column Grid */
+        .orders-section-container {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .orders-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 14px;
+        }
+
+        .orders-section-title {
+            font-size: 15px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .orders-section-title.urgent {
+            color: #DC2626;
+            border-bottom-color: #FCA5A5;
+        }
+
+        .orders-section-title.preparing {
+            color: #2563EB;
+            border-bottom-color: #93C5FD;
+        }
+
+        .orders-section-title.dispatched {
+            color: #475569;
+            border-bottom-color: #CBD5E1;
+        }
+
+        .orders-grid-2col {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 16px;
+        }
+
+        /* Order Cards Base */
+        .order-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Urgent / New Card Style: Light Red */
+        .order-card.urgent-card {
+            background: #FEF2F2;
+            border: 2px solid #F87171;
+            box-shadow: 0 6px 18px rgba(239, 68, 68, 0.12);
+        }
+
+        /* Preparing / Looked Card Style: Light Neutral */
+        .order-card.preparing-card {
+            background: #F8FAFC;
+            border: 1.5px solid #CBD5E1;
+        }
+
+        /* Dispatched / Courier Card Style: Muted Grey */
+        .order-card.dispatched-card {
+            background: #F1F5F9;
+            border: 1px solid #CBD5E1;
+            opacity: 0.9;
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
         .order-time {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-muted);
+            font-weight: 600;
         }
 
         .order-status-badge {
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 8px;
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
-        .order-status-badge.received {
-            background-color: #FEF3C7;
-            color: #D97706;
+        .order-status-badge.received,
+        .order-status-badge.új {
+            background-color: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FCA5A5;
         }
 
-        .order-status-badge.preparing {
-            background-color: #DBEAFE;
+        .order-status-badge.preparing,
+        .order-status-badge.megnéztem {
+            background-color: #E0E7FF;
+            color: #4338CA;
+            border: 1px solid #C7D2FE;
+        }
+
+        .order-status-badge.dispatched,
+        .order-status-badge.futárnál {
+            background-color: #E2E8F0;
+            color: #475569;
+            border: 1px solid #CBD5E1;
+        }
+
+        .order-customer-phone-box {
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            padding: 6px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #0F172A;
+        }
+
+        .order-customer-phone-box a {
             color: #2563EB;
+            text-decoration: none;
         }
 
-        .order-status-badge.dispatched {
-            background-color: #D1FAE5;
-            color: #059669;
+        .order-customer-phone-box a:hover {
+            text-decoration: underline;
         }
 
         .order-card-items {
             font-size: 12px;
             line-height: 1.5;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed #CBD5E1;
         }
 
         .order-card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px dashed #E2E8F0;
-            padding-top: 8px;
+            border-top: 1px dashed #CBD5E1;
+            padding-top: 10px;
+            margin-top: auto;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .order-total-lbl {
-            font-size: 13px;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .btn-print-slip {
+            background: #334155;
+            color: #FFFFFF;
             font-weight: 700;
-            color: var(--primary);
+            padding: 6px 11px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            transition: var(--transition);
+        }
+
+        .btn-print-slip:hover {
+            background: #0F172A;
+            transform: translateY(-1px);
         }
 
         /* Menu card grid */
@@ -2476,52 +2622,285 @@
         }
 
         // ================= ORDERS HANDLING =================
+        // ================= ORDERS HANDLING & COURIER SLIP =================
+        function printCourierSlip(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order || !activeRestaurant) {
+                alert("A rendelés nem található!");
+                return;
+            }
+
+            const printWindow = window.open("", "_blank", "width=650,height=850");
+            if (!printWindow) {
+                alert("Kérlek engedélyezd a felugró ablakokat a futár összesítő nyomtatásához!");
+                return;
+            }
+
+            const itemsHtml = order.items.map(item => `
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #CBD5E1; font-size:13px;">
+                    <div>
+                        <strong style="font-size:14px;">${item.quantity}x ${item.name}</strong>
+                        ${item.toppingsText ? `<div style="font-size:11px; color:#64748B; margin-top:2px;">+ ${item.toppingsText}</div>` : ''}
+                    </div>
+                    <strong style="font-size:14px;">${((item.price || 0) * (item.quantity || 1)).toLocaleString('hu-HU')} Ft</strong>
+                </div>
+            `).join("");
+
+            const html = `
+                <!DOCTYPE html>
+                <html lang="hu">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Futár Összesítő - #${order.id}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 24px; color: #0F172A; line-height: 1.4; background: #F8FAFC; }
+                        .slip-card { max-width: 480px; margin: 0 auto; background: #FFF; border: 2px solid #000; border-radius: 12px; padding: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+                        .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 14px; margin-bottom: 16px; }
+                        .header h1 { margin: 0 0 4px 0; font-size: 22px; text-transform: uppercase; color: #D97706; }
+                        .header h2 { margin: 0; font-size: 14px; color: #475569; letter-spacing: 1px; }
+                        .order-badge { display: inline-block; background: #000; color: #FFF; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 6px; margin-top: 8px; }
+                        .box { border: 2px solid #1E293B; border-radius: 8px; padding: 12px; margin-bottom: 16px; background: #F8FAFC; }
+                        .box-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #475569; margin-bottom: 8px; border-bottom: 1px solid #CBD5E1; padding-bottom: 4px; }
+                        .cust-row { font-size: 15px; font-weight: 800; color: #0F172A; margin-bottom: 6px; }
+                        .phone-row { font-size: 17px; font-weight: 900; color: #2563EB; margin-bottom: 6px; }
+                        .addr-row { font-size: 15px; font-weight: 700; background: #FEF08A; padding: 6px 8px; border-radius: 6px; margin-bottom: 6px; border: 1px solid #FDE047; }
+                        .note-row { font-size: 13px; font-weight: 700; color: #B91C1C; background: #FEE2E2; padding: 6px 8px; border-radius: 6px; border: 1px solid #FCA5A5; }
+                        .total-card { background: #0F172A; color: #FFF; padding: 14px; border-radius: 8px; text-align: center; margin-top: 18px; }
+                        .total-lbl { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; }
+                        .total-amt { font-size: 26px; font-weight: 900; color: #38BDF8; margin: 4px 0; }
+                        .pay-badge { font-size: 14px; font-weight: 800; color: #FCD34D; }
+                        @media print {
+                            body { padding: 0; background: #FFF; }
+                            .slip-card { border: 1px solid #000; box-shadow: none; max-width: 100%; border-radius: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="slip-card">
+                        <div class="header">
+                            <h1>${activeRestaurant.name}</h1>
+                            <h2>FUTÁR SZÁLLÍTÓLEVÉL & BLOKK</h2>
+                            <div class="order-badge">RENDELÉS: #${order.id} · ⏱ ${order.time}</div>
+                        </div>
+
+                        <div class="box">
+                            <div class="box-title">📍 CÍMZETT & KISZÁLLÍTÁSI ADATOK</div>
+                            <div class="cust-row">👤 ${order.customerName || "Vásárló"}</div>
+                            <div class="phone-row">📞 ${order.phone || "Nincs megadva"}</div>
+                            <div class="addr-row">🏠 ${order.deliveryAddress || "Nincs megadva"}</div>
+                            ${order.note ? `<div class="note-row">⚠️ MEGJEGYZÉS: ${order.note}</div>` : ''}
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <div class="box-title" style="font-size:11px; font-weight:800; color:#475569; margin-bottom:8px; border-bottom:1px solid #CBD5E1; padding-bottom:4px;">🍽️ RENDELT TÉTELEK</div>
+                            ${itemsHtml}
+                        </div>
+
+                        <div class="total-card">
+                            <div class="total-lbl">Fizetendő a futárnál (Utánvét)</div>
+                            <div class="total-amt">${(order.total || 0).toLocaleString('hu-HU')} Ft</div>
+                            <div class="pay-badge">${order.paymentMethod || '💵 Utánvét (készpénz / kártya a futárnál)'}</div>
+                        </div>
+
+                        <div style="text-align:center; margin-top:16px; font-size:11px; color:#94A3B8; font-weight:600;">
+                            GastroGo Éttermi Felhő Rendszer · Jó utat!
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                            }, 250);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `;
+
+            printWindow.document.write(html);
+            printWindow.document.close();
+        }
+        window.printCourierSlip = printCourierSlip;
+
         function renderDashboardOrders() {
             const container = document.getElementById("orders-container");
+            if (!container) return;
             container.innerHTML = "";
 
             const resOrders = orders.filter(o => o.restaurantId === activeRestaurant.id);
             updateOrdersBadge();
 
             if (resOrders.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:20px;">Nincs még beérkező rendelésed.</div>`;
+                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:13px; padding:30px; background:#F8FAFC; border-radius:12px; border:1px dashed #CBD5E1;">Nincs még beérkező rendelésed az éttermedhez.</div>`;
                 return;
             }
 
-            resOrders.slice().reverse().forEach(order => {
-                let statusText = "Új";
-                if (order.status === "preparing") statusText = "Készítés alatt";
-                if (order.status === "dispatched") statusText = "Futárnál";
+            // Group orders into 3 clear categories
+            const newOrders = [];
+            const preparingOrders = [];
+            const dispatchedOrders = [];
 
-                let itemsStr = order.items.map(i => `<strong>${i.quantity}x</strong> ${i.name}`).join(', ');
+            // Sort newest first
+            const sortedOrders = resOrders.slice().reverse();
 
-                let buttons = "";
-                if (order.status === "received") {
-                    buttons = `<button class="btn-action-small btn-primary" onclick="setOrderStatus('${order.id}', 'preparing')">Megnéztem</button>`;
-                } else if (order.status === "preparing") {
-                    buttons = `<button class="btn-action-small btn-primary" style="background-color:var(--accent);" onclick="setOrderStatus('${order.id}', 'dispatched')">Futárnak átadva</button>`;
+            sortedOrders.forEach(order => {
+                const st = (order.status || "received").toLowerCase();
+                if (st === "received" || st === "új") {
+                    newOrders.push(order);
+                } else if (st === "preparing" || st === "megnéztem") {
+                    preparingOrders.push(order);
                 } else {
-                    buttons = `<span style="font-size:10px; color:var(--text-muted); font-weight:600;">✓ Kézbesítve</span>`;
+                    dispatchedOrders.push(order);
+                }
+            });
+
+            function buildOrderCard(order, sectionType) {
+                const isUrgent = sectionType === "urgent";
+                const isPreparing = sectionType === "preparing";
+                const isDispatched = sectionType === "dispatched";
+
+                let cardClass = "order-card";
+                let statusBadgeText = "Új Rendelés";
+                let statusBadgeClass = "received";
+
+                if (isUrgent) {
+                    cardClass += " urgent-card";
+                    statusBadgeText = "🚨 Sürgős / Új";
+                    statusBadgeClass = "received";
+                } else if (isPreparing) {
+                    cardClass += " preparing-card";
+                    statusBadgeText = "🍳 Előkészítés alatt";
+                    statusBadgeClass = "preparing";
+                } else {
+                    cardClass += " dispatched-card";
+                    statusBadgeText = "🚚 Futárnál";
+                    statusBadgeClass = "dispatched";
                 }
 
-                const card = document.createElement("div");
-                card.className = "order-card";
-                card.innerHTML = `
-                    <div class="order-card-header">
-                        <div>
-                            <h4>${order.customerName}</h4>
-                            <span class="order-time">${order.time}</span>
+                const itemsStr = (order.items || []).map(i => {
+                    const topStr = i.toppingsText ? ` <span style="font-size:11px; color:#2563EB;">(+${i.toppingsText})</span>` : '';
+                    return `<div><strong>${i.quantity}x</strong> ${i.name}${topStr} <span style="color:#64748B;">(${((i.price || 0) * (i.quantity || 1)).toLocaleString('hu-HU')} Ft)</span></div>`;
+                }).join("");
+
+                let actionButtons = "";
+                if (isUrgent) {
+                    actionButtons = `
+                        <button class="btn-action-small btn-primary" onclick="setOrderStatus('${order.id}', 'preparing')" style="padding:6px 12px; font-size:11px; font-weight:700;">👁️ Megnéztem</button>
+                        <button class="btn-action-small" onclick="setOrderStatus('${order.id}', 'dispatched')" style="background:#10B981; color:#FFF; padding:6px 12px; font-size:11px; font-weight:700;">🚚 Futárnak átadva</button>
+                    `;
+                } else if (isPreparing) {
+                    actionButtons = `
+                        <button class="btn-action-small btn-primary" style="background-color:var(--accent); padding:6px 12px; font-size:11px; font-weight:700;" onclick="setOrderStatus('${order.id}', 'dispatched')">🚚 Átadva futárnak</button>
+                    `;
+                } else {
+                    actionButtons = `
+                        <span style="font-size:11px; color:#059669; font-weight:700;">✓ Átadva a futárnak</span>
+                    `;
+                }
+
+                const phoneDisplay = order.phone 
+                    ? `<div class="order-customer-phone-box">📞 <a href="tel:${order.phone}">${order.phone}</a></div>`
+                    : `<span style="font-size:11px; color:#94A3B8;">(Nincs telefonszám)</span>`;
+
+                const addressDisplay = order.deliveryAddress
+                    ? `<div style="font-size:12px; color:#334155; margin-top:2px;">🏠 <strong>Cím:</strong> ${order.deliveryAddress}</div>`
+                    : ``;
+
+                const noteDisplay = order.note
+                    ? `<div style="font-size:11px; color:#B91C1C; background:#FEE2E2; padding:4px 8px; border-radius:6px; margin-top:4px; font-weight:600;">⚠️ Megjegyzés: ${order.note}</div>`
+                    : ``;
+
+                return `
+                    <div class="${cardClass}">
+                        <div class="order-card-header">
+                            <div>
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                    <h4 style="font-size:15px; font-weight:800; margin:0; color:#0F172A;">${order.customerName || "Vevő"}</h4>
+                                    <span class="order-time">⏱ ${order.time || ""}</span>
+                                </div>
+                                ${phoneDisplay}
+                                ${addressDisplay}
+                                ${noteDisplay}
+                            </div>
+                            <span class="order-status-badge ${statusBadgeClass}">${statusBadgeText}</span>
                         </div>
-                        <span class="order-status-badge ${order.status}">${statusText}</span>
-                    </div>
-                    <div class="order-card-items">${itemsStr}</div>
-                    <div class="order-card-footer">
-                        <span class="order-total-lbl">${order.total} Ft</span>
-                        <div>${buttons}</div>
+
+                        <div class="order-card-items">
+                            <div style="font-size:10px; font-weight:800; text-transform:uppercase; color:#64748B; margin-bottom:4px;">Rendelt ételek:</div>
+                            ${itemsStr}
+                        </div>
+
+                        <div class="order-card-footer">
+                            <div>
+                                <div class="order-total-lbl">${(order.total || 0).toLocaleString('hu-HU')} Ft</div>
+                                <div style="font-size:10px; color:#64748B; font-weight:600;">${order.paymentMethod || 'Utánvét'}</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="btn-print-slip" onclick="printCourierSlip('${order.id}')" title="Szállítólevél nyomtatása a futárnak">🖨️ Futár blokk</button>
+                                ${actionButtons}
+                            </div>
+                        </div>
                     </div>
                 `;
-                container.appendChild(card);
-            });
+            }
+
+            const mainWrapper = document.createElement("div");
+            mainWrapper.className = "orders-section-container";
+
+            // 1. SECTION: URGENT / NEW ORDERS (Light Red)
+            const secUrgent = document.createElement("div");
+            secUrgent.innerHTML = `
+                <div class="orders-section-header">
+                    <div class="orders-section-title urgent">
+                        <span>🔥 Új beérkezett rendelések</span>
+                        <span class="badge-count" style="background:#EF4444; font-size:11px; padding:3px 8px;">${newOrders.length} db</span>
+                        <span style="font-size:11px; font-weight:600; color:#DC2626; margin-left:6px;">— Sürgős teendő!</span>
+                    </div>
+                </div>
+                <div class="orders-grid-2col" id="orders-grid-urgent">
+                    ${newOrders.length > 0 
+                        ? newOrders.map(o => buildOrderCard(o, "urgent")).join("") 
+                        : `<div style="grid-column:1/-1; text-align:center; padding:16px; font-size:12px; color:#94A3B8; background:#FEF2F2; border-radius:10px; border:1px dashed #FCA5A5;">Nincs új várakozó rendelés.</div>`}
+                </div>
+            `;
+            mainWrapper.appendChild(secUrgent);
+
+            // 2. SECTION: PREPARING / LOOKED ORDERS (Light Neutral)
+            const secPrep = document.createElement("div");
+            secPrep.innerHTML = `
+                <div class="orders-section-header">
+                    <div class="orders-section-title preparing">
+                        <span>🍳 Megnéztem / Készítés alatt</span>
+                        <span class="badge-count" style="background:#3B82F6; font-size:11px; padding:3px 8px;">${preparingOrders.length} db</span>
+                    </div>
+                </div>
+                <div class="orders-grid-2col" id="orders-grid-preparing">
+                    ${preparingOrders.length > 0 
+                        ? preparingOrders.map(o => buildOrderCard(o, "preparing")).join("") 
+                        : `<div style="grid-column:1/-1; text-align:center; padding:16px; font-size:12px; color:#94A3B8; background:#F8FAFC; border-radius:10px; border:1px dashed #CBD5E1;">Nincs folyamatban lévő ételkészítés.</div>`}
+                </div>
+            `;
+            mainWrapper.appendChild(secPrep);
+
+            // 3. SECTION: DISPATCHED / COURIER ORDERS (Muted Grey - Auto daily cleanup note)
+            const secDisp = document.createElement("div");
+            secDisp.innerHTML = `
+                <div class="orders-section-header">
+                    <div class="orders-section-title dispatched">
+                        <span>🚚 Feladva a futárnak</span>
+                        <span class="badge-count" style="background:#64748B; font-size:11px; padding:3px 8px;">${dispatchedOrders.length} db</span>
+                        <span style="font-size:11px; font-weight:600; color:#64748B; margin-left:8px;">(A nap végén automatikusan archiválódik)</span>
+                    </div>
+                </div>
+                <div class="orders-grid-2col" id="orders-grid-dispatched">
+                    ${dispatchedOrders.length > 0 
+                        ? dispatchedOrders.map(o => buildOrderCard(o, "dispatched")).join("") 
+                        : `<div style="grid-column:1/-1; text-align:center; padding:16px; font-size:12px; color:#94A3B8; background:#F1F5F9; border-radius:10px; border:1px dashed #CBD5E1;">Még nem adtál át rendelést a futárnak.</div>`}
+                </div>
+            `;
+            mainWrapper.appendChild(secDisp);
+
+            container.appendChild(mainWrapper);
         }
 
         function setOrderStatus(id, newStatus) {
@@ -2529,10 +2908,17 @@
             if (order) {
                 order.status = newStatus;
                 if (newStatus === "dispatched") {
-                    const elapsed = Math.round((Date.now() - order.createdTimestamp) / 1000);
+                    const elapsed = Math.round((Date.now() - (order.createdTimestamp || Date.now())) / 1000);
                     const simMins = Math.max(12, Math.min(38, Math.round(elapsed * 2.5) + 12));
                     napszakStats[getCurrentNapszak()].push(simMins);
                 }
+                GastroGoDB.write("orders", orders);
+                try {
+                    const db = window.firestoreDb || (typeof firebase !== "undefined" && firebase.apps && firebase.apps.length > 0 ? firebase.firestore() : null);
+                    if (db) {
+                        db.collection("orders").doc(id).set({ status: newStatus }, { merge: true });
+                    }
+                } catch(e){}
                 initDashboard();
                 syncData();
             }
