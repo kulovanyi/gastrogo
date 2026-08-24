@@ -768,15 +768,18 @@ body, html {
 /* STICKY CATEGORY SELECTION BAR */
 .menu-category-sticky-bar {
     position: sticky;
-    top: -20px;
+    top: -24px;
+    margin: 0 -20px 20px -20px;
+    padding: 16px 20px 12px 20px;
     background-color: #FFFFFF;
-    padding: 12px 0;
-    z-index: 10;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    z-index: 25;
     display: flex;
     gap: 8px;
     overflow-x: auto;
-    border-bottom: 1px solid #F1F5F9;
-    margin-bottom: 20px;
+    border-bottom: 1px solid #E2E8F0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
 }
 
 .menu-category-sticky-bar::-webkit-scrollbar {
@@ -1800,6 +1803,9 @@ body.dark-mode .menu-category-sticky-bar,
 html.dark-mode .menu-category-sticky-bar {
     background-color: #0F172A !important;
     border-bottom: 1px solid #334155 !important;
+    border-top-left-radius: 24px !important;
+    border-top-right-radius: 24px !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.dark-mode .menu-category-tab,

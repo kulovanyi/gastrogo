@@ -1052,24 +1052,34 @@ function renderRestaurants() {
         
         const isSaved = savedRestaurants.includes(res.id);
         const liveRating = getRestaurantAverageRating(res.id, res.rating);
+        const baseFee = getRestaurantDeliveryFee(res, 0);
+        const threshold = Number(res.freeDeliveryThreshold) || 0;
+        let deliveryBadgeText = "";
+        if (baseFee === 0) {
+            deliveryBadgeText = "Ingyenes szállítás";
+        } else if (threshold > 0) {
+            deliveryBadgeText = `Szállítás: ${baseFee} Ft (${threshold.toLocaleString('hu-HU')} Ft-tól ingyenes)`;
+        } else {
+            deliveryBadgeText = `Szállítás: ${baseFee} Ft`;
+        }
 
-        card.innerHTML = `
-            <button class="fav-btn ${isSaved ? 'saved' : ''}" data-id="${res.id}">
-                ${isSaved ? '♥' : '♡'}
-            </button>
-            <div class="restaurant-img" style="background-image: url('${res.image}')">
-                <span class="restaurant-badge">★ ${liveRating}</span>
-                <span class="restaurant-badge badge-delivery">${getRestaurantDeliveryFee(res, 0) === 0 ? 'Ingyenes szállítás' : `Szállítás: ${getRestaurantDeliveryFee(res, 0)} Ft`}</span>
-            </div>
-            <div class="restaurant-info">
-                <h4>${res.name}</h4>
-                <p class="restaurant-desc">${res.description}</p>
-                <div class="restaurant-footer">
-                    <span>🍽️ Kínálat (${res.menu.length} étel)</span>
-                    <span>⏱ ${res.time}</span>
+            card.innerHTML = `
+                <button class="fav-btn ${isSaved ? 'saved' : ''}" data-id="${res.id}">
+                    ${isSaved ? '♥' : '♡'}
+                </button>
+                <div class="restaurant-img" style="background-image: url('${res.image}')">
+                    <span class="restaurant-badge">★ ${liveRating}</span>
+                    <span class="restaurant-badge badge-delivery">${deliveryBadgeText}</span>
                 </div>
-            </div>
-        `;
+                <div class="restaurant-info">
+                    <h4>${res.name}</h4>
+                    <p class="restaurant-desc">${res.description}</p>
+                    <div class="restaurant-footer">
+                        <span>🍽️ Kínálat (${res.menu.length} étel)</span>
+                        <span>⏱ ${res.time}</span>
+                    </div>
+                </div>
+            `;
 
         card.querySelector(".fav-btn").addEventListener("click", (e) => {
             e.stopPropagation();
@@ -2655,7 +2665,7 @@ function renderDesktopSidebarCart() {
     const cartRes = restaurants.find(r => r.id === cartResId);
     const extraFees = cartRes && cartRes.extraFees ? cartRes.extraFees : [];
 
-    container.innerHTML = cart.map(item => {
+    const itemsHtml = cart.map(item => {
         const itemTotal = item.price * item.quantity;
         subtotal += itemTotal;
         const toppingsSubText = item.toppingsText ? `<div style="font-size:11px; color:var(--primary); margin-top:2px;">+ ${item.toppingsText}</div>` : '';
@@ -2674,6 +2684,34 @@ function renderDesktopSidebarCart() {
             </div>
         `;
     }).join("");
+
+    let freeDeliveryBannerHtml = "";
+    const threshold = Number(cartRes && cartRes.freeDeliveryThreshold) || 0;
+    if (threshold > 0) {
+        if (subtotal >= threshold) {
+            freeDeliveryBannerHtml = `
+                <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:12px; padding:10px 12px; margin-bottom:10px; font-size:12px; font-weight:700; color:#065F46; display:flex; align-items:center; gap:6px;">
+                    <span>🎉</span> Elérted az INGYENES szállítást!
+                </div>
+            `;
+        } else {
+            const needed = threshold - subtotal;
+            const pct = Math.min(100, Math.round((subtotal / threshold) * 100));
+            freeDeliveryBannerHtml = `
+                <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:10px 12px; margin-bottom:10px; font-size:12px;">
+                    <div style="display:flex; justify-content:space-between; font-weight:700; color:#92400E; margin-bottom:6px;">
+                        <span>🚚 Ingyenes szállítás</span>
+                        <span>Még ${needed.toLocaleString('hu-HU')} Ft</span>
+                    </div>
+                    <div style="background:#E2E8F0; height:6px; border-radius:3px; overflow:hidden;">
+                        <div style="background:var(--primary); height:100%; width:${pct}%; transition:width 0.3s ease;"></div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    container.innerHTML = freeDeliveryBannerHtml + itemsHtml;
 
     const deliveryFee = getRestaurantDeliveryFee(cartRes, subtotal);
     const extraTotal = extraFees.reduce((sum, fee) => sum + (fee.amount || 0), 0);
