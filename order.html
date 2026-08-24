@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GastroGo - Ételrendelés</title>
-    <link rel="stylesheet" href="styles.css?v=34">
+    <link rel="stylesheet" href="styles.css?v=35">
     <style>
         #tab-login-restaurant,
         #form-restaurant,
@@ -480,26 +480,16 @@
 
         <!-- ================= RESTAURANT MENU SCREEN ================= -->
         <section id="screen-menu" class="screen">
-            <header class="menu-header">
-                <button class="back-btn" id="btn-back-to-home" onclick="window.navigateTo('screen-home')" style="cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                </button>
-                <h3 id="menu-title">Étterem neve</h3>
-                <div class="cart-trigger" id="cart-icon-btn-menu" onclick="window.toggleCart(true)" style="cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="9" cy="21" r="1"></circle>
-                        <circle cx="20" cy="21" r="1"></circle>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                    <span class="cart-badge" id="cart-badge-count-menu">0</span>
-                </div>
-            </header>
-
             <div class="screen-scrollable menu-content-container" style="padding: 0; padding-bottom: 90px;">
                 <div class="restaurant-banner-img" id="restaurant-banner-bg">
+                    <!-- Floating Back Button on Banner -->
+                    <button class="back-btn" id="btn-back-to-home" onclick="window.navigateTo('screen-home')" style="position: absolute; top: 16px; left: 16px; z-index: 10; cursor: pointer;" title="Vissza a főoldalra">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+
                     <div class="restaurant-meta-overlay">
                         <span class="res-meta-rating">★ <span id="res-rating-val">4.8</span></span>
                         <span class="res-meta-time">⏱ <span id="res-time-val">20-30 perc</span></span>
@@ -523,8 +513,11 @@
                 </div>
 
                 <!-- Sticky Category Navigation Bar (Single page scroll targets) -->
-                <div class="menu-category-sticky-bar" id="menu-category-tabs">
-                    <!-- Loaded dynamically via JS -->
+                <div class="menu-category-sticky-bar">
+                    <button class="sticky-back-btn" onclick="window.navigateTo('screen-home')" title="Vissza" style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #CBD5E1; background: #F8FAFC; color: var(--text-dark); font-size: 15px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">←</button>
+                    <div id="menu-category-tabs" style="display: flex; gap: 8px; overflow-x: auto; flex: 1;">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
                 </div>
 
                 <div style="padding: 0 20px;">
@@ -1181,6 +1174,6 @@
     <!-- Cloud Adapter & App Scripts -->
     <script src="firebase-config.js?v=3"></script>
     <script src="shared-data.js?v=6"></script>
-    <script src="app.js?v=74"></script>
+    <script src="app.js?v=75"></script>
 </body>
 </html>

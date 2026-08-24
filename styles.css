@@ -766,16 +766,38 @@ body, html {
     position: sticky;
     top: 0;
     margin: 0 0 20px 0;
-    padding: 12px 20px;
+    padding: 10px 16px;
     width: 100%;
     box-sizing: border-box;
     background-color: #FFFFFF;
-    z-index: 30;
+    z-index: 100;
     display: flex;
+    align-items: center;
     gap: 8px;
-    overflow-x: auto;
     border-bottom: 1px solid #E2E8F0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.sticky-back-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid #CBD5E1;
+    background: #F8FAFC;
+    color: var(--text-dark);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.sticky-back-btn:hover {
+    background: #EDF2F7;
+    border-color: #94A3B8;
 }
 
 .menu-category-sticky-bar::-webkit-scrollbar {
@@ -1800,6 +1822,13 @@ html.dark-mode .menu-category-sticky-bar {
     background-color: #0F172A !important;
     border-bottom: 1px solid #334155 !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.dark-mode .sticky-back-btn,
+html.dark-mode .sticky-back-btn {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #F8FAFC !important;
 }
 
 body.dark-mode .menu-category-tab,
