@@ -168,3 +168,21 @@ window.GastroGoDB = (() => {
 
     return { read, write, subscribe, initCloudSeed };
 })();
+
+// ================= OFFICIAL 1-14 EU/HUNGARIAN ALLERGENS =================
+window.OFFICIAL_ALLERGENS = [
+    { id: 1, name: "Glutén", icon: "🌾", desc: "Glutént tartalmazó gabonafélék (búza, rozs, árpa, zab stb.)" },
+    { id: 2, name: "Rákfélék", icon: "🦐", desc: "Rákfélék és belőlük készült termékek" },
+    { id: 3, name: "Tojás", icon: "🥚", desc: "Tojás és belőle készült termékek" },
+    { id: 4, name: "Halak", icon: "🐟", desc: "Hal és abból készült termékek" },
+    { id: 5, name: "Földimogyoró", icon: "🥜", desc: "Földimogyoró és belőle készült termékek" },
+    { id: 6, name: "Szójabab", icon: "🌱", desc: "Szójabab és belőle készült termékek" },
+    { id: 7, name: "Tej / Laktóz", icon: "🥛", desc: "Tej és tejtermékek (beleértve a laktózt)" },
+    { id: 8, name: "Diófélék", icon: "🌰", desc: "Diófélék (mandula, dió, mogyoró, kesudió stb.)" },
+    { id: 9, name: "Zeller", icon: "🌿", desc: "Zeller és belőle készült termékek" },
+    { id: 10, name: "Mustár", icon: "🟡", desc: "Mustár és belőle készült termékek" },
+    { id: 11, name: "Szezámmag", icon: "⚪", desc: "Szezámmag és belőle készült termékek" },
+    { id: 12, name: "Kén-dioxid / Szulfitok", icon: "🍷", desc: "Kén-dioxid és szulfitok (>10mg/kg vagy >10mg/l)" },
+    { id: 13, name: "Csillagfürt", icon: "🌸", desc: "Csillagfürt és belőle készült termékek" },
+    { id: 14, name: "Puhatestűek", icon: "🦪", desc: "Kagylók, polipok, csigák és tintahal" }
+];

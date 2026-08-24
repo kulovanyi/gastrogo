@@ -19,7 +19,8 @@ const restaurants = [
                 description: "Paradicsomszósz, bivaly mozzarella, friss bazsalikom, olívaolaj.",
                 price: 1990,
                 image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 7]
             },
             {
                 id: "r1-f2",
@@ -28,7 +29,8 @@ const restaurants = [
                 description: "Csípős olasz szalámi, jalapeño karikák, mozzarella, paradicsomszósz.",
                 price: 2390,
                 image: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 7]
             },
             {
                 id: "r1-f3",
@@ -37,7 +39,8 @@ const restaurants = [
                 description: "0.33l dobozos klasszikus szénsavas üdítőital.",
                 price: 490,
                 image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: []
             },
             {
                 id: "r1-f4",
@@ -46,7 +49,8 @@ const restaurants = [
                 description: "Klasszikus magyar édesség gazdag csokoládéöntettel és tejszínhabbal.",
                 price: 1290,
                 image: "https://images.unsplash.com/photo-1579372786545-d24232daf58c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 3, 7, 8]
             },
             {
                 id: "r1-f5",
@@ -55,7 +59,8 @@ const restaurants = [
                 description: "Paradicsomszósz, mozzarella, érlelt olasz sonka, friss szeletelt csiperkegomba.",
                 price: 2390,
                 image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 7]
             },
             {
                 id: "r1-f6",
@@ -64,7 +69,8 @@ const restaurants = [
                 description: "Négyféle sajtos csoda: gorgonzola, mozzarella, parmezán, pecorino.",
                 price: 2490,
                 image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 7]
             },
             {
                 id: "r1-f7",
@@ -73,7 +79,8 @@ const restaurants = [
                 description: "Paradicsomos alap, mozzarella sajt, tonhaldarabok, lilahagyma karikák, olívabogyó.",
                 price: 2490,
                 image: "https://images.unsplash.com/photo-1573821663912-569905455b1c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 4, 7]
             },
             {
                 id: "r1-f8",
@@ -82,7 +89,8 @@ const restaurants = [
                 description: "Fűszeres paradicsomos alap, házi kolbász, bacon szeletek, lilahagyma, hegyes erős paprika.",
                 price: 2590,
                 image: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 7]
             },
             {
                 id: "r1-f9",
@@ -91,7 +99,8 @@ const restaurants = [
                 description: "Félbehajtott kemencés tészta sonkával, gombával, ricottával és mozzarellával töltve.",
                 price: 2590,
                 image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 7]
             },
             {
                 id: "r1-f10",
@@ -100,7 +109,8 @@ const restaurants = [
                 description: "Lassan főzött marhahúsos ragu, spagetti tészta, reszelt parmezán sajt.",
                 price: 2290,
                 image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 7, 9]
             },
             {
                 id: "r1-f11",
@@ -109,7 +119,8 @@ const restaurants = [
                 description: "Tejszín nélkül! Pirított guanciale (tokaszalonna), tojássárgája, pecorino sajt.",
                 price: 2390,
                 image: "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 3, 7]
             },
             {
                 id: "r1-f12",
@@ -118,7 +129,8 @@ const restaurants = [
                 description: "Tésztalapok közé rétegezett bolognai ragu, krémes besamel mártás, kemencében sütve.",
                 price: 2690,
                 image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                toppings: []
+                toppings: [],
+                allergens: [1, 3, 7, 9]
             },
             {
                 id: "r1-f13",
@@ -416,12 +428,31 @@ function getAveragePrepTime(napszakKey) {
     return Math.round(sum / list.length);
 }
 
-// ================= DYNAMIC RATINGS CALCULATION =================
-function getRestaurantAverageRating(resId, defaultRating) {
-    const resReviews = reviews.filter(r => r.restaurantId === resId);
+// ================= DYNAMIC RATINGS & DELIVERY TIME CALCULATION =================
+function getRestaurantAverageRating(resId, defaultRating = "4.8") {
+    const allReviews = (typeof reviews !== "undefined" && Array.isArray(reviews)) ? reviews : GastroGoDB.read("reviews", []);
+    const resReviews = allReviews.filter(r => r.restaurantId === resId);
     if (resReviews.length === 0) return defaultRating;
-    const sum = resReviews.reduce((s, r) => s + r.rating, 0);
+    const sum = resReviews.reduce((s, r) => s + (Number(r.rating) || 0), 0);
     return (sum / resReviews.length).toFixed(1);
+}
+
+function getLiveRestaurantDeliveryTime(restaurant) {
+    if (!restaurant) return "25-35 perc";
+    
+    const napszakKey = (typeof getCurrentNapszak === "function") ? getCurrentNapszak() : "afternoon";
+    const basePrep = (typeof getAveragePrepTime === "function") ? getAveragePrepTime(napszakKey) : 20;
+
+    const allOrders = (typeof orders !== "undefined" && Array.isArray(orders)) ? orders : GastroGoDB.read("orders", []);
+    const activeOrders = allOrders.filter(o => 
+        o.restaurantId === restaurant.id && 
+        (o.status === "pending" || o.status === "preparing" || o.status === "készül" || o.status === "új" || o.status === "folyamatban")
+    );
+    
+    const loadExtra = Math.min(25, activeOrders.length * 3);
+    const minTime = Math.max(15, basePrep + 5 + loadExtra);
+    const maxTime = minTime + 10;
+    return `${minTime}-${maxTime} perc`;
 }
 
 // ================= NAVIGATION SYSTEM =================
@@ -1052,6 +1083,7 @@ function renderRestaurants() {
         
         const isSaved = savedRestaurants.includes(res.id);
         const liveRating = getRestaurantAverageRating(res.id, res.rating);
+        const liveTime = getLiveRestaurantDeliveryTime(res);
         const baseFee = getRestaurantDeliveryFee(res, 0);
         const threshold = Number(res.freeDeliveryThreshold) || 0;
         let deliveryBadgeText = "";
@@ -1076,7 +1108,7 @@ function renderRestaurants() {
                     <p class="restaurant-desc">${res.description}</p>
                     <div class="restaurant-footer">
                         <span>🍽️ Kínálat (${res.menu.length} étel)</span>
-                        <span>⏱ ${res.time}</span>
+                        <span>⏱ ${liveTime}</span>
                     </div>
                 </div>
             `;
@@ -1115,6 +1147,7 @@ function openRestaurantMenu(restaurant) {
     
     try {
         const liveRating = getRestaurantAverageRating(restaurant.id, restaurant.rating);
+        const liveTime = getLiveRestaurantDeliveryTime(restaurant);
         const napszakKey = (typeof getCurrentNapszak === "function") ? getCurrentNapszak() : "afternoon";
         const avgPrep = (typeof getAveragePrepTime === "function") ? getAveragePrepTime(napszakKey) : 20;
 
@@ -1127,9 +1160,9 @@ function openRestaurantMenu(restaurant) {
         const ratingVal = document.getElementById("res-rating-val");
         if (ratingVal) ratingVal.textContent = liveRating;
         const timeVal = document.getElementById("res-time-val");
-        if (timeVal) timeVal.textContent = restaurant.time || "20-30 perc";
+        if (timeVal) timeVal.textContent = liveTime;
         const prepStatsVal = document.getElementById("res-prep-stats-val");
-        if (prepStatsVal) prepStatsVal.textContent = `⏱ Napszaki átlag: ~${avgPrep}p`;
+        if (prepStatsVal) prepStatsVal.textContent = `⏱ Élő becsült idő · Napszaki átlag: ~${avgPrep}p`;
         const bannerBg = document.getElementById("restaurant-banner-bg");
         if (bannerBg && restaurant.image) bannerBg.style.backgroundImage = `url('${restaurant.image}')`;
 
@@ -1195,12 +1228,28 @@ function openRestaurantMenu(restaurant) {
                         
                         const imgUrl = item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3";
 
+                        let allergensHtml = "";
+                        if (item.allergens && item.allergens.length > 0) {
+                            const allergenLabels = item.allergens.map(id => {
+                                const a = (window.OFFICIAL_ALLERGENS || []).find(x => x.id === id);
+                                return a ? `${a.id}. ${a.name}` : id;
+                            }).join(", ");
+                            allergensHtml = `
+                                <div class="menu-item-allergens" style="margin-top: 4px;" title="Allergének: ${allergenLabels}">
+                                    <span style="font-size: 10px; font-weight: 700; color: #B45309; background: #FEF3C7; border: 1px solid #FCD34D; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
+                                        ⚠️ Allergének: ${item.allergens.join(", ")}
+                                    </span>
+                                </div>
+                            `;
+                        }
+
                         itemCard.innerHTML = `
                             <div class="menu-card-img" style="background-image: url('${imgUrl}')"></div>
                             <div class="menu-card-details">
                                 <div>
                                     <h4>${item.name}</h4>
                                     <p>${item.description || ""}</p>
+                                    ${allergensHtml}
                                 </div>
                                 <div class="menu-card-footer">
                                     <span class="menu-card-price">${item.price} Ft</span>
@@ -1235,7 +1284,7 @@ document.getElementById("btn-back-to-home").addEventListener("click", () => {
     navigateTo("screen-home");
 });
 
-document.getElementById("btn-generate-menu").addEventListener("click", () => {
+document.getElementById("btn-generate-menu")?.addEventListener("click", () => {
     if (!activeRestaurant) return;
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
@@ -2048,6 +2097,19 @@ function renderDashboardMenu() {
                 toppingsSummary = `<div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Feltétek: ${item.toppings.map(t => `${t.name} (+${t.price} Ft)`).join(', ')}</div>`;
             }
 
+            let allergensSummary = "";
+            if (item.allergens && item.allergens.length > 0) {
+                const allergenLabels = item.allergens.map(id => {
+                    const a = (window.OFFICIAL_ALLERGENS || []).find(x => x.id === id);
+                    return a ? `${a.id}. ${a.name}` : id;
+                }).join(", ");
+                allergensSummary = `
+                    <div style="font-size: 10px; font-weight: 700; color: #B45309; background: #FEF3C7; border: 1px solid #FCD34D; padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content; display: inline-flex; align-items: center; gap: 3px;" title="Allergének: ${allergenLabels}">
+                        ⚠️ Allergének: ${item.allergens.join(", ")}
+                    </div>
+                `;
+            }
+
             itemCard.innerHTML = `
                 <div class="menu-card-img" style="background-image: url('${imgUrl}')"></div>
                 <div class="menu-card-details">
@@ -2055,6 +2117,7 @@ function renderDashboardMenu() {
                         <h4>${item.name}</h4>
                         <p>${item.description}</p>
                         ${toppingsSummary}
+                        ${allergensSummary}
                     </div>
                     <div class="menu-card-footer" style="margin-top: 10px;">
                         <span class="menu-card-price">${item.price} Ft</span>

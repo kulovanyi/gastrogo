@@ -527,10 +527,14 @@ body, html {
     gap: 12px;
     overflow-x: auto;
     padding-bottom: 5px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .categories-list::-webkit-scrollbar {
     display: none;
+    width: 0;
+    height: 0;
 }
 
 .category-item {
@@ -776,32 +780,20 @@ body, html {
     gap: 8px;
     border-bottom: 1px solid #E2E8F0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.sticky-back-btn {
-    flex-shrink: 0;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    border: 1px solid #CBD5E1;
-    background: #F8FAFC;
-    color: var(--text-dark);
-    font-size: 16px;
-    font-weight: 800;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-}
-
-.sticky-back-btn:hover {
-    background: #EDF2F7;
-    border-color: #94A3B8;
-}
-
-.menu-category-sticky-bar::-webkit-scrollbar {
+.menu-category-sticky-bar::-webkit-scrollbar,
+#menu-category-tabs::-webkit-scrollbar {
     display: none;
+    width: 0;
+    height: 0;
+}
+
+#menu-category-tabs {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .menu-category-tab {

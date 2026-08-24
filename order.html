@@ -501,7 +501,6 @@
                     <div class="menu-intro">
                         <h2 id="menu-restaurant-name">Étterem</h2>
                         <p id="menu-restaurant-desc">Különleges gasztronómiai kínálat.</p>
-                        <button id="btn-generate-menu" class="btn btn-secondary" style="margin-top:12px; padding:9px 13px; font-size:12px;">🖨️ Designos étlap megnyitása</button>
                         
                         <!-- Clean Helpline Button -->
                         <div id="menu-helpline-container" style="margin-top: 10px;">
@@ -514,8 +513,7 @@
 
                 <!-- Sticky Category Navigation Bar (Single page scroll targets) -->
                 <div class="menu-category-sticky-bar">
-                    <button class="sticky-back-btn" onclick="window.navigateTo('screen-home')" title="Vissza" style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #CBD5E1; background: #F8FAFC; color: var(--text-dark); font-size: 15px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">←</button>
-                    <div id="menu-category-tabs" style="display: flex; gap: 8px; overflow-x: auto; flex: 1;">
+                    <div id="menu-category-tabs" style="display: flex; gap: 8px; overflow-x: auto; flex: 1; scrollbar-width: none; -ms-overflow-style: none;">
                         <!-- Loaded dynamically via JS -->
                     </div>
                 </div>
@@ -523,7 +521,34 @@
                 <div style="padding: 0 20px;">
                     <!-- Food List -->
                     <div class="menu-section">
-                        <h3 class="section-title">Kínálatunk</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 class="section-title" style="margin-bottom: 0;">Kínálatunk</h3>
+                        </div>
+
+                        <!-- Official EU/Hungarian Allergens Guide Accordion -->
+                        <details style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 11px;">
+                            <summary style="font-weight: 700; color: #92400E; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none;">
+                                <span>⚠️ Hivatalos Allergén Kalauz (1-14 Jelölések)</span>
+                                <span style="font-size: 10px; color: #B45309; text-decoration: underline;">Mit jelentenek a számok?</span>
+                            </summary>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #FCD34D; color: #78350F; font-size: 11px;">
+                                <div><strong>1.</strong> 🌾 Glutén</div>
+                                <div><strong>2.</strong> 🦐 Rákfélék</div>
+                                <div><strong>3.</strong> 🥚 Tojás</div>
+                                <div><strong>4.</strong> 🐟 Halak</div>
+                                <div><strong>5.</strong> 🥜 Földimogyoró</div>
+                                <div><strong>6.</strong> 🌱 Szójabab</div>
+                                <div><strong>7.</strong> 🥛 Tej / Laktóz</div>
+                                <div><strong>8.</strong> 🌰 Diófélék</div>
+                                <div><strong>9.</strong> 🌿 Zeller</div>
+                                <div><strong>10.</strong> 🟡 Mustár</div>
+                                <div><strong>11.</strong> ⚪ Szezámmag</div>
+                                <div><strong>12.</strong> 🍷 Kén-dioxid</div>
+                                <div><strong>13.</strong> 🌸 Csillagfürt</div>
+                                <div><strong>14.</strong> 🦪 Puhatestűek</div>
+                            </div>
+                        </details>
+
                         <div class="menu-list" id="menu-items-container">
                             <!-- Dynamic food list loaded via JS -->
                         </div>

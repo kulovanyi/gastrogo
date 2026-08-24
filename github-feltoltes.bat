@@ -1,32 +1,46 @@
 @echo off
-chcp 65001 > nul
-cd /d "%~dp0"
+title GastroGo - GitHub Feltoltes
+cls
 
-echo ========================================================
-echo   🚀 GastroGo - TELJES GitHub Szinkronizáció
-echo ========================================================
+echo =======================================================
+echo              GASTROGO - GITHUB FELTOLTES
+echo =======================================================
 echo.
 
-echo [1/3] Összes létező és új fájl hozzáadása (MINDEN fájl)...
-git add --all .
+echo [1/4] Modositott es uj fajlok ellenorzese:
+echo -------------------------------------------------------
+git status -s
+echo -------------------------------------------------------
+echo.
+
+echo [2/4] Fajlok elokeszitese...
+git add .
+echo [OK] Fajlok hozzaadva!
+echo.
+
+echo [3/4] Mentes keszitese (Commit)...
+git commit -m "GastroGo frissites: %date% %time%"
+echo.
+
+echo [4/4] Feltoltes a GitHubra (Push)...
+git push origin main
+echo.
+
+echo =======================================================
+if %ERRORLEVEL% equ 0 (
+    echo    SIKERES FELTOLTES A GITHUBRA!
+    echo =======================================================
+    echo.
+    echo Feltoltott fajlok es modositasok:
+    echo -------------------------------------------------------
+    git log -1 --stat --oneline
+    echo -------------------------------------------------------
+) else (
+    echo    HIBA TORTENT A FELTOLTES SORAN!
+    echo =======================================================
+    echo Ellenorizd az internetkapcsolatot vagy a Git beallitasokat.
+)
 
 echo.
-echo [2/3] Módosítások mentése...
-git commit -m "Teljes szinkronizáció: minden projekt fájl frissítve"
-
-echo.
-echo [3/3] Feltöltés a GitHub-ra (origin main)...
-git push -u origin main
-
-echo.
-echo ========================================================
-echo   📦 GitHubon lévő fájlok listája:
-echo ========================================================
-git ls-files
-echo.
-echo ========================================================
-echo   ✅ SIKERESEN FELTÖLTVE!
-echo   🔗 https://github.com/kulovanyi/gastrogo
-echo ========================================================
-echo.
-pause
+echo Nyomj meg egy gombot a bezarashoz...
+pause >nul
