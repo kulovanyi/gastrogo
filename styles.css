@@ -742,12 +742,8 @@ body, html {
 
 .menu-content-container {
     background-color: white;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-    margin-top: -24px;
     position: relative;
     z-index: 2;
-    padding-top: 20px;
 }
 
 .menu-intro {
@@ -769,15 +765,11 @@ body, html {
 .menu-category-sticky-bar {
     position: sticky;
     top: 0;
-    margin-left: -20px;
-    margin-right: -20px;
-    margin-bottom: 20px;
+    margin: 0 0 20px 0;
     padding: 12px 20px;
-    width: calc(100% + 40px);
+    width: 100%;
     box-sizing: border-box;
     background-color: #FFFFFF;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
     z-index: 30;
     display: flex;
     gap: 8px;
@@ -1807,9 +1799,7 @@ body.dark-mode .menu-category-sticky-bar,
 html.dark-mode .menu-category-sticky-bar {
     background-color: #0F172A !important;
     border-bottom: 1px solid #334155 !important;
-    border-top-left-radius: 24px !important;
-    border-top-right-radius: 24px !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
 }
 
 body.dark-mode .menu-category-tab,
@@ -2247,10 +2237,9 @@ body.dark-mode #success-order-meta-card {
     }
 
     .menu-category-sticky-bar {
-        margin-left: -32px;
-        margin-right: -32px;
-        width: calc(100% + 64px);
-        padding: 14px 32px;
+        margin: 0 0 20px 0;
+        width: 100%;
+        padding: 14px 24px;
     }
 
     /* Grid Layouts for Restaurants & Menus */

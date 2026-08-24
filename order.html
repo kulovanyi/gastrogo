@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GastroGo - Ételrendelés</title>
-    <link rel="stylesheet" href="styles.css?v=33">
+    <link rel="stylesheet" href="styles.css?v=34">
     <style>
         #tab-login-restaurant,
         #form-restaurant,
@@ -498,25 +498,27 @@
                 </div>
             </header>
 
-            <div class="restaurant-banner-img" id="restaurant-banner-bg">
-                <div class="restaurant-meta-overlay">
-                    <span class="res-meta-rating">★ <span id="res-rating-val">4.8</span></span>
-                    <span class="res-meta-time">⏱ <span id="res-time-val">20-30 perc</span></span>
-                    <span class="res-meta-stats" id="res-prep-stats-val">⏱ Napszaki átlag: ~20 perc</span>
+            <div class="screen-scrollable menu-content-container" style="padding: 0; padding-bottom: 90px;">
+                <div class="restaurant-banner-img" id="restaurant-banner-bg">
+                    <div class="restaurant-meta-overlay">
+                        <span class="res-meta-rating">★ <span id="res-rating-val">4.8</span></span>
+                        <span class="res-meta-time">⏱ <span id="res-time-val">20-30 perc</span></span>
+                        <span class="res-meta-stats" id="res-prep-stats-val">⏱ Napszaki átlag: ~20 perc</span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="screen-scrollable menu-content-container">
-                <div class="menu-intro">
-                    <h2 id="menu-restaurant-name">Étterem</h2>
-                    <p id="menu-restaurant-desc">Különleges gasztronómiai kínálat.</p>
-                    <button id="btn-generate-menu" class="btn btn-secondary" style="margin-top:12px; padding:9px 13px; font-size:12px;">🖨️ Designos étlap megnyitása</button>
-                    
-                    <!-- Clean Helpline Button -->
-                    <div id="menu-helpline-container" style="margin-top: 10px;">
-                        <button id="menu-helpline-phone" class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px; border-radius: 12px; font-weight: 700; color: var(--accent); background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.2); display: inline-flex; align-items: center;">
-                            📞 +36 35 123 456
-                        </button>
+                <div style="padding: 20px 20px 0 20px;">
+                    <div class="menu-intro">
+                        <h2 id="menu-restaurant-name">Étterem</h2>
+                        <p id="menu-restaurant-desc">Különleges gasztronómiai kínálat.</p>
+                        <button id="btn-generate-menu" class="btn btn-secondary" style="margin-top:12px; padding:9px 13px; font-size:12px;">🖨️ Designos étlap megnyitása</button>
+                        
+                        <!-- Clean Helpline Button -->
+                        <div id="menu-helpline-container" style="margin-top: 10px;">
+                            <button id="menu-helpline-phone" class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px; border-radius: 12px; font-weight: 700; color: var(--accent); background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.2); display: inline-flex; align-items: center;">
+                                📞 +36 35 123 456
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -525,39 +527,41 @@
                     <!-- Loaded dynamically via JS -->
                 </div>
 
-                <!-- Food List -->
-                <div class="menu-section">
-                    <h3 class="section-title">Kínálatunk</h3>
-                    <div class="menu-list" id="menu-items-container">
-                        <!-- Dynamic food list loaded via JS -->
-                    </div>
-                </div>
-
-                <!-- Customer Reviews Section -->
-                <div class="menu-section" style="margin-top: 30px; border-top: 1px dashed #CBD5E1; padding-top: 20px;">
-                    <h3 class="section-title">Vélemények és Értékelések</h3>
-                    
-                    <!-- Submission Form -->
-                    <div class="editor-form-card" style="margin-bottom: 20px; background-color: #F8FAFC;">
-                        <h4>Értékeld a helyet!</h4>
-                        <div class="rating-stars-select" id="review-stars-select" style="margin: 10px 0; font-size: 26px; color: #CBD5E1; cursor: pointer; display: flex; gap: 4px;">
-                            <span class="star-select-btn" data-value="1">★</span>
-                            <span class="star-select-btn" data-value="2">★</span>
-                            <span class="star-select-btn" data-value="3">★</span>
-                            <span class="star-select-btn" data-value="4">★</span>
-                            <span class="star-select-btn active" data-value="5">★</span>
+                <div style="padding: 0 20px;">
+                    <!-- Food List -->
+                    <div class="menu-section">
+                        <h3 class="section-title">Kínálatunk</h3>
+                        <div class="menu-list" id="menu-items-container">
+                            <!-- Dynamic food list loaded via JS -->
                         </div>
-                        <input type="hidden" id="review-rating-value" value="5">
+                    </div>
+
+                    <!-- Customer Reviews Section -->
+                    <div class="menu-section" style="margin-top: 30px; border-top: 1px dashed #CBD5E1; padding-top: 20px;">
+                        <h3 class="section-title">Vélemények és Értékelések</h3>
                         
-                        <div class="input-group dark-label">
-                            <input type="text" id="review-comment-input" placeholder="Írd le véleményed (pl. Nagyon finom volt!)">
+                        <!-- Submission Form -->
+                        <div class="editor-form-card" style="margin-bottom: 20px; background-color: #F8FAFC;">
+                            <h4>Értékeld a helyet!</h4>
+                            <div class="rating-stars-select" id="review-stars-select" style="margin: 10px 0; font-size: 26px; color: #CBD5E1; cursor: pointer; display: flex; gap: 4px;">
+                                <span class="star-select-btn" data-value="1">★</span>
+                                <span class="star-select-btn" data-value="2">★</span>
+                                <span class="star-select-btn" data-value="3">★</span>
+                                <span class="star-select-btn" data-value="4">★</span>
+                                <span class="star-select-btn active" data-value="5">★</span>
+                            </div>
+                            <input type="hidden" id="review-rating-value" value="5">
+                            
+                            <div class="input-group dark-label">
+                                <input type="text" id="review-comment-input" placeholder="Írd le véleményed (pl. Nagyon finom volt!)">
+                            </div>
+                            <button id="btn-submit-review" class="btn btn-primary btn-block" style="margin-top: 12px; padding: 10px;">Vélemény Beküldése</button>
                         </div>
-                        <button id="btn-submit-review" class="btn btn-primary btn-block" style="margin-top: 12px; padding: 10px;">Vélemény Beküldése</button>
-                    </div>
 
-                    <!-- Reviews List -->
-                    <div id="reviews-list-container" style="display: flex; flex-direction: column; gap: 12px;">
-                        <!-- Dynamic list of comments -->
+                        <!-- Reviews List -->
+                        <div id="reviews-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+                            <!-- Dynamic list of comments -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1177,6 +1181,6 @@
     <!-- Cloud Adapter & App Scripts -->
     <script src="firebase-config.js?v=3"></script>
     <script src="shared-data.js?v=6"></script>
-    <script src="app.js?v=73"></script>
+    <script src="app.js?v=74"></script>
 </body>
 </html>
