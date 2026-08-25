@@ -63,6 +63,24 @@ window.GastroGoDB = (() => {
                             }
                         });
                     }
+                } else if (key === "serviceOrders") {
+                    if (Array.isArray(value)) {
+                        value.forEach(srv => {
+                            if (srv && srv.id) {
+                                const cleanSrv = JSON.parse(JSON.stringify(srv));
+                                db.collection("serviceOrders").doc(srv.id).set(cleanSrv, { merge: true })
+                                    .catch(err => console.error("Firestore serviceOrders write error:", err));
+                            }
+                        });
+                    }
+                } else if (key === "userProfiles") {
+                    if (typeof value === "object" && value !== null) {
+                        Object.keys(value).forEach(uName => {
+                            const profileData = JSON.parse(JSON.stringify(value[uName]));
+                            db.collection("userProfiles").doc(uName).set(profileData, { merge: true })
+                                .catch(err => console.error("Firestore userProfiles write error:", err));
+                        });
+                    }
                 } else if (key === "commissionRate" || key === "convenienceFee") {
                     const updateObj = {};
                     updateObj[key] = value;
@@ -119,6 +137,20 @@ window.GastroGoDB = (() => {
                         localStorage.setItem(prefix + "reviews", JSON.stringify(cloudReviews));
                         handler(cloudReviews);
                     }, err => console.warn("Firestore reviews subscription error:", err));
+                } else if (key === "serviceOrders") {
+                    db.collection("serviceOrders").onSnapshot(snapshot => {
+                        const cloudServices = [];
+                        snapshot.forEach(doc => cloudServices.push(doc.data()));
+                        localStorage.setItem(prefix + "serviceOrders", JSON.stringify(cloudServices));
+                        handler(cloudServices);
+                    }, err => console.warn("Firestore serviceOrders subscription error:", err));
+                } else if (key === "userProfiles") {
+                    db.collection("userProfiles").onSnapshot(snapshot => {
+                        const profilesMap = {};
+                        snapshot.forEach(doc => { profilesMap[doc.id] = doc.data(); });
+                        localStorage.setItem(prefix + "userProfiles", JSON.stringify(profilesMap));
+                        handler(profilesMap);
+                    }, err => console.warn("Firestore userProfiles subscription error:", err));
                 } else if (key === "commissionRate" || key === "convenienceFee") {
                     db.collection("system").doc("settings").onSnapshot(doc => {
                         if (doc.exists) {

@@ -353,93 +353,62 @@
             </div>
         </section>
 
-        <!-- ================= ACHIEVEMENTS (SIKEREK) SCREEN ================= -->
+        <!-- ================= ACHIEVEMENTS (SIKEREK, SZINTEK & JELVÉNYEK) SCREEN ================= -->
         <section id="screen-achievements" class="screen">
             <header class="app-header">
                 <div class="user-info user-info-clickable" id="user-profile-trigger-achievements" title="Profil és Beállítások megnyitása">
                     <div class="avatar header-avatar">G</div>
                     <div>
-                        <span class="welcome-text">Jutalmak & Rang</span>
-                        <h3 class="username-display">Mérföldkövek</h3>
+                        <span class="welcome-text">Rang & Jutalmak</span>
+                        <h3 class="username-display">Gastro Ranglétra</h3>
                     </div>
                 </div>
                 <span style="font-size: 26px;">🏆</span>
             </header>
 
-            <div class="screen-scrollable">
-                <!-- Top Summary Card -->
+            <div class="screen-scrollable" style="padding-bottom: 90px;">
+                <!-- Top XP & Level Hero Card -->
                 <div class="achievement-stats-card">
-                    <div>
-                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.9; font-weight: 700;">Hűségprogram</span>
-                        <h2 style="font-size: 21px; font-weight: 800; margin-top: 3px;" id="achievement-rank-title">Kezdő Ínyenc</h2>
-                        <p style="font-size: 12px; opacity: 0.95; margin-top: 2px;" id="achievement-order-stats">0 sikeres rendelés eddig</p>
-                    </div>
-                    <div style="font-size: 42px;">🎖️</div>
-                </div>
-
-                <h3 class="section-title" style="margin-bottom: 14px;">Elérhető Mérföldkövek</h3>
-
-                <!-- 1. Első vásárlás -->
-                <div class="achievement-card" id="achieve-card-1">
-                    <div class="achievement-header">
-                        <div class="achievement-icon-box">🍕</div>
-                        <div class="achievement-info">
-                            <h4 class="achievement-title">Első Vásárlás</h4>
-                            <p class="achievement-desc">Add le a legelső rendelésed a GastroGo-n!</p>
+                    <div class="xp-hero-top">
+                        <div>
+                            <span class="xp-level-badge" id="achieve-rank-level">⭐ Szint 1</span>
+                            <h2 style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #FFF;" id="achievement-rank-title">Kezdő Felfedező</h2>
+                            <p style="font-size: 12px; color: #94A3B8; margin-top: 2px;" id="achievement-order-stats">0 sikeres rendelés eddig</p>
                         </div>
-                        <span class="achievement-badge-pill" id="achieve-badge-1">1 db</span>
-                    </div>
-                    <div class="achievement-progress-wrapper">
-                        <div class="achievement-progress-bar">
-                            <div class="achievement-progress-fill" id="achieve-progress-1" style="width: 0%;"></div>
+                        <div style="text-align: right;">
+                            <div class="xp-total-counter" id="achievement-total-xp">0 XP</div>
+                            <span style="font-size: 11px; color: #94A3B8; font-weight: 600;">Összes gyűjtött XP</span>
                         </div>
-                        <div class="achievement-meta">
-                            <span id="achieve-status-text-1">0 / 1 rendelés</span>
-                            <span id="achieve-tag-1" style="color: var(--primary);">Kezdő</span>
+                    </div>
+
+                    <!-- Progress Bar to Next Level -->
+                    <div class="xp-progress-bar-container">
+                        <div class="xp-progress-bar-track">
+                            <div class="xp-progress-bar-fill" id="achievement-xp-fill" style="width: 0%;"></div>
+                        </div>
+                        <div class="xp-progress-labels">
+                            <span id="achievement-xp-current-range">0 / 150 XP</span>
+                            <span id="achievement-xp-next-label" style="color: #FCD34D;">Még 150 XP a Szint 2-ig</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. Összesen 10 vásárlás -->
-                <div class="achievement-card" id="achieve-card-10">
-                    <div class="achievement-header">
-                        <div class="achievement-icon-box">🍔</div>
-                        <div class="achievement-info">
-                            <h4 class="achievement-title">Rendszeres Vendég</h4>
-                            <p class="achievement-desc">Rendelj összesen 10 alkalommal kedvenc helyeidről!</p>
-                        </div>
-                        <span class="achievement-badge-pill" id="achieve-badge-10">10 db</span>
-                    </div>
-                    <div class="achievement-progress-wrapper">
-                        <div class="achievement-progress-bar">
-                            <div class="achievement-progress-fill" id="achieve-progress-10" style="width: 0%;"></div>
-                        </div>
-                        <div class="achievement-meta">
-                            <span id="achieve-status-text-10">0 / 10 rendelés</span>
-                            <span id="achieve-tag-10" style="color: var(--primary);">Haladó</span>
-                        </div>
-                    </div>
+                <!-- 1. HETI KÜLDETÉSEK -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 class="section-title" style="margin-bottom: 0;">🎯 Heti Küldetések</h3>
+                    <span style="font-size: 11px; font-weight: 700; color: var(--primary);">Megújuló XP kihívások</span>
+                </div>
+                <div class="quests-container" id="weekly-quests-container">
+                    <!-- Loaded dynamically via JS -->
                 </div>
 
-                <!-- 3. Összesen 50 vásárlás -->
-                <div class="achievement-card" id="achieve-card-50">
-                    <div class="achievement-header">
-                        <div class="achievement-icon-box">👑</div>
-                        <div class="achievement-info">
-                            <h4 class="achievement-title">VIP Gastro Legenda</h4>
-                            <p class="achievement-desc">Érd el az 50 leadott rendelést és légy a környék legendája!</p>
-                        </div>
-                        <span class="achievement-badge-pill" id="achieve-badge-50">50 db</span>
-                    </div>
-                    <div class="achievement-progress-wrapper">
-                        <div class="achievement-progress-bar">
-                            <div class="achievement-progress-fill" id="achieve-progress-50" style="width: 0%;"></div>
-                        </div>
-                        <div class="achievement-meta">
-                            <span id="achieve-status-text-50">0 / 50 rendelés</span>
-                            <span id="achieve-tag-50" style="color: var(--primary);">Mester</span>
-                        </div>
-                    </div>
+                <!-- 2. GASZTRONÓMIAI JELVÉNYEK & SIKEREK -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 18px 0 12px;">
+                    <h3 class="section-title" style="margin-bottom: 0;">🎖️ Gasztronómiai Jelvények</h3>
+                    <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);" id="badges-unlocked-ratio">0 / 14 feloldva</span>
+                </div>
+                <div class="badges-grid" id="badges-grid-container">
+                    <!-- Loaded dynamically via JS -->
                 </div>
             </div>
         </section>
@@ -1188,7 +1157,13 @@
                     Megrendelés jóváhagyása ➔
                 </button>
             </div>
-        </aside>
+    <!-- Gamification Toast Notification (Level Up / Badge Unlocked) -->
+    <div id="gamification-toast">
+        <div id="gamification-toast-icon" style="font-size: 28px;">🏆</div>
+        <div>
+            <div id="gamification-toast-title" style="font-weight: 800; font-size: 14px; color: #FCD34D;">Szintlépés!</div>
+            <div id="gamification-toast-msg" style="font-size: 12px; color: #E2E8F0; margin-top: 2px;">Gratulálunk, új rangot és képkeretet értél el!</div>
+        </div>
     </div>
 
     <!-- Firebase SDK (Compat) -->
@@ -1198,7 +1173,7 @@
 
     <!-- Cloud Adapter & App Scripts -->
     <script src="firebase-config.js?v=3"></script>
-    <script src="shared-data.js?v=6"></script>
-    <script src="app.js?v=75"></script>
+    <script src="shared-data.js?v=7"></script>
+    <script src="app.js?v=76"></script>
 </body>
 </html>

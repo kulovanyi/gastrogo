@@ -1195,33 +1195,35 @@ body, html {
     color: var(--primary);
 }
 
-/* ================= CART SHEET ================= */
+/* ================= CART SHEET & MODALS ================= */
 .cart-sheet {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 500;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 99999 !important;
     display: none;
     pointer-events: none;
 }
 
 .cart-sheet.active {
-    display: block;
-    pointer-events: auto;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    pointer-events: auto !important;
 }
 
 .cart-sheet-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(10, 14, 23, 0.6);
-    backdrop-filter: blur(4px);
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(10, 14, 23, 0.7) !important;
+    backdrop-filter: blur(6px) !important;
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 1;
 }
 
 .cart-sheet.active .cart-sheet-backdrop {
@@ -1229,26 +1231,28 @@ body, html {
 }
 
 .cart-sheet-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    max-height: 88%;
-    background: #FFFFFF;
-    border-top-left-radius: 28px;
-    border-top-right-radius: 28px;
+    position: relative !important;
+    z-index: 2 !important;
+    width: 100% !important;
+    max-width: 540px !important;
+    max-height: 88vh !important;
+    background: #FFFFFF !important;
+    border-top-left-radius: 28px !important;
+    border-top-right-radius: 28px !important;
     transform: translateY(100%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-    padding: 24px;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-    overflow-y: auto;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 24px !important;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.3) !important;
+    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
 }
 
 .cart-sheet.active .cart-sheet-content {
-    transform: translateY(0);
+    transform: translateY(0) !important;
 }
 
 .drag-handle {
@@ -1508,120 +1512,338 @@ hr {
 }
 
 /* ================= ACHIEVEMENTS STYLES ================= */
-.achievement-stats-card {
-    background: linear-gradient(135deg, #FF9F1C 0%, #FFBE0B 100%);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    color: white;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 25px rgba(255, 159, 28, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+/* ==========================================================================
+   GAMIFIED CUSTOMER LEVEL FRAMES, BADGES & QUESTS STYLING
+   ========================================================================== */
+
+/* Level-dependent Avatar Frames */
+.avatar {
+    position: relative;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
 }
 
-.achievement-card {
-    background-color: #FFFFFF;
-    border: 1px solid #E2E8F0;
+.avatar.avatar-frame-lvl1 {
+    border: 2px solid #CBD5E1 !important;
+}
+
+.avatar.avatar-frame-lvl2 {
+    border: 2.5px solid #CD7F32 !important;
+    box-shadow: 0 0 8px rgba(205, 127, 50, 0.45) !important;
+}
+
+.avatar.avatar-frame-lvl3 {
+    border: 2.5px solid #94A3B8 !important;
+    box-shadow: 0 0 12px rgba(148, 163, 184, 0.6) !important;
+}
+
+.avatar.avatar-frame-lvl4 {
+    border: 3px solid #F59E0B !important;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.7) !important;
+}
+
+.avatar.avatar-frame-lvl5 {
+    border: 3px solid #06B6D4 !important;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.85) !important;
+}
+
+.avatar.avatar-frame-lvl6 {
+    border: 3.5px solid #EC4899 !important;
+    animation: vip-frame-glow 2.5s infinite alternate !important;
+}
+
+@keyframes vip-frame-glow {
+    0% {
+        box-shadow: 0 0 12px rgba(236, 72, 153, 0.8);
+        border-color: #EC4899;
+    }
+    50% {
+        box-shadow: 0 0 22px rgba(245, 158, 11, 0.9);
+        border-color: #F59E0B;
+    }
+    100% {
+        box-shadow: 0 0 28px rgba(139, 92, 246, 0.95);
+        border-color: #8B5CF6;
+    }
+}
+
+/* XP & Level Hero Card */
+.achievement-stats-card {
+    background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+    border: 1.5px solid #334155;
     border-radius: var(--border-radius);
-    padding: 18px;
-    margin-bottom: 16px;
-    box-shadow: var(--card-shadow);
-    transition: var(--transition);
+    padding: 22px 20px;
+    color: white;
+    margin-bottom: 22px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     position: relative;
     overflow: hidden;
 }
 
-.achievement-card.completed {
-    border-color: #2EC4B6;
-    background: linear-gradient(to right, rgba(46, 196, 182, 0.05), #FFFFFF);
+.achievement-stats-card::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 159, 28, 0.18) 0%, rgba(255, 159, 28, 0) 70%);
+    pointer-events: none;
 }
 
-.achievement-header {
+.xp-hero-top {
     display: flex;
     align-items: center;
-    gap: 14px;
+    justify-content: space-between;
+    gap: 12px;
 }
 
-.achievement-icon-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    background: #F1F5F9;
-    display: flex;
+.xp-level-badge {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #F8FAFC;
+}
+
+.xp-total-counter {
     font-size: 24px;
-    flex-shrink: 0;
+    font-weight: 800;
+    color: #FFBE0B;
 }
 
-.achievement-card.completed .achievement-icon-box {
-    background: rgba(46, 196, 182, 0.15);
-}
-
-.achievement-info {
-    flex: 1;
-}
-
-.achievement-title {
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 2px;
-}
-
-.achievement-desc {
-    font-size: 12px;
-    color: var(--text-muted);
-}
-
-.achievement-progress-wrapper {
+.xp-progress-bar-container {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.achievement-progress-bar {
+.xp-progress-bar-track {
     width: 100%;
-    height: 8px;
-    background-color: #E2E8F0;
-    border-radius: 4px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
     overflow: hidden;
+    position: relative;
 }
 
-.achievement-progress-fill {
+.xp-progress-bar-fill {
     height: 100%;
-    background-color: var(--primary);
-    border-radius: 4px;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, #FF9F1C, #FFBE0B);
+    border-radius: 6px;
+    transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 12px rgba(255, 190, 11, 0.6);
 }
 
-.achievement-card.completed .achievement-progress-fill {
-    background-color: #2EC4B6;
-}
-
-.achievement-meta {
+.xp-progress-labels {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
+    font-size: 11px;
+    color: #94A3B8;
     font-weight: 600;
 }
 
-.achievement-badge-pill {
-    font-size: 11px;
+/* Weekly Quests Section */
+.quests-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.quest-card {
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    transition: var(--transition);
+}
+
+.quest-card.completed {
+    border-color: #10B981;
+    background: #F0FDF4;
+}
+
+.quest-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.quest-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quest-name {
+    font-size: 13.5px;
     font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 10px;
+    color: var(--text-dark);
+}
+
+.quest-reward-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: #FEF3C7;
+    color: #B45309;
+}
+
+.quest-card.completed .quest-reward-badge {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.quest-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.quest-status-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.quest-progress-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.quest-card.completed .quest-progress-text {
+    color: #10B981;
+}
+
+/* Badges Grid (14 Diverse Achievements) */
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.badge-card {
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.badge-card.unlocked {
+    border-color: #FCD34D;
+    background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 100%);
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.12);
+}
+
+.badge-card.locked {
+    opacity: 0.65;
+    background: #F8FAFC;
+}
+
+.badge-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    position: relative;
+}
+
+.badge-card.unlocked .badge-icon-wrapper {
+    background: #FEF3C7;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.badge-card.locked .badge-icon-wrapper::after {
+    content: "🔒";
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 13px;
+}
+
+.badge-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.3;
+}
+
+.badge-desc {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    line-height: 1.3;
+    min-height: 28px;
+}
+
+.badge-xp-tag {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 6px;
     background: #F1F5F9;
     color: var(--text-muted);
 }
 
-.achievement-card.completed .achievement-badge-pill {
-    background: rgba(46, 196, 182, 0.15);
-    color: #2EC4B6;
+.badge-card.unlocked .badge-xp-tag {
+    background: #FEF3C7;
+    color: #B45309;
+}
+
+/* Gamification Toast Notification */
+#gamification-toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: #0F172A;
+    border: 1.5px solid #F59E0B;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: min(90vw, 400px);
+}
+
+#gamification-toast.show {
+    transform: translateX(-50%) translateY(0);
 }
 
 /* ==========================================================================
@@ -2428,37 +2650,27 @@ body.dark-mode #success-order-meta-card {
     }
 
     /* Desktop Modal Dialog styling for Toppings */
-    #topping-modal {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
-    }
-
     #topping-modal.active {
-        opacity: 1;
-        visibility: visible;
-        display: flex;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     #topping-modal .cart-sheet-content {
-        position: relative;
-        bottom: auto;
-        left: auto;
-        width: 100%;
-        max-width: 520px;
-        max-height: 85vh;
-        border-radius: 24px;
-        transform: scale(0.92) translateY(20px);
-        box-shadow: 0 25px 70px rgba(0,0,0,0.35);
-        padding: 26px;
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        max-width: 520px !important;
+        max-height: 85vh !important;
+        border-radius: 24px !important;
+        transform: scale(0.95) !important;
+        box-shadow: 0 25px 70px rgba(0,0,0,0.35) !important;
+        padding: 26px !important;
     }
 
     #topping-modal.active .cart-sheet-content {
-        transform: scale(1) translateY(0);
+        transform: scale(1) !important;
     }
 }
 

@@ -1155,19 +1155,19 @@
                         <div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
                                 <div>
-                                    <h4 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0 0 6px 0;">📊 Tömeges Étlap Feltöltés & Frissítés (Excel / CSV)</h4>
-                                    <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Töltsd fel az éttermed teljes étlapját és italkínálatát egyszerre másodpercek alatt CSV táblázatból.</p>
+                                    <h4 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0 0 6px 0;">📊 Tömeges Étlap Feltöltés & Módosítás (Excel / CSV)</h4>
+                                    <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Exportáld a meglévő étlapodat ID azonosítókkal, szerkeszd Excelben, és töltsd vissza! Az ID alapján a rendszer módosítja a meglévőket, az új sorokból pedig új ételeket készít.</p>
                                 </div>
                                 <button class="btn btn-secondary" id="btn-export-csv" style="font-size: 13px; font-weight: 700; padding: 12px 20px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px;">
-                                    📥 Étlap Minta letöltése (.CSV)
+                                    📥 Jelenlegi Étlap Exportálása (.CSV)
                                 </button>
                             </div>
 
                             <!-- 4X Extra Large Drag and Drop Upload Zone -->
                             <div class="csv-upload-zone" id="csv-drop-zone" style="min-height: 280px; border: 3px dashed #CBD5E1; border-radius: 16px; background: #F8FAFC; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 30px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 0; gap: 10px;">
                                 <div style="font-size: 52px;">📂</div>
-                                <strong style="font-size: 17px; color: #1E293B;">Húzd ide a kitöltött CSV fájlt, vagy kattints a tallózáshoz</strong>
-                                <span style="font-size: 13px; color: #64748B; max-width: 480px; line-height: 1.5;">Támogatott formátum: UTF-8 kódolású .CSV táblázat (Megnevezés, Kategória, Ár, Leírás, Feltétek, Allergének)</span>
+                                <strong style="font-size: 17px; color: #1E293B;">Húzd ide a módosított vagy új CSV fájlt, vagy kattints a tallózáshoz</strong>
+                                <span style="font-size: 13px; color: #64748B; max-width: 520px; line-height: 1.5;">Támogatott formátum: UTF-8 kódolású .CSV táblázat (ID, Megnevezés, Kategória, Ár, Leírás, Feltétek, Allergének, KépURL)</span>
                             </div>
                         </div>
                         <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
@@ -2527,32 +2527,52 @@
             updateComboPreview();
         }
 
-        // ================= CSV TEMPLATE EXPORT & DOWNLOAD =================
+        // ================= CSV CURRENT MENU EXPORT (WITH INTEGER IDs & ALLERGENS) =================
         document.getElementById("btn-export-csv").addEventListener("click", () => {
             if (!activeRestaurant) return;
             
             // UTF-8 BOM to guarantee Excel parses accented characters correctly
-            let csvContent = "\ufeffMegnevezés,Kategória,Ár,Leírás,Feltétek,Allergének\n";
+            let csvContent = "\ufeffID,Megnevezés,Kategória,Ár,Leírás,Feltétek,Allergének,KépURL\n";
             
-            activeRestaurant.menu.forEach(item => {
+            (activeRestaurant.menu || []).forEach((item, idx) => {
+                // Sequential integer ID starting from 1
+                const numericId = idx + 1;
+                item.id = String(numericId);
+
                 const toppingsStr = item.toppings ? item.toppings.map(t => `${t.name}:${t.price}`).join('|') : '';
-                const allergensStr = item.allergens && Array.isArray(item.allergens) ? item.allergens.join('|') : '';
+                
+                // Format allergens cleanly as comma-separated numbers (e.g. "1, 7" or "1, 3, 7")
+                let allergensStr = '';
+                if (Array.isArray(item.allergens) && item.allergens.length > 0) {
+                    allergensStr = item.allergens.join(', ');
+                } else if (typeof item.allergens === 'string') {
+                    allergensStr = item.allergens;
+                }
+
+                const imgStr = item.image || '';
+
                 const row = [
-                    `"${item.name.replace(/"/g, '""')}"`,
-                    `"${(item.category || '').replace(/"/g, '""')}"`,
-                    item.price,
+                    numericId,
+                    `"${(item.name || '').replace(/"/g, '""')}"`,
+                    `"${(item.category || 'Egyéb').replace(/"/g, '""')}"`,
+                    item.price || 0,
                     `"${(item.description || '').replace(/"/g, '""')}"`,
                     `"${toppingsStr.replace(/"/g, '""')}"`,
-                    `"${allergensStr.replace(/"/g, '""')}"`
+                    `"${allergensStr.replace(/"/g, '""')}"`,
+                    `"${imgStr.replace(/"/g, '""')}"`
                 ].join(",");
                 csvContent += row + "\n";
             });
+
+            // Save synced integer IDs
+            syncData();
 
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
-            link.setAttribute("download", `${activeRestaurant.name.toLowerCase().replace(/\s+/g, '_')}_etlap_sablon.csv`);
+            const dateStr = new Date().toISOString().slice(0, 10);
+            link.setAttribute("download", `${activeRestaurant.name.toLowerCase().replace(/\s+/g, '_')}_etlap_${dateStr}.csv`);
             link.style.visibility = "hidden";
             document.body.appendChild(link);
             link.click();
@@ -4756,50 +4776,148 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 const text = event.target.result;
-                const lines = text.split(/\r?\n/);
-                let count = 0;
-                for(let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    const cols = line.split(",");
-                    if (cols.length < 4) continue;
+                const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+                if (lines.length <= 1) {
+                    alert("A kiválasztott CSV fájl üres vagy érvénytelen!");
+                    return;
+                }
 
-                    const name = cols[0].trim();
-                    const category = cols[1].trim() || "Egyéb";
-                    const price = parseInt(cols[2].trim()) || 0;
-                    const desc = cols[3].trim();
+                // Parse header to determine column mapping
+                const headerCols = parseCsvRow(lines[0]).map(c => c.toLowerCase());
+                let idIdx = headerCols.findIndex(c => c.includes("id"));
+                let nameIdx = headerCols.findIndex(c => c.includes("megnevez") || c.includes("név") || c.includes("nev") || c.includes("name"));
+                let catIdx = headerCols.findIndex(c => c.includes("kateg") || c.includes("cat"));
+                let priceIdx = headerCols.findIndex(c => c.includes("ár") || c.includes("ar") || c.includes("price"));
+                let descIdx = headerCols.findIndex(c => c.includes("leír") || c.includes("leir") || c.includes("desc"));
+                let topIdx = headerCols.findIndex(c => c.includes("feltét") || c.includes("feltet") || c.includes("top"));
+                let allIdx = headerCols.findIndex(c => c.includes("allerg") || c.includes("all"));
+                let imgIdx = headerCols.findIndex(c => c.includes("kép") || c.includes("kep") || c.includes("img") || c.includes("image"));
 
-                    if (!activeRestaurant.categories.includes(category)) {
+                // Fallback default column indexes if header is simple
+                if (idIdx === -1) idIdx = 0;
+                if (nameIdx === -1) nameIdx = (headerCols.length > 1 && idIdx === 0) ? 1 : 0;
+                if (catIdx === -1) catIdx = (headerCols.length > 2 && idIdx === 0) ? 2 : 1;
+                if (priceIdx === -1) priceIdx = (headerCols.length > 3 && idIdx === 0) ? 3 : 2;
+                if (descIdx === -1) descIdx = (headerCols.length > 4 && idIdx === 0) ? 4 : 3;
+
+                let createdCount = 0;
+                let updatedCount = 0;
+
+                if (!Array.isArray(activeRestaurant.menu)) activeRestaurant.menu = [];
+                if (!Array.isArray(activeRestaurant.categories)) activeRestaurant.categories = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const row = parseCsvRow(lines[i]);
+                    if (row.length < 2) continue;
+
+                    const rowId = (idIdx !== -1 && row[idIdx]) ? row[idIdx].trim() : "";
+                    const name = (nameIdx !== -1 && row[nameIdx]) ? row[nameIdx].trim() : "";
+                    if (!name) continue;
+
+                    const category = (catIdx !== -1 && row[catIdx]) ? row[catIdx].trim() || "Egyéb" : "Egyéb";
+                    const price = (priceIdx !== -1 && row[priceIdx]) ? (parseInt(String(row[priceIdx]).replace(/[^\d]/g, "")) || 0) : 0;
+                    const desc = (descIdx !== -1 && row[descIdx]) ? row[descIdx].trim() : "";
+
+                    if (category && !activeRestaurant.categories.includes(category)) {
                         activeRestaurant.categories.push(category);
                     }
 
                     const toppings = [];
-                    if (cols[4]) {
-                        cols[4].trim().split("|").forEach(t => {
+                    if (topIdx !== -1 && row[topIdx]) {
+                        row[topIdx].trim().split("|").forEach(t => {
                             const sub = t.split(":");
-                            if (sub.length === 2) toppings.push({ name: sub[0].trim(), price: parseInt(sub[1].trim()) || 0 });
+                            if (sub.length === 2) toppings.push({ name: sub[0].trim(), price: parseInt(String(sub[1]).replace(/[^\d]/g, "")) || 0 });
                         });
                     }
 
                     const allergens = [];
-                    if (cols[5]) {
-                        cols[5].trim().split("|").forEach(a => {
-                            const aNum = parseInt(a.trim());
-                            if (!isNaN(aNum) && aNum >= 1 && aNum <= 14) allergens.push(aNum);
-                        });
+                    if (allIdx !== -1 && row[allIdx]) {
+                        const rawMatches = String(row[allIdx]).match(/\b(1[0-4]|[1-9])\b/g);
+                        if (rawMatches) {
+                            rawMatches.forEach(numStr => {
+                                const val = parseInt(numStr);
+                                if (!isNaN(val) && val >= 1 && val <= 14 && !allergens.includes(val)) {
+                                    allergens.push(val);
+                                }
+                            });
+                            allergens.sort((a, b) => a - b);
+                        }
                     }
 
-                    activeRestaurant.menu.push({
-                        id: `${activeRestaurant.id}-f-import-${Date.now()}-${i}`,
-                        name, category, price, description: desc, toppings, allergens, image: null
-                    });
-                    count++;
+                    const img = (imgIdx !== -1 && row[imgIdx]) ? row[imgIdx].trim() : null;
+
+                    // CHECK IF ITEM ID (NUMERIC) EXISTS -> UPDATE EXISTING, ELSE CREATE NEW
+                    const rowIdNum = parseInt(rowId.replace(/[^\d]/g, ""));
+                    const existingIndex = !isNaN(rowIdNum) && rowIdNum > 0
+                        ? activeRestaurant.menu.findIndex((m, idx) => m.id === String(rowIdNum) || Number(m.id) === rowIdNum || idx + 1 === rowIdNum)
+                        : (rowId ? activeRestaurant.menu.findIndex(m => String(m.id).trim() === rowId) : -1);
+
+                    if (existingIndex !== -1) {
+                        // UPDATE EXISTING ITEM
+                        const item = activeRestaurant.menu[existingIndex];
+                        item.name = name;
+                        item.category = category;
+                        item.price = price;
+                        item.description = desc;
+                        if (toppings.length > 0 || row[topIdx] !== undefined) item.toppings = toppings;
+                        if (allergens.length > 0 || row[allIdx] !== undefined) item.allergens = allergens;
+                        if (img) item.image = img;
+                        updatedCount++;
+                    } else {
+                        // CREATE NEW ITEM
+                        const finalId = (!isNaN(rowIdNum) && rowIdNum > 0 && !activeRestaurant.menu.some(m => Number(m.id) === rowIdNum))
+                            ? String(rowIdNum)
+                            : String(activeRestaurant.menu.length + 1);
+
+                        activeRestaurant.menu.push({
+                            id: finalId,
+                            name,
+                            category,
+                            price,
+                            description: desc,
+                            toppings,
+                            allergens,
+                            image: img || null
+                        });
+                        createdCount++;
+                    }
                 }
-                alert(`Importálva: ${count} db termék!`);
+
+                // Ensure all items have clean sequential integer IDs
+                activeRestaurant.menu.forEach((m, idx) => {
+                    m.id = String(idx + 1);
+                });
+
+                alert(`✅ Étlap sikeresen feldolgozva!\n\n• Módosított meglévő ételek: ${updatedCount} db\n• Újonnan felvett ételek: ${createdCount} db`);
                 initDashboard();
                 syncData();
             };
             reader.readAsText(file, "UTF-8");
+        }
+
+        // Robust CSV row parser supporting quoted strings and commas
+        function parseCsvRow(rowStr) {
+            const result = [];
+            let insideQuote = false;
+            let entry = "";
+            for (let i = 0; i < rowStr.length; i++) {
+                const char = rowStr[i];
+                if (char === '"') {
+                    if (insideQuote && rowStr[i + 1] === '"') {
+                        entry += '"';
+                        i++;
+                    } else {
+                        insideQuote = !insideQuote;
+                    }
+                } else if (char === ',' && !insideQuote) {
+                    result.push(entry);
+                    entry = "";
+                } else {
+                    entry += char;
+                }
+            }
+            result.push(entry);
+            return result;
         }
 
         // ================= SYNC TO FIRESTORE & DATA =================
