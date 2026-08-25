@@ -866,33 +866,7 @@
         }
     </style>
 </head>
-<body>
-
-    <!-- ================= OWNER LOGIN ================= -->
-    <section class="desktop-login" id="desktop-login-screen">
-        <form class="desktop-login-card" id="desktop-login-form">
-            <div class="desktop-login-brand">
-                <h1>Gastro<span>Go</span></h1>
-                <p>Étterem tulajdonosi vezérlőpult</p>
-            </div>
-            <div class="input-group">
-                <label for="desktop-login-restaurant">Étterem</label>
-                <select id="desktop-login-restaurant">
-                    <option value="r1">Vár Pizzéria</option>
-                    <option value="r2">Burger Haven</option>
-                    <option value="r3">Istambul Gyros & Grill</option>
-                    <option value="r4">Központi Étkezde</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="desktop-login-password">Jelszó</label>
-                <input id="desktop-login-password" type="password" value="admin123" placeholder="Írd be a jelszavad">
-            </div>
-            <button class="btn btn-primary btn-block" type="submit">Belépés Tulajdonosként</button>
-            <button type="button" id="btn-login-kitchen-only" class="btn btn-secondary btn-block" style="margin-top: 10px; background: #F8FAFC; color: #334155; border: 1.5px solid #CBD5E1; font-weight: 700;">👨‍🍳 Belépés Pultos / Konyha Módba</button>
-            <div class="desktop-login-error" id="desktop-login-error" aria-live="polite"></div>
-        </form>
-    </section>
+<body class="desktop-body desktop-authenticated">
 
     <!-- ================= DESKTOP HEADER ================= -->
     <header class="desktop-header">
@@ -5308,38 +5282,20 @@
             }
         });
 
-        document.getElementById("btn-login-kitchen-only")?.addEventListener("click", () => {
-            const restaurantId = document.getElementById("desktop-login-restaurant").value;
-            activeRestaurant = restaurants.find(res => res.id === restaurantId) || restaurants[0];
-            localStorage.setItem("gastrogo_restaurant_logged_in", "true");
-            localStorage.setItem("gastrogo_active_restaurant_id", activeRestaurant.id);
-            document.getElementById("desktop-restaurant-select").value = activeRestaurant.id;
-            document.body.classList.add("desktop-authenticated");
-            document.getElementById("desktop-login-screen").style.display = "none";
-            setKioskMode(true);
-            initDashboard();
-        });
-
-        window.onload = function() {
-            const isResLoggedIn = localStorage.getItem("gastrogo_restaurant_logged_in");
-            if (!isResLoggedIn) {
-                window.location.href = "index.html";
-                return;
-            }
-
+        function startDashboardSession() {
             const storedResId = localStorage.getItem("gastrogo_active_restaurant_id");
             if (storedResId) {
                 const found = restaurants.find(res => res.id === storedResId);
                 if (found) activeRestaurant = found;
+            } else if (!activeRestaurant) {
+                activeRestaurant = restaurants[0];
             }
 
             document.body.classList.add("desktop-authenticated");
-            const loginScreen = document.getElementById("desktop-login-screen");
-            if (loginScreen) loginScreen.style.display = "none";
             const selectEl = document.getElementById("desktop-restaurant-select");
             if (selectEl && activeRestaurant) selectEl.value = activeRestaurant.id;
 
-            // Default to Kiosk Mode (locked for staff) unless explicit admin mode was set
+            // Kiosk / Admin mode resolution
             const savedKiosk = localStorage.getItem("gastrogo_kiosk_mode");
             const urlParams = new URLSearchParams(window.location.search);
             const isAdminRequested = urlParams.get("mode") === "admin" || savedKiosk === "false";
@@ -5347,7 +5303,7 @@
             if (isAdminRequested) {
                 setKioskMode(false);
             } else {
-                setKioskMode(true); // Default is ALWAYS Kiosk mode
+                setKioskMode(true); // Default is Kiosk mode for staff
             }
 
             initDashboard();
@@ -5367,28 +5323,17 @@
                     updateOrdersBadge();
                 }, err => console.warn("Desktop Firestore orders listener error:", err));
             }
-        };
+        }
 
-        document.getElementById("desktop-login-form")?.addEventListener("submit", (event) => {
-            event.preventDefault();
-            const password = document.getElementById("desktop-login-password").value;
-            const error = document.getElementById("desktop-login-error");
-            if (password !== "admin123") {
-                error.textContent = "Hibás jelszó.";
-                return;
-            }
+        // Initialize immediately
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", startDashboardSession);
+        } else {
+            startDashboardSession();
+        }
+        window.addEventListener("load", startDashboardSession);
 
-            const restaurantId = document.getElementById("desktop-login-restaurant").value;
-            activeRestaurant = restaurants.find(res => res.id === restaurantId) || restaurants[0];
-            localStorage.setItem("gastrogo_restaurant_logged_in", "true");
-            localStorage.setItem("gastrogo_active_restaurant_id", activeRestaurant.id);
-            document.getElementById("desktop-restaurant-select").value = activeRestaurant.id;
-            document.body.classList.add("desktop-authenticated");
-            document.getElementById("desktop-login-screen").style.display = "none";
-            initDashboard();
-        });
-
-        document.getElementById("desktop-logout").addEventListener("click", () => {
+        document.getElementById("desktop-logout")?.addEventListener("click", () => {
             localStorage.removeItem("gastrogo_restaurant_logged_in");
             localStorage.removeItem("gastrogo_active_restaurant_id");
             localStorage.removeItem("gastrogo_kiosk_mode");
