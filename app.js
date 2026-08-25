@@ -870,12 +870,12 @@ function getCustomerTotalOrdersCount() {
 
 // ================= COMPREHENSIVE GAMIFICATION ENGINE (XP, LEVELS, BADGES & QUESTS) =================
 const GAMIFICATION_LEVELS = [
-    { level: 1, title: "Kezdő Felfedező", minXp: 0, maxXp: 150, frameClass: "avatar-frame-lvl1", badgeText: "⭐ Szint 1" },
-    { level: 2, title: "Lelkes Ínyenc", minXp: 150, maxXp: 500, frameClass: "avatar-frame-lvl2", badgeText: "🥉 Szint 2 (Bronz)" },
-    { level: 3, title: "Konyhamester", minXp: 500, maxXp: 1500, frameClass: "avatar-frame-lvl3", badgeText: "🥈 Szint 3 (Ezüst)" },
-    { level: 4, title: "Gasztro Báró", minXp: 1500, maxXp: 4000, frameClass: "avatar-frame-lvl4", badgeText: "🥇 Szint 4 (Arany)" },
-    { level: 5, title: "Gyémánt Lovag", minXp: 4000, maxXp: 10000, frameClass: "avatar-frame-lvl5", badgeText: "💎 Szint 5 (Gyémánt)" },
-    { level: 6, title: "VIP GastroGo Legenda", minXp: 10000, maxXp: Infinity, frameClass: "avatar-frame-lvl6", badgeText: "👑 Szint 6 (VIP Legenda)" }
+    { level: 1, title: "Kezdő Felfedező", minXp: 0, maxXp: 100, frameClass: "avatar-frame-lvl1", badgeText: "⭐ Szint 1" },
+    { level: 2, title: "Lelkes Ínyenc", minXp: 100, maxXp: 350, frameClass: "avatar-frame-lvl2", badgeText: "🥉 Szint 2 (Bronz)" },
+    { level: 3, title: "Konyhamester", minXp: 350, maxXp: 1000, frameClass: "avatar-frame-lvl3", badgeText: "🥈 Szint 3 (Ezüst)" },
+    { level: 4, title: "Gasztro Báró", minXp: 1000, maxXp: 2500, frameClass: "avatar-frame-lvl4", badgeText: "🥇 Szint 4 (Arany)" },
+    { level: 5, title: "Gyémánt Lovag", minXp: 2500, maxXp: 6000, frameClass: "avatar-frame-lvl5", badgeText: "💎 Szint 5 (Gyémánt)" },
+    { level: 6, title: "VIP GastroGo Legenda", minXp: 6000, maxXp: Infinity, frameClass: "avatar-frame-lvl6", badgeText: "👑 Szint 6 (VIP Legenda)" }
 ];
 
 const OFFICIAL_BADGES = [
@@ -884,55 +884,55 @@ const OFFICIAL_BADGES = [
         icon: "🥇",
         name: "Első Lépés",
         desc: "Add le a legelső rendelésed a GastroGo-n!",
-        xp: 50,
+        xp: 10,
         check: (ctx) => ctx.totalOrders >= 1
     },
     {
         id: "badge_pizza_lover",
         icon: "🍕",
         name: "Pizzalovag",
-        desc: "Rendelj legalább 3 pizzát!",
-        xp: 100,
-        check: (ctx) => (ctx.categoryCounts["pizza"] || 0) >= 3 || (ctx.itemKeywordCounts["pizza"] || 0) >= 3
+        desc: "Rendelj legalább 5 pizzát kedvenc helyeidről!",
+        xp: 15,
+        check: (ctx) => (ctx.categoryCounts["pizza"] || 0) >= 5 || (ctx.itemKeywordCounts["pizza"] || 0) >= 5
     },
     {
         id: "badge_burger_master",
         icon: "🍔",
         name: "Burger Bajnok",
-        desc: "Kóstolj meg legalább 3 burgert!",
-        xp: 100,
-        check: (ctx) => (ctx.categoryCounts["burger"] || 0) >= 3 || (ctx.itemKeywordCounts["burger"] || 0) >= 3
+        desc: "Kóstolj meg legalább 5 kézműves burgert!",
+        xp: 15,
+        check: (ctx) => (ctx.categoryCounts["burger"] || 0) >= 5 || (ctx.itemKeywordCounts["burger"] || 0) >= 5
     },
     {
         id: "badge_gyros_king",
         icon: "🌯",
         name: "Gyros Király",
-        desc: "Rendelj legalább 2 gyrost vagy tálat!",
-        xp: 80,
-        check: (ctx) => (ctx.categoryCounts["gyros"] || 0) >= 2 || (ctx.itemKeywordCounts["gyros"] || 0) >= 2
+        desc: "Rendelj legalább 4 gyrost vagy tálat!",
+        xp: 15,
+        check: (ctx) => (ctx.categoryCounts["gyros"] || 0) >= 4 || (ctx.itemKeywordCounts["gyros"] || 0) >= 4
     },
     {
         id: "badge_globe_trotter",
         icon: "🌍",
         name: "Gasztro Világutazó",
-        desc: "Rendelj legalább 3 különböző étteremből!",
-        xp: 150,
-        check: (ctx) => ctx.distinctRestaurantsCount >= 3
+        desc: "Rendelj legalább 4 különböző partnerétteremből!",
+        xp: 25,
+        check: (ctx) => ctx.distinctRestaurantsCount >= 4
     },
     {
         id: "badge_night_owl",
         icon: "🌙",
         name: "Éjszakai Ragadozó",
-        desc: "Adj le rendelést 19:00 óra után!",
-        xp: 80,
+        desc: "Adj le egy rendelést este 20:00 óra után!",
+        xp: 10,
         check: (ctx) => ctx.hasNightOrder
     },
     {
         id: "badge_lunch_hero",
         icon: "☀️",
         name: "Déli Ínyenc",
-        desc: "Rendelj ebédidőben (11:00 és 13:30 között)!",
-        xp: 80,
+        desc: "Rendelj ebédidőben (11:30 és 13:00 között)!",
+        xp: 10,
         check: (ctx) => ctx.hasLunchOrder
     },
     {
@@ -940,55 +940,55 @@ const OFFICIAL_BADGES = [
         icon: "🔥",
         name: "Hétvégi Gurmand",
         desc: "Rendelj pénteken vagy szombaton!",
-        xp: 80,
+        xp: 10,
         check: (ctx) => ctx.hasWeekendOrder
     },
     {
         id: "badge_critic",
         icon: "✍️",
         name: "Kritikus Szem",
-        desc: "Írj és küldj be legalább 2 éttermi értékelést!",
-        xp: 120,
-        check: (ctx) => ctx.reviewsCount >= 2
+        desc: "Írj és küldj be legalább 3 éttermi értékelést!",
+        xp: 15,
+        check: (ctx) => ctx.reviewsCount >= 3
     },
     {
         id: "badge_extra_bites",
         icon: "🍟",
         name: "Extra Falatok",
-        desc: "Rendelj ételt hozzáadott extra feltétekkel!",
-        xp: 60,
-        check: (ctx) => ctx.hasCustomToppingsOrder
+        desc: "Rendelj ételt hozzáadott extra feltétekkel legalább 2 alkalommal!",
+        xp: 10,
+        check: (ctx) => ctx.hasCustomToppingsOrder && ctx.totalOrders >= 2
     },
     {
         id: "badge_feast",
         icon: "👑",
         name: "Nagyétkű Lakoma",
-        desc: "Egy rendelésed végösszege haladja meg a 8 000 Ft-ot!",
-        xp: 150,
+        desc: "Egy rendelésed végösszege haladja meg a 10 000 Ft-ot!",
+        xp: 20,
         check: (ctx) => ctx.hasBigOrder
     },
     {
         id: "badge_regular",
         icon: "🎖️",
         name: "Törzsvendég",
-        desc: "Érd el az 5 leadott sikeres rendelést!",
-        xp: 100,
-        check: (ctx) => ctx.totalOrders >= 5
+        desc: "Érd el a 10 leadott sikeres rendelést!",
+        xp: 25,
+        check: (ctx) => ctx.totalOrders >= 10
     },
     {
         id: "badge_veteran",
         icon: "🏅",
         name: "Gastro Veterán",
-        desc: "Érd el a 20 leadott sikeres rendelést!",
-        xp: 300,
-        check: (ctx) => ctx.totalOrders >= 20
+        desc: "Érd el a 30 leadott sikeres rendelést!",
+        xp: 50,
+        check: (ctx) => ctx.totalOrders >= 30
     },
     {
         id: "badge_legend_50",
         icon: "🏆",
         name: "50-es Mérföldkő",
         desc: "Érd el az 50 leadott rendelést (VIP Legenda)!",
-        xp: 600,
+        xp: 100,
         check: (ctx) => ctx.totalOrders >= 50
     }
 ];
@@ -1018,7 +1018,7 @@ function getWeeklyQuests() {
             id: "quest_weekly_order",
             name: "Heti Rendelés",
             desc: "Rendelj ezen a héten legalább 1 alkalommal!",
-            rewardXp: 40,
+            rewardXp: 5,
             current: Math.min(thisWeekOrders.length, 1),
             target: 1,
             completed: thisWeekOrders.length >= 1
@@ -1027,7 +1027,7 @@ function getWeeklyQuests() {
             id: "quest_weekend_order",
             name: "Hétvégi Ízek",
             desc: "Rendelj péntek és vasárnap között!",
-            rewardXp: 50,
+            rewardXp: 8,
             current: Math.min(weekendOrders.length, 1),
             target: 1,
             completed: weekendOrders.length >= 1
@@ -1036,7 +1036,7 @@ function getWeeklyQuests() {
             id: "quest_explore_res",
             name: "Új Élmények",
             desc: "Rendelj legalább 2 különböző étteremből a héten!",
-            rewardXp: 60,
+            rewardXp: 10,
             current: Math.min(distinctResThisWeek, 2),
             target: 2,
             completed: distinctResThisWeek >= 2
@@ -1133,8 +1133,8 @@ function calculateUserGamification() {
         reviewsCount
     };
 
-    // 1. Order XP: 25 XP base per order + 1 XP per 200 Ft spent (slow & steady progression)
-    let orderXp = (totalOrders * 25) + Math.floor(totalSpent / 200);
+    // 1. Order XP: 3 XP base per order + 1 XP per 1000 Ft spent (slow, challenging progression)
+    let orderXp = (totalOrders * 3) + Math.floor(totalSpent / 1000);
 
     // 2. Badge XP & Unlocked Badges
     const unlockedBadges = [];
@@ -1199,21 +1199,28 @@ function calculateUserGamification() {
         }
     };
 
-    // Save & sync to GastroGoDB and Firestore under userProfiles
-    if (currentUser && currentUser !== "guest") {
-        try {
-            const allProfiles = GastroGoDB.read("userProfiles", {});
-            allProfiles[currentUser] = {
-                xp: totalXp,
-                level: currentLevelObj.level,
-                unlockedBadges,
-                updatedAt: Date.now()
-            };
-            GastroGoDB.write("userProfiles", allProfiles);
-        } catch(e) {}
-    }
-
     return gamificationResult;
+}
+
+function syncUserGamificationToCloud() {
+    if (!currentUser || currentUser === "guest") return;
+    try {
+        const gData = calculateUserGamification();
+        const allProfiles = GastroGoDB.read("userProfiles", {});
+        allProfiles[currentUser] = {
+            xp: gData.totalXp,
+            level: gData.levelInfo.level,
+            unlockedBadges: gData.unlockedBadges,
+            updatedAt: Date.now()
+        };
+        // Save silently without triggering local loop
+        localStorage.setItem("gastrogo:userProfiles", JSON.stringify(allProfiles));
+        const db = window.firestoreDb || (typeof firebase !== "undefined" && firebase.apps && firebase.apps.length > 0 ? firebase.firestore() : null);
+        if (db) {
+            db.collection("userProfiles").doc(currentUser).set(allProfiles[currentUser], { merge: true })
+                .catch(err => console.error("Firestore userProfiles sync error:", err));
+        }
+    } catch(e) {}
 }
 
 function showGamificationToast(icon, title, msg) {
@@ -1298,8 +1305,12 @@ function renderAchievements() {
         }).join("");
     }
 
-    // Update avatar level frame in header & profile
-    updateUserAvatarUI();
+    // Update avatar level frame in header & profile using calculated frameClass
+    const frameClass = gData.levelInfo.frameClass || "avatar-frame-lvl1";
+    document.querySelectorAll(".avatar").forEach(av => {
+        av.classList.remove("avatar-frame-lvl1", "avatar-frame-lvl2", "avatar-frame-lvl3", "avatar-frame-lvl4", "avatar-frame-lvl5", "avatar-frame-lvl6");
+        av.classList.add(frameClass);
+    });
 }
 
 function openAchievementsTab() {
@@ -3596,6 +3607,7 @@ function submitOrder() {
     // Gamification Progression & Feedback
     try {
         const gData = calculateUserGamification();
+        syncUserGamificationToCloud();
         updateUserAvatarUI();
         if (gData && gData.levelInfo && gData.levelInfo.level > 1) {
             showGamificationToast("⭐", "XP Jóváírva!", `Köszönjük a rendelést! Jelenlegi rangod: ${gData.levelInfo.title} (${gData.totalXp} XP)`);
@@ -3821,7 +3833,6 @@ GastroGoDB.subscribe("convenienceFee", fee => {
 
 GastroGoDB.subscribe("userProfiles", profiles => {
     updateUserAvatarUI();
-    if (currentScreen === "screen-achievements") renderAchievements();
 });
 
 // ================= INITIALIZE =================

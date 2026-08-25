@@ -423,6 +423,37 @@
             color: var(--text-light);
         }
 
+        /* Mini Admin & Extra Link on Auth Box */
+        .mini-admin-link-container {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .btn-mini-admin {
+            background: rgba(231, 29, 54, 0.12);
+            color: #FF5A5F;
+            border: 1px solid rgba(231, 29, 54, 0.3);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-mini-admin:hover {
+            background: var(--danger);
+            color: #FFFFFF;
+            border-color: var(--danger);
+        }
+
         /* Footer */
         .portal-footer {
             margin-top: 30px;
@@ -447,24 +478,36 @@
             color: var(--secondary);
         }
 
-        /* Mobile Adjustments */
+        /* Mobile Adjustments: Direct Login without Cards */
         @media screen and (max-width: 768px) {
             body {
                 justify-content: center;
-                padding: 20px;
+                padding: 16px 14px;
+            }
+
+            .brand-header {
+                margin-bottom: 20px;
             }
 
             .brand-header h1 {
-                font-size: 34px;
+                font-size: 32px;
             }
 
             .cards-grid {
-                grid-template-columns: 1fr;
-                max-width: 380px;
+                display: none !important;
             }
 
-            .restaurant-portal-card {
+            #box-customer-auth .btn-back-link {
                 display: none !important;
+            }
+
+            .views-viewport {
+                min-height: auto;
+            }
+
+            .auth-slide-box {
+                max-width: 100%;
+                padding: 24px 18px;
             }
         }
     </style>
@@ -574,13 +617,19 @@
                         🎉 Fiók létrehozása & Belépés ➔
                     </button>
                 </form>
+
+                <!-- Mini Admin & Restaurant Links at bottom on Mobile/Desktop -->
+                <div class="mini-admin-link-container">
+                    <span>Rendszergazda vagy?</span>
+                    <button type="button" class="btn-mini-admin" onclick="openAuthView('admin')">⚙️ Admin belépés</button>
+                </div>
             </div>
 
             <!-- ================= 3. RESTAURANT PARTNER AUTH BOX ================= -->
             <div class="auth-slide-box" id="box-restaurant-auth">
                 <div class="slide-box-head">
-                    <button type="button" class="btn-back-link" onclick="closeAuthViews()">
-                        ⬅️ Vissza a választáshoz
+                    <button type="button" class="btn-back-link" onclick="handleBackToCustomer()">
+                        ⬅️ Vissza a bejelentkezéshez
                     </button>
                     <span style="font-size: 12px; font-weight: 700; color: var(--accent);">Étterem Belépés</span>
                 </div>
@@ -608,8 +657,8 @@
             <!-- ================= 4. PLATFORM ADMIN AUTH BOX ================= -->
             <div class="auth-slide-box" id="box-admin-auth">
                 <div class="slide-box-head">
-                    <button type="button" class="btn-back-link" onclick="closeAuthViews()">
-                        ⬅️ Vissza a választáshoz
+                    <button type="button" class="btn-back-link" onclick="handleBackToCustomer()">
+                        ⬅️ Vissza a bejelentkezéshez
                     </button>
                     <span style="font-size: 12px; font-weight: 700; color: var(--danger);">Rendszergazda</span>
                 </div>
@@ -644,35 +693,63 @@
     <script>
         // Mobile detection
         const isMobileScreen = window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // On mobile, immediately open customer auth form directly without cards
         if (isMobileScreen) {
-            const resCard = document.querySelector(".restaurant-portal-card");
-            if (resCard) resCard.style.display = "none";
+            document.addEventListener("DOMContentLoaded", () => {
+                openAuthView('customer');
+            });
+            // Also run immediately in case DOM is already ready
+            setTimeout(() => {
+                openAuthView('customer');
+            }, 50);
         }
 
         // View Transition Switcher
         function openAuthView(type) {
-            document.getElementById("portal-cards-grid").classList.add("hide");
+            const cardsGrid = document.getElementById("portal-cards-grid");
+            if (cardsGrid) cardsGrid.classList.add("hide");
             document.querySelectorAll(".auth-slide-box").forEach(box => box.classList.remove("active"));
 
             if (type === "customer") {
-                document.getElementById("box-customer-auth").classList.add("active");
-                document.getElementById("portal-desc").textContent = "Jelentkezz be vagy regisztrálj a rendeléshez";
+                const box = document.getElementById("box-customer-auth");
+                if (box) box.classList.add("active");
+                const desc = document.getElementById("portal-desc");
+                if (desc) desc.textContent = "Jelentkezz be vagy regisztrálj a rendeléshez";
                 setTimeout(() => document.getElementById("cust-login-user")?.focus(), 300);
             } else if (type === "restaurant") {
-                document.getElementById("box-restaurant-auth").classList.add("active");
-                document.getElementById("portal-desc").textContent = "Partner bejelentkezés az étterem kezeléséhez";
+                const box = document.getElementById("box-restaurant-auth");
+                if (box) box.classList.add("active");
+                const desc = document.getElementById("portal-desc");
+                if (desc) desc.textContent = "Partner bejelentkezés az étterem kezeléséhez";
                 setTimeout(() => document.getElementById("res-login-pass")?.focus(), 300);
             } else if (type === "admin") {
-                document.getElementById("box-admin-auth").classList.add("active");
-                document.getElementById("portal-desc").textContent = "Platform felügyelet és rendszerbeállítások";
+                const box = document.getElementById("box-admin-auth");
+                if (box) box.classList.add("active");
+                const desc = document.getElementById("portal-desc");
+                if (desc) desc.textContent = "Platform felügyelet és rendszerbeállítások";
                 setTimeout(() => document.getElementById("admin-login-pass")?.focus(), 300);
             }
         }
 
+        function handleBackToCustomer() {
+            if (isMobileScreen) {
+                openAuthView('customer');
+            } else {
+                closeAuthViews();
+            }
+        }
+
         function closeAuthViews() {
+            if (isMobileScreen) {
+                openAuthView('customer');
+                return;
+            }
             document.querySelectorAll(".auth-slide-box").forEach(box => box.classList.remove("active"));
-            document.getElementById("portal-cards-grid").classList.remove("hide");
-            document.getElementById("portal-desc").textContent = "Válassz felületet a folytatáshoz";
+            const cardsGrid = document.getElementById("portal-cards-grid");
+            if (cardsGrid) cardsGrid.classList.remove("hide");
+            const desc = document.getElementById("portal-desc");
+            if (desc) desc.textContent = "Válassz felületet a folytatáshoz";
         }
 
         // Customer Auth Handlers
