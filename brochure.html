@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GastroGo - Partner Értékesítési Brosúra (A4)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF9F1C;
+            --primary-dark: #E08200;
+            --secondary: #FFBE0B;
+            --accent: #2EC4B6;
+            --dark: #0A0E17;
+            --card-dark: #162032;
+            --light-bg: #F8FAFC;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --success: #10B981;
+            --border: #E2E8F0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            background-color: #334155;
+            color: var(--text-main);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* Floating Action Bar (Invisible on print) */
+        .no-print-bar {
+            position: fixed;
+            top: 20px;
+            z-index: 99999;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #0A0E17;
+            font-weight: 800;
+            font-size: 14px;
+            padding: 10px 22px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 159, 28, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #FFF;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* A4 Page Container */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            height: 297mm;
+            background: #FFFFFF;
+            padding: 18mm 16mm;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        /* Top Header */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 2.5px solid var(--primary);
+            margin-bottom: 14px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-logo h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--dark);
+        }
+
+        .brand-logo h1 span {
+            color: var(--primary);
+        }
+
+        .badge-pitch {
+            background: rgba(255, 159, 28, 0.15);
+            color: var(--primary-dark);
+            border: 1px solid rgba(255, 159, 28, 0.4);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            background: linear-gradient(135deg, #0A0E17 0%, #162032 100%);
+            color: #FFFFFF;
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 159, 28, 0.3);
+        }
+
+        .hero-banner h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 6px;
+        }
+
+        .hero-banner h2 span {
+            color: var(--primary);
+        }
+
+        .hero-banner p {
+            font-size: 11.5px;
+            color: #CBD5E1;
+            line-height: 1.5;
+            max-width: 90%;
+        }
+
+        /* 4 Key Value Pillars */
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .pillar-card {
+            background: var(--light-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .pillar-icon {
+            font-size: 26px;
+            background: #FFFFFF;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+
+        .pillar-info h3 {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .pillar-info p {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Visual Feature Showcase Grid */
+        .features-section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .features-section-title::after {
+            content: "";
+            flex-grow: 1;
+            height: 1.5px;
+            background: var(--border);
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .showcase-item {
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #FFFFFF;
+        }
+
+        .showcase-img {
+            height: 85px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .showcase-tag {
+            position: absolute;
+            bottom: 6px;
+            left: 8px;
+            background: rgba(10, 14, 23, 0.85);
+            color: #FFFFFF;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            backdrop-filter: blur(4px);
+        }
+
+        .showcase-content {
+            padding: 10px 12px;
+        }
+
+        .showcase-content h4 {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .showcase-content p {
+            font-size: 10px;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        /* Bottom Steps / CTA Banner */
+        .bottom-cta-banner {
+            background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+            border: 1.5px solid #FDBA74;
+            border-radius: 14px;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .cta-text h4 {
+            font-size: 13px;
+            font-weight: 800;
+            color: #9A3412;
+            margin-bottom: 2px;
+        }
+
+        .cta-text p {
+            font-size: 10.5px;
+            color: #7C2D12;
+        }
+
+        .cta-contact-box {
+            background: #FFFFFF;
+            border: 1px solid #FDBA74;
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .cta-contact-box strong {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        .cta-contact-box span {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Page Footer */
+        .page-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9.5px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
+        }
+
+        /* ================= PAGE 2 SPECIFICS ================= */
+        .workflow-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .workflow-box {
+            background: var(--light-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .workflow-num {
+            width: 26px;
+            height: 26px;
+            background: var(--primary);
+            color: #000;
+            font-weight: 900;
+            font-size: 12px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+
+        .workflow-box h4 {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .workflow-box p {
+            font-size: 9.5px;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .deep-dive-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .deep-dive-card {
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: #FFFFFF;
+        }
+
+        .deep-dive-card.highlight {
+            background: #F0FDF4;
+            border-color: #86EFAC;
+        }
+
+        .deep-dive-card h4 {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .deep-dive-card ul {
+            list-style: none;
+            padding-left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .deep-dive-card ul li {
+            font-size: 10px;
+            color: var(--text-main);
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            line-height: 1.3;
+        }
+
+        .deep-dive-card ul li::before {
+            content: "✔";
+            color: var(--success);
+            font-weight: 900;
+            font-size: 10px;
+        }
+
+        /* Print Media Styles */
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+                gap: 0;
+            }
+            .no-print-bar {
+                display: none !important;
+            }
+            .a4-page {
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Action Toolbar (Hidden during Print) -->
+    <div class="no-print-bar">
+        <button class="btn-action" onclick="window.print()">
+            🖨️ Nyomtatás / Mentés PDF-ként
+        </button>
+        <a href="admin.html" class="btn-secondary">
+            ⬅️ Vissza az Adminba
+        </a>
+    </div>
+
+    <!-- ==========================================
+         PAGE 1: A4 FRONT COVER & CORE ADVANTAGES
+         ========================================== -->
+    <div class="a4-page">
+        <!-- Header -->
+        <header class="header-row">
+            <div class="brand-logo">
+                <h1>Gastro<span>Go</span></h1>
+            </div>
+            <div class="badge-pitch">
+                🚀 Partner Ajánlat Éttermeknek
+            </div>
+        </header>
+
+        <!-- Main Hero Pitch -->
+        <div class="hero-banner">
+            <h2>Növeld a forgalmad <span>közvetlen rendelésekkel</span> és tarts meg minden forintot!</h2>
+            <p>A GastroGo a komplett digitális étlap, online rendeléskezelő és konyhai pultos rendszer, amellyel saját márkádat építheted a magas jutalékok nélkül.</p>
+        </div>
+
+        <!-- 4 Key Advantages -->
+        <div class="features-section-title">
+            Miért választják az éttermek a GastroGo-t?
+        </div>
+
+        <div class="pillars-grid">
+            <div class="pillar-card">
+                <div class="pillar-icon">💰</div>
+                <div class="pillar-info">
+                    <h3>0% vagy Minimális Jutalék</h3>
+                    <p>Felejtsd el a nagy ételfutár cégek 25-35%-os jutalékát. A megkeresett profit a te zsebedben marad.</p>
+                </div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">📱</div>
+                <div class="pillar-info">
+                    <h3>Letöltésmentes Vendégélmény</h3>
+                    <p>A vendég azonnal rendelhet mobilról vagy asztali QR kódról. Nincs kötelező app letöltés, nincs akadály.</p>
+                </div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">👨‍🍳</div>
+                <div class="pillar-info">
+                    <h3>Konyhai & Pultos Képernyő</h3>
+                    <p>Érintőképernyős rendeléskezelő hangjelzéssel és 1-kattintásos státuszváltással (Készül, Futárnál, Kiszállítva).</p>
+                </div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🍕</div>
+                <div class="pillar-info">
+                    <h3>Több Méret & Extra Feltétek</h3>
+                    <p>28/32cm pizza, 0.33/0.5l üdítő, tetszőleges méretek és egyedi plusz feltétek valós idejű árszámítással.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Showcase with Images -->
+        <div class="features-section-title">
+            Teljeskörű Digitális Megoldás Egy Rendszerben
+        </div>
+
+        <div class="showcase-grid">
+            <div class="showcase-item">
+                <div class="showcase-img" style="background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80');">
+                    <span class="showcase-tag">Vendég Rendelőfelület</span>
+                </div>
+                <div class="showcase-content">
+                    <h4>📱 Prémium Mobil Étlap</h4>
+                    <p>Gyönyörű képek, kategóriák, allergén ikonok és automatikus ingyenes szállítási sáv.</p>
+                </div>
+            </div>
+
+            <div class="showcase-item">
+                <div class="showcase-img" style="background-image: url('https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=600&auto=format&fit=crop&q=80');">
+                    <span class="showcase-tag">Pult & Konyha</span>
+                </div>
+                <div class="showcase-content">
+                    <h4>🔒 Zárolható Pultos Kiosk</h4>
+                    <p>A személyzet csak az élő rendeléseket látja. Tulajdonosi Admin mód egyszerű 4 jegyű PIN-nel védve.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom CTA Box -->
+        <div class="bottom-cta-banner">
+            <div class="cta-text">
+                <h4>Csatlakozz még ma és indulj el akár 24 órán belül!</h4>
+                <p>Nincs hűségidő, nincs rejtett költség. Kérj díjmentes bemutatót!</p>
+            </div>
+            <div class="cta-contact-box">
+                <strong>GastroGo Partnerprogram</strong>
+                <span>info@gastrogo.hu • www.gastrogo.hu</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="page-footer">
+            <span>GastroGo Rendszer • 1. Oldal: Áttekintés</span>
+            <span>Kiadás dátuma: 2026. • info@gastrogo.hu</span>
+        </footer>
+    </div>
+
+
+    <!-- ==========================================
+         PAGE 2: A4 BACK - WORKFLOW, SPECS & ONBOARDING
+         ========================================== -->
+    <div class="a4-page">
+        <!-- Header -->
+        <header class="header-row">
+            <div class="brand-logo">
+                <h1>Gastro<span>Go</span></h1>
+            </div>
+            <div class="badge-pitch">
+                ⚙️ Rendszer Részletek & Csatlakozás
+            </div>
+        </header>
+
+        <!-- 3 Step Onboarding Workflow -->
+        <div class="features-section-title">
+            Hogyan Működik az Élesítés? (3 Egyszerű Lépés)
+        </div>
+
+        <div class="workflow-row">
+            <div class="workflow-box">
+                <div class="workflow-num">1</div>
+                <h4>Étlap Feltöltése</h4>
+                <p>Elküldöd az étlapodat, mi 24 órán belül feltöltjük képekkel, kategóriákkal és méretekkel.</p>
+            </div>
+            <div class="workflow-box">
+                <div class="workflow-num">2</div>
+                <h4>Link & QR Kód</h4>
+                <p>Elhelyezed a linket a Facebookon, Google Cégemben és QR kódon az asztalokon vagy szórólapon.</p>
+            </div>
+            <div class="workflow-box">
+                <div class="workflow-num">3</div>
+                <h4>Élő Rendelések</h4>
+                <p>A rendelések hangjelzéssel érkeznek a tabletre/gépre, és azonnal készítheted őket.</p>
+            </div>
+        </div>
+
+        <!-- Deep Dive Features -->
+        <div class="features-section-title">
+            Mit Tartalmaz a GastroGo Rendszere?
+        </div>
+
+        <div class="deep-dive-grid">
+            <div class="deep-dive-card">
+                <h4>🍽️ Tulajdonosi Étlapkezelő</h4>
+                <ul>
+                    <li>Árak és ételek módosítása másodpercek alatt</li>
+                    <li>Több kiszerelés / méret soronként kezelve</li>
+                    <li>Plusz feltétek & allergének hozzárendelése</li>
+                    <li>Kategóriák és leírások tetszőleges szerkesztése</li>
+                </ul>
+            </div>
+
+            <div class="deep-dive-card">
+                <h4>🚚 Intelligens Kiszállítás</h4>
+                <ul>
+                    <li>Saját szállítási díj és minimum rendelési érték</li>
+                    <li>Dinamikus ingyenes szállítási mérősáv vevőknek</li>
+                    <li>Cím- és telefonszám ellenőrzés rendeléskor</li>
+                    <li>Élő futár- és diszpécser átadási jegyzőkönyv</li>
+                </ul>
+            </div>
+
+            <div class="deep-dive-card">
+                <h4>👨‍🍳 Konyhai & Pultos Vezérlés</h4>
+                <ul>
+                    <li>Hangjelzés új beérkező rendelésnél</li>
+                    <li>Egykattintásos állapotváltás (Készül ➔ Futárnál ➔ Kész)</li>
+                    <li>Zárolt Kiosk nézet a személyzetnek PIN védelemmel</li>
+                    <li>Műszakjegyzetek és konyhai üzenőfal</li>
+                </ul>
+            </div>
+
+            <div class="deep-dive-card highlight">
+                <h4>📊 Pénzügyek & Statisztikák</h4>
+                <ul>
+                    <li>Napi, heti és havi forgalmi összesítések</li>
+                    <li>Legnépszerűbb ételek és feltétek kimutatása</li>
+                    <li>Napszaki átlagos elkészítési idő elemzés</li>
+                    <li>Automata napi forgalmi elszámolás export</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Hardware Requirements -->
+        <div class="features-section-title">
+            Eszközigény & Kompatibilitás
+        </div>
+
+        <div style="background: var(--light-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;">
+            <p style="font-size: 11px; color: var(--text-main); line-height: 1.5;">
+                💻 <strong>Nem igényel drága céleszközt:</strong> Bármilyen meglévő Android / iPad tableten, okostelefonon, laptopon vagy asztali számítógépen Chrome vagy Safari böngészőből azonnal fut.
+            </p>
+        </div>
+
+        <!-- Final Call to Action -->
+        <div class="bottom-cta-banner" style="background: linear-gradient(135deg, #0A0E17 0%, #162032 100%); border-color: var(--primary); color: #FFF;">
+            <div class="cta-text">
+                <h4 style="color: var(--primary); font-size: 14px;">Készen állsz fellendíteni a forgalmadat?</h4>
+                <p style="color: #CBD5E1;">Vedd fel velünk a kapcsolatot és próbáld ki kötelezettségmentesen!</p>
+            </div>
+            <div class="cta-contact-box" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: #FFF;">
+                <strong style="color: #FFF;">Kapcsolatfelvétel:</strong>
+                <span style="color: var(--primary); font-weight: 700;">+36 (30) 123-4567</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="page-footer">
+            <span>GastroGo Rendszer • 2. Oldal: Funkciók & Csatlakozás</span>
+            <span>&copy; 2026 GastroGo Platform • Minden jog fenntartva.</span>
+        </footer>
+    </div>
+
+</body>
+</html>
