@@ -447,44 +447,45 @@
             color: var(--secondary);
         }
 
-        /* Mobile Adjustments: Compact 1-screen Fit without scrolling */
+        /* Mobile Adjustments: Top Aligned, Compact 1-screen Fit without scrolling */
         @media screen and (max-width: 768px) {
             body {
-                justify-content: center;
-                padding: 12px 16px;
+                justify-content: flex-start;
+                padding: 10px 14px 10px;
                 min-height: 100vh;
             }
 
             .portal-wrapper {
-                max-width: 360px;
+                max-width: 340px;
                 width: 100%;
-                margin: auto;
+                margin: 0 auto;
             }
 
             .brand-header {
-                margin-bottom: 12px;
+                margin-bottom: 8px;
             }
 
             .brand-logo-icon {
-                padding: 8px;
-                border-radius: 18px;
-                margin-bottom: 6px;
+                padding: 6px;
+                border-radius: 14px;
+                margin-bottom: 3px;
+                box-shadow: 0 4px 15px rgba(255, 159, 28, 0.2);
             }
 
             .brand-logo-icon svg {
-                width: 38px;
-                height: 38px;
+                width: 32px;
+                height: 32px;
             }
 
             .brand-header h1 {
-                font-size: 24px;
-                margin-bottom: 2px;
+                font-size: 22px;
+                margin-bottom: 0px;
             }
 
             .brand-header p {
-                font-size: 12px;
-                max-width: 280px;
-                line-height: 1.3;
+                font-size: 11px;
+                max-width: 270px;
+                line-height: 1.25;
             }
 
             .cards-grid {
@@ -501,64 +502,64 @@
             }
 
             .auth-slide-box {
-                max-width: 340px !important;
+                max-width: 330px !important;
                 width: 100% !important;
-                padding: 18px 16px !important;
-                border-radius: 20px !important;
+                padding: 14px 14px !important;
+                border-radius: 18px !important;
                 margin: 0 auto !important;
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45);
+                box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
             }
 
             .slide-box-head {
-                margin-bottom: 10px;
+                margin-bottom: 6px;
             }
 
             .auth-tab-row {
-                padding: 3px;
-                border-radius: 11px;
-                margin-bottom: 12px;
+                padding: 2px;
+                border-radius: 10px;
+                margin-bottom: 8px;
             }
 
             .auth-tab-btn {
-                padding: 7px 10px;
-                font-size: 12px;
-                border-radius: 8px;
+                padding: 6px 8px;
+                font-size: 11px;
+                border-radius: 7px;
             }
 
             .form-group {
-                margin-bottom: 10px;
+                margin-bottom: 8px;
             }
 
             .form-group label {
                 font-size: 10px;
-                margin-bottom: 3px;
-                letter-spacing: 0.3px;
+                margin-bottom: 2px;
+                letter-spacing: 0.2px;
             }
 
             .form-group input,
             .form-group select {
-                padding: 9px 12px;
-                font-size: 13px;
-                border-radius: 10px;
+                padding: 8px 10px;
+                font-size: 12px;
+                border-radius: 9px;
             }
 
             .btn-auth-submit {
-                padding: 10px 14px;
-                font-size: 13px;
-                margin-top: 6px;
-                border-radius: 11px;
-            }
-
-            .btn-guest-enter {
-                padding: 8px 10px;
-                font-size: 11px;
-                margin-top: 6px;
+                padding: 9px 12px;
+                font-size: 12px;
+                margin-top: 4px;
                 border-radius: 10px;
             }
 
-            .portal-footer {
-                margin-top: 14px;
+            .btn-guest-enter {
+                padding: 7px 10px;
                 font-size: 11px;
+                margin-top: 4px;
+                border-radius: 9px;
+            }
+
+            .portal-footer {
+                margin-top: 10px;
+                font-size: 10px;
             }
         }
     </style>
