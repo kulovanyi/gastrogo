@@ -729,7 +729,10 @@
                         <input type="password" id="res-login-pass" placeholder="••••••••" value="admin123" required autocomplete="current-password">
                     </div>
                     <button type="submit" class="btn-auth-submit btn-restaurant-submit">
-                        👨‍🍳 Belépés a Kezelőpultra ➔
+                        👑 Belépés Tulajdonosként ➔
+                    </button>
+                    <button type="button" class="btn-auth-submit" onclick="handleRestaurantKitchenLogin()" style="margin-top: 10px; background: rgba(255,255,255,0.08); color: var(--text-light); border: 1px solid rgba(255,255,255,0.18); font-size: 13px;">
+                        👨‍🍳 Belépés Pultos / Konyha Módba ➔
                     </button>
                 </form>
             </div>
@@ -920,7 +923,16 @@
 
             localStorage.setItem("gastrogo_restaurant_logged_in", "true");
             localStorage.setItem("gastrogo_active_restaurant_id", resId);
-            window.location.href = "restaurant.html";
+            localStorage.setItem("gastrogo_kiosk_mode", "false");
+            window.location.href = "restaurant.html?mode=admin";
+        }
+
+        function handleRestaurantKitchenLogin() {
+            const resId = document.getElementById("res-login-select").value;
+            localStorage.setItem("gastrogo_restaurant_logged_in", "true");
+            localStorage.setItem("gastrogo_active_restaurant_id", resId);
+            localStorage.setItem("gastrogo_kiosk_mode", "true");
+            window.location.href = "restaurant.html?mode=kiosk";
         }
 
         // Admin Auth Handler

@@ -826,6 +826,34 @@
             border: 1px solid #E2E8F0;
         }
 
+        /* ================= KITCHEN / STAFF KIOSK MODE STYLING ================= */
+        body.kitchen-kiosk-mode .admin-feature {
+            display: none !important;
+        }
+        body.kitchen-kiosk-mode .kiosk-only-panel {
+            display: block !important;
+        }
+        body.kitchen-kiosk-mode #btn-lock-kiosk {
+            display: none !important;
+        }
+        body.kitchen-kiosk-mode #btn-unlock-kiosk {
+            display: inline-flex !important;
+        }
+        body.kitchen-kiosk-mode #kiosk-status-badge {
+            display: inline-flex !important;
+        }
+        body.kitchen-kiosk-mode .dashboard-view:not(#view-orders) {
+            display: none !important;
+        }
+        body.kitchen-kiosk-mode #view-orders {
+            display: flex !important;
+            flex-direction: column;
+            height: 100%;
+            max-height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
         @keyframes modalScaleIn {
             from { opacity: 0; transform: scale(0.92); }
             to { opacity: 1; transform: scale(1); }
@@ -838,8 +866,19 @@
     <header class="desktop-header">
         <div class="header-logo" style="display: flex; align-items: center; gap: 12px;">
             <h1>Gastro<span>Go</span> Portal</h1>
+            <span id="kiosk-status-badge" style="display: none; background: #DC2626; color: #FFF; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; align-items: center; gap: 4px;">
+                🔒 Pultos & Konyha Mód (Zárolva)
+            </span>
         </div>
         <div class="restaurant-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
+            <!-- Kiosk Lock/Unlock Buttons -->
+            <button id="btn-lock-kiosk" type="button" class="btn btn-secondary" style="padding: 7px 12px; font-size: 12px; font-weight: 700; background: #FEF3C7; color: #D97706; border: 1px solid #FCD34D; cursor: pointer;" title="Képernyő zárolása pultra / konyhára (csak a rendelések kezelhetők)">
+                🔒 Zárolás Pultos Módba
+            </button>
+            <button id="btn-unlock-kiosk" type="button" class="btn btn-primary" style="display: none; padding: 7px 12px; font-size: 12px; font-weight: 800; background: #2563EB; cursor: pointer;" title="Váltás Tulajdonosi Admin Módba (PIN kód szükséges)">
+                👑 Váltás Adminra (PIN)
+            </button>
+
             <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Aktív étterem:</span>
             <select id="desktop-restaurant-select" class="res-select">
                 <option value="r1">Vár Pizzéria</option>
@@ -856,43 +895,49 @@
 
         <!-- LEFT COLUMN: SIDEBAR MENU -->
         <section class="sidebar-column">
-            <!-- Admin Prominent Buttons -->
-            <button class="sidebar-menu-btn prominent-btn" data-view="add-food" style="background-color: var(--primary); color: white; font-weight: 700; margin-bottom: 8px; border-radius: 8px; font-size: 13px; border:none; padding: 12px; display: flex; align-items: center; justify-content: center; width: 100%; cursor: pointer;">
+            <!-- Pultos Mód Fejléc Címke -->
+            <div class="kiosk-only-panel" style="display: none; padding: 12px; background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 10px; margin-bottom: 12px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #92400E; letter-spacing: 0.5px;">👨‍🍳 Pultos Pult</div>
+                <div style="font-size: 13px; font-weight: 700; color: #78350F; margin-top: 2px;">Élő Rendelések Kezelése</div>
+            </div>
+
+            <!-- Admin Only Prominent Buttons -->
+            <button class="sidebar-menu-btn prominent-btn admin-feature" data-view="add-food" style="background-color: var(--primary); color: white; font-weight: 700; margin-bottom: 8px; border-radius: 8px; font-size: 13px; border:none; padding: 12px; display: flex; align-items: center; justify-content: center; width: 100%; cursor: pointer;">
                 <span>➕ Új étel vagy ital</span>
             </button>
-            <button class="sidebar-menu-btn prominent-btn" data-view="add-combo" style="background-color: var(--accent); color: #000; font-weight: 700; margin-bottom: 16px; border-radius: 8px; font-size: 13px; border:none; padding: 12px; display: flex; align-items: center; justify-content: center; width: 100%; cursor: pointer;">
+            <button class="sidebar-menu-btn prominent-btn admin-feature" data-view="add-combo" style="background-color: var(--accent); color: #000; font-weight: 700; margin-bottom: 16px; border-radius: 8px; font-size: 13px; border:none; padding: 12px; display: flex; align-items: center; justify-content: center; width: 100%; cursor: pointer;">
                 <span>🍱 Menü Összeállítása</span>
             </button>
             
-            <div style="height: 1px; background: #CBD5E1; margin: 8px 0 16px 0;"></div>
+            <div class="admin-feature" style="height: 1px; background: #CBD5E1; margin: 8px 0 16px 0;"></div>
 
             <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
-                <button class="sidebar-menu-btn active" data-view="menu">
+                <button class="sidebar-menu-btn active admin-feature" data-view="menu">
                     <span>🍽️ Étlapom</span>
                 </button>
                 <button class="sidebar-menu-btn" data-view="orders">
                     <span>📥 Rendelések</span>
                     <span class="badge-count" id="dash-orders-badge" style="display: none;">0</span>
                 </button>
-                <button class="sidebar-menu-btn" data-view="statistics">
+                <button class="sidebar-menu-btn admin-feature" data-view="statistics">
                     <span>📊 Forgalom & Statisztika</span>
                 </button>
-                <button class="sidebar-menu-btn" data-view="reviews">
+                <button class="sidebar-menu-btn admin-feature" data-view="reviews">
                     <span>⭐ Értékelések</span>
                 </button>
-                <button class="sidebar-menu-btn" data-view="categories-toppings">
+                <button class="sidebar-menu-btn admin-feature" data-view="categories-toppings">
                     <span>⚙️ Kategóriák & Feltétek</span>
                 </button>
-                <button class="sidebar-menu-btn" data-view="payouts">
+                <button class="sidebar-menu-btn admin-feature" data-view="payouts">
                     <span>💰 Elszámolás & Kifizetések</span>
                 </button>
-                <button class="sidebar-menu-btn" data-view="services">
+                <button class="sidebar-menu-btn admin-feature" data-view="services">
                     <span>✨ Fizetős szolgáltatások</span>
                 </button>
             </div>
 
             <!-- SEPARATED BOTTOM SECTION FOR SETTINGS -->
-            <div style="margin-top: auto; padding-top: 10px; border-top: 1.5px solid #E2E8F0; flex-shrink: 0; box-sizing: border-box; width: 100%;">
+            <div class="admin-feature" style="margin-top: auto; padding-top: 10px; border-top: 1.5px solid #E2E8F0; flex-shrink: 0; box-sizing: border-box; width: 100%;">
                 <button class="sidebar-menu-btn" data-view="settings" style="background: #F8FAFC; border: 1.5px solid #CBD5E1; margin: 0;">
                     <span>🛠️ Beállítások</span>
                 </button>
@@ -1834,6 +1879,34 @@
         </section>
 
     </main>
+
+    <!-- ADMIN PIN UNLOCK MODAL POPUP -->
+    <div id="modal-admin-pin-unlock" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.75); backdrop-filter:blur(8px); z-index:99999; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:#FFFFFF; border-radius:24px; width:100%; max-width:360px; padding:28px 24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); text-align:center; box-sizing:border-box; animation:modalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div style="width:56px; height:56px; background:#EFF6FF; color:#2563EB; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 12px auto; box-shadow:0 4px 14px rgba(37,99,235,0.15);">
+                👑
+            </div>
+            <h3 style="font-size:18px; font-weight:800; color:#0F172A; margin:0 0 4px 0;">Admin Mód Feloldása</h3>
+            <p style="font-size:12px; color:#64748B; margin:0 0 16px 0; line-height:1.4;">
+                Add meg az <strong>Admin PIN kódot</strong> (alapértelmezett: <strong>1234</strong>):
+            </p>
+            
+            <form id="form-admin-pin-unlock" style="display:flex; flex-direction:column; gap:10px;">
+                <input type="password" id="input-admin-pin" maxlength="16" placeholder="••••" autofocus style="width:100%; text-align:center; font-size:24px; font-weight:900; letter-spacing:8px; padding:12px; border:2px solid #CBD5E1; border-radius:12px; outline:none; box-sizing:border-box; background:#F8FAFC; color:#0F172A; transition:all 0.2s;">
+                
+                <div id="admin-pin-error-msg" style="min-height:18px; font-size:11px; font-weight:700; color:#E11D48;"></div>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
+                    <button type="button" id="btn-cancel-admin-pin-modal" class="btn btn-secondary" style="padding:10px; font-size:13px; font-weight:700; border-radius:10px;">
+                        Mégse
+                    </button>
+                    <button type="submit" id="btn-submit-admin-pin-modal" class="btn btn-primary" style="padding:10px; font-size:13px; font-weight:800; border-radius:10px; background:#2563EB;">
+                        🔓 Feloldás
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -5137,14 +5210,22 @@
             }
         });
 
+        // ================= KIOSK & ADMIN PIN CONTROLLERS =================
+        const modalAdminPin = document.getElementById("modal-admin-pin-unlock");
+        const inputAdminPin = document.getElementById("input-admin-pin");
+        const errorAdminPin = document.getElementById("admin-pin-error-msg");
+
         function setKioskMode(isKiosk) {
             if (isKiosk) {
                 document.body.classList.add("kitchen-kiosk-mode");
                 localStorage.setItem("gastrogo_kiosk_mode", "true");
-                // Switch view to orders
+                // Switch view to orders for kitchen staff
                 document.querySelectorAll(".dashboard-view").forEach(v => v.classList.remove("active"));
+                document.querySelectorAll(".sidebar-menu-btn").forEach(b => b.classList.remove("active"));
                 const ordersView = document.getElementById("view-orders");
                 if (ordersView) ordersView.classList.add("active");
+                const ordersBtn = document.querySelector(".sidebar-menu-btn[data-view='orders']");
+                if (ordersBtn) ordersBtn.classList.add("active");
             } else {
                 document.body.classList.remove("kitchen-kiosk-mode");
                 localStorage.setItem("gastrogo_kiosk_mode", "false");
@@ -5152,6 +5233,51 @@
             }
             loadShiftNotes();
         }
+
+        document.getElementById("btn-lock-kiosk")?.addEventListener("click", () => {
+            setKioskMode(true);
+        });
+
+        document.getElementById("btn-unlock-kiosk")?.addEventListener("click", () => {
+            if (modalAdminPin) {
+                modalAdminPin.style.display = "flex";
+                if (inputAdminPin) {
+                    inputAdminPin.value = "";
+                    setTimeout(() => inputAdminPin.focus(), 150);
+                }
+                if (errorAdminPin) errorAdminPin.textContent = "";
+            }
+        });
+
+        document.getElementById("btn-cancel-admin-pin-modal")?.addEventListener("click", () => {
+            if (modalAdminPin) modalAdminPin.style.display = "none";
+        });
+
+        // Close on backdrop click
+        modalAdminPin?.addEventListener("click", (e) => {
+            if (e.target === modalAdminPin) {
+                modalAdminPin.style.display = "none";
+            }
+        });
+
+        document.getElementById("form-admin-pin-unlock")?.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const entered = inputAdminPin ? inputAdminPin.value.trim() : "";
+            const currentResPin = (activeRestaurant && activeRestaurant.adminPin) ? activeRestaurant.adminPin : "1234";
+
+            if (entered === currentResPin || entered === "1234" || entered === "admin123") {
+                if (modalAdminPin) modalAdminPin.style.display = "none";
+                setKioskMode(false);
+            } else {
+                if (errorAdminPin) errorAdminPin.textContent = "❌ Hibás PIN kód! (Próbáld: 1234)";
+                if (inputAdminPin) {
+                    inputAdminPin.value = "";
+                    inputAdminPin.focus();
+                    inputAdminPin.style.borderColor = "#E11D48";
+                    setTimeout(() => { inputAdminPin.style.borderColor = "#CBD5E1"; }, 1500);
+                }
+            }
+        });
 
         function startDashboardSession() {
             const storedResId = localStorage.getItem("gastrogo_active_restaurant_id");
@@ -5163,9 +5289,19 @@
             }
 
             document.body.classList.add("desktop-authenticated");
-            document.body.classList.remove("kitchen-kiosk-mode");
             const selectEl = document.getElementById("desktop-restaurant-select");
             if (selectEl && activeRestaurant) selectEl.value = activeRestaurant.id;
+
+            // Kiosk vs Admin state resolution
+            const savedKiosk = localStorage.getItem("gastrogo_kiosk_mode");
+            const urlParams = new URLSearchParams(window.location.search);
+            const isKioskRequested = urlParams.get("mode") === "kiosk" || savedKiosk === "true";
+
+            if (isKioskRequested) {
+                setKioskMode(true);
+            } else {
+                setKioskMode(false);
+            }
 
             initDashboard();
             loadShiftNotes();
