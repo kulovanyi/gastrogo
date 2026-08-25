@@ -872,10 +872,10 @@
         </div>
         <div class="restaurant-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
             <!-- Kiosk Lock/Unlock Buttons -->
-            <button id="btn-lock-kiosk" type="button" class="btn btn-secondary" style="padding: 7px 12px; font-size: 12px; font-weight: 700; background: #FEF3C7; color: #D97706; border: 1px solid #FCD34D; cursor: pointer;" title="Képernyő zárolása pultra / konyhára (csak a rendelések kezelhetők)">
+            <button id="btn-lock-kiosk" onclick="setKioskMode(true)" type="button" class="btn btn-secondary" style="padding: 7px 12px; font-size: 12px; font-weight: 700; background: #FEF3C7; color: #D97706; border: 1px solid #FCD34D; cursor: pointer;" title="Képernyő zárolása pultra / konyhára (csak a rendelések kezelhetők)">
                 🔒 Zárolás Pultos Módba
             </button>
-            <button id="btn-unlock-kiosk" type="button" class="btn btn-primary" style="display: none; padding: 7px 12px; font-size: 12px; font-weight: 800; background: #2563EB; cursor: pointer;" title="Váltás Tulajdonosi Admin Módba (PIN kód szükséges)">
+            <button id="btn-unlock-kiosk" onclick="openAdminPinModal()" type="button" class="btn btn-primary" style="display: none; padding: 7px 12px; font-size: 12px; font-weight: 800; background: #2563EB; cursor: pointer;" title="Váltás Tulajdonosi Admin Módba (PIN kód szükséges)">
                 👑 Váltás Adminra (PIN)
             </button>
 
@@ -886,7 +886,7 @@
                 <option value="r3">Istambul Gyros</option>
                 <option value="r4">Központi Étkezde</option>
             </select>
-            <button class="logout-btn" id="desktop-logout" type="button" style="background:#E71D36; border-color:#E71D36; color:#FFFFFF;">Kilépés</button>
+            <button class="logout-btn" id="desktop-logout" onclick="handleDesktopLogout()" type="button" style="background:#E71D36; border-color:#E71D36; color:#FFFFFF; cursor: pointer;">Kilépés</button>
         </div>
     </header>
 
@@ -4042,7 +4042,6 @@
                 // Populate normal food form
                 document.getElementById("edit-food-id").value = item.id;
                 document.getElementById("food-name").value = item.name;
-                document.getElementById("food-price").value = item.price;
                 document.getElementById("food-desc").value = item.description || "";
                 document.getElementById("food-img-base64").value = item.image || "";
                 document.getElementById("food-category-select").value = item.category || "";
@@ -5117,15 +5116,14 @@
         }
 
         // Attach listeners for Food preview
-        document.getElementById("food-name").addEventListener("input", updateFoodPreview);
-        document.getElementById("food-desc").addEventListener("input", updateFoodPreview);
-        document.getElementById("food-price").addEventListener("input", updateFoodPreview);
-        document.getElementById("food-img-file").addEventListener("change", () => setTimeout(updateFoodPreview, 150));
+        document.getElementById("food-name")?.addEventListener("input", updateFoodPreview);
+        document.getElementById("food-desc")?.addEventListener("input", updateFoodPreview);
+        document.getElementById("food-img-file")?.addEventListener("change", () => setTimeout(updateFoodPreview, 150));
 
         // Attach listeners for Combo preview
-        document.getElementById("combo-name").addEventListener("input", updateComboPreview);
-        document.getElementById("combo-builder-discount-value").addEventListener("input", updateComboPreview);
-        document.getElementById("combo-builder-discount-type").addEventListener("change", updateComboPreview);
+        document.getElementById("combo-name")?.addEventListener("input", updateComboPreview);
+        document.getElementById("combo-builder-discount-value")?.addEventListener("input", updateComboPreview);
+        document.getElementById("combo-builder-discount-type")?.addEventListener("change", updateComboPreview);
 
         // ================= SHIFT NOTES & KIOSK LOGIC =================
         let shiftNotes = [];
@@ -5215,13 +5213,35 @@
         const inputAdminPin = document.getElementById("input-admin-pin");
         const errorAdminPin = document.getElementById("admin-pin-error-msg");
 
+        function openAdminPinModal() {
+            if (modalAdminPin) {
+                modalAdminPin.style.display = "flex";
+                if (inputAdminPin) {
+                    inputAdminPin.value = "";
+                    setTimeout(() => inputAdminPin.focus(), 120);
+                }
+                if (errorAdminPin) errorAdminPin.textContent = "";
+            }
+        }
+        window.openAdminPinModal = openAdminPinModal;
+
         function setKioskMode(isKiosk) {
+            const btnLock = document.getElementById("btn-lock-kiosk");
+            const btnUnlock = document.getElementById("btn-unlock-kiosk");
+            const badge = document.getElementById("kiosk-status-badge");
+
             if (isKiosk) {
                 document.body.classList.add("kitchen-kiosk-mode");
                 localStorage.setItem("gastrogo_kiosk_mode", "true");
+                
+                if (btnLock) btnLock.style.display = "none";
+                if (btnUnlock) btnUnlock.style.display = "inline-flex";
+                if (badge) badge.style.display = "inline-flex";
+
                 // Switch view to orders for kitchen staff
                 document.querySelectorAll(".dashboard-view").forEach(v => v.classList.remove("active"));
                 document.querySelectorAll(".sidebar-menu-btn").forEach(b => b.classList.remove("active"));
+                
                 const ordersView = document.getElementById("view-orders");
                 if (ordersView) ordersView.classList.add("active");
                 const ordersBtn = document.querySelector(".sidebar-menu-btn[data-view='orders']");
@@ -5229,24 +5249,32 @@
             } else {
                 document.body.classList.remove("kitchen-kiosk-mode");
                 localStorage.setItem("gastrogo_kiosk_mode", "false");
+
+                if (btnLock) btnLock.style.display = "inline-flex";
+                if (btnUnlock) btnUnlock.style.display = "none";
+                if (badge) badge.style.display = "none";
+
+                // Switch view to menu for admin
+                document.querySelectorAll(".dashboard-view").forEach(v => v.classList.remove("active"));
+                document.querySelectorAll(".sidebar-menu-btn").forEach(b => b.classList.remove("active"));
+
+                const menuView = document.getElementById("view-menu");
+                if (menuView) menuView.classList.add("active");
+                const menuBtn = document.querySelector(".sidebar-menu-btn[data-view='menu']");
+                if (menuBtn) menuBtn.classList.add("active");
+
                 initDashboard();
             }
             loadShiftNotes();
         }
+        window.setKioskMode = setKioskMode;
 
         document.getElementById("btn-lock-kiosk")?.addEventListener("click", () => {
             setKioskMode(true);
         });
 
         document.getElementById("btn-unlock-kiosk")?.addEventListener("click", () => {
-            if (modalAdminPin) {
-                modalAdminPin.style.display = "flex";
-                if (inputAdminPin) {
-                    inputAdminPin.value = "";
-                    setTimeout(() => inputAdminPin.focus(), 150);
-                }
-                if (errorAdminPin) errorAdminPin.textContent = "";
-            }
+            openAdminPinModal();
         });
 
         document.getElementById("btn-cancel-admin-pin-modal")?.addEventListener("click", () => {
@@ -5278,6 +5306,14 @@
                 }
             }
         });
+
+        function handleDesktopLogout() {
+            localStorage.removeItem("gastrogo_restaurant_logged_in");
+            localStorage.removeItem("gastrogo_active_restaurant_id");
+            localStorage.removeItem("gastrogo_kiosk_mode");
+            window.location.href = "index.html";
+        }
+        window.handleDesktopLogout = handleDesktopLogout;
 
         function startDashboardSession() {
             const storedResId = localStorage.getItem("gastrogo_active_restaurant_id");
@@ -5330,12 +5366,7 @@
         }
         window.addEventListener("load", startDashboardSession);
 
-        document.getElementById("desktop-logout")?.addEventListener("click", () => {
-            localStorage.removeItem("gastrogo_restaurant_logged_in");
-            localStorage.removeItem("gastrogo_active_restaurant_id");
-            localStorage.removeItem("gastrogo_kiosk_mode");
-            window.location.href = "index.html";
-        });
+        document.getElementById("desktop-logout")?.addEventListener("click", handleDesktopLogout);
     </script>
 </body>
 </html>
