@@ -1564,6 +1564,37 @@ function openRestaurantMenu(restaurant) {
             phoneEl.onclick = () => alert(`Hívás indítása az étteremnek: ${restaurant.phone || "+36 35 123 456"}`);
         }
 
+        // Live Delivery Fee & Free Delivery Threshold Banner
+        const allSettings = (typeof GastroGoDB !== "undefined") ? GastroGoDB.read("restaurantSettings", {}) : {};
+        const resSettings = (restaurant.id && allSettings[restaurant.id]) ? allSettings[restaurant.id] : {};
+        const baseFee = getRestaurantDeliveryFee(restaurant, 0);
+        const threshold = (resSettings.freeDeliveryThreshold !== undefined && resSettings.freeDeliveryThreshold !== null && resSettings.freeDeliveryThreshold !== "")
+            ? Number(resSettings.freeDeliveryThreshold)
+            : (restaurant.freeDeliveryThreshold ? Number(restaurant.freeDeliveryThreshold) : 0);
+
+        const deliveryInfoEl = document.getElementById("menu-delivery-info-banner");
+        if (deliveryInfoEl) {
+            if (baseFee === 0) {
+                deliveryInfoEl.innerHTML = `<span>🎉</span> Ingyenes szállítás minden rendelésre!`;
+                deliveryInfoEl.style.background = "#ECFDF5";
+                deliveryInfoEl.style.borderColor = "#A7F3D0";
+                deliveryInfoEl.style.color = "#065F46";
+                deliveryInfoEl.style.display = "inline-flex";
+            } else if (threshold > 0) {
+                deliveryInfoEl.innerHTML = `<span>🚚</span> Szállítás: ${baseFee} Ft (${threshold.toLocaleString('hu-HU')} Ft-tól INGYENES)`;
+                deliveryInfoEl.style.background = "#FFFBEB";
+                deliveryInfoEl.style.borderColor = "#FDE68A";
+                deliveryInfoEl.style.color = "#92400E";
+                deliveryInfoEl.style.display = "inline-flex";
+            } else {
+                deliveryInfoEl.innerHTML = `<span>🚚</span> Szállítási díj: ${baseFee} Ft`;
+                deliveryInfoEl.style.background = "#F1F5F9";
+                deliveryInfoEl.style.borderColor = "#CBD5E1";
+                deliveryInfoEl.style.color = "#334155";
+                deliveryInfoEl.style.display = "inline-flex";
+            }
+        }
+
         const container = document.getElementById("menu-items-container");
         if (container) {
             container.innerHTML = "";
@@ -3192,7 +3223,6 @@ function renderCartItems() {
         return;
     }
 
-    container.innerHTML = "";
     if (summary) summary.style.display = "block";
 
     let subtotal = 0;
@@ -3200,31 +3230,75 @@ function renderCartItems() {
     const cartRes = restaurants.find(r => r.id === cartResId);
     const extraFees = cartRes && cartRes.extraFees ? cartRes.extraFees : [];
 
-    cart.forEach(item => {
+    // Live settings resolve
+    const allSettings = (typeof GastroGoDB !== "undefined") ? GastroGoDB.read("restaurantSettings", {}) : {};
+    const resSettings = (cartRes && cartRes.id && allSettings[cartRes.id]) ? allSettings[cartRes.id] : {};
+    const threshold = (resSettings.freeDeliveryThreshold !== undefined && resSettings.freeDeliveryThreshold !== null && resSettings.freeDeliveryThreshold !== "")
+        ? Number(resSettings.freeDeliveryThreshold)
+        : (cartRes && cartRes.freeDeliveryThreshold ? Number(cartRes.freeDeliveryThreshold) : 0);
+
+    const itemsHtml = cart.map(item => {
         const itemTotal = item.price * item.quantity;
         subtotal += itemTotal;
 
         const toppingsSubText = item.toppingsText ? `<div style="font-size:11px; color:var(--primary); margin-top:2px;">+ ${item.toppingsText}</div>` : '';
 
-        const el = document.createElement("div");
-        el.className = "cart-item";
-        el.innerHTML = `
-            <div class="cart-item-info">
-                <h4>${item.name}</h4>
-                ${toppingsSubText}
-                <span>${item.price} Ft</span>
-            </div>
-            <div class="cart-item-qty">
-                <button class="qty-btn minus" data-id="${item.cartItemId}">-</button>
-                <span class="qty-val">${item.quantity}</span>
-                <button class="qty-btn plus" data-id="${item.cartItemId}">+</button>
+        return `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <h4>${item.name}</h4>
+                    ${toppingsSubText}
+                    <span>${item.price} Ft</span>
+                </div>
+                <div class="cart-item-qty">
+                    <button class="qty-btn minus" data-id="${item.cartItemId}">-</button>
+                    <span class="qty-val">${item.quantity}</span>
+                    <button class="qty-btn plus" data-id="${item.cartItemId}">+</button>
+                </div>
             </div>
         `;
+    }).join("");
 
-        el.querySelector(".qty-btn.plus").addEventListener("click", () => adjustQty(item.cartItemId, 1));
-        el.querySelector(".qty-btn.minus").addEventListener("click", () => adjustQty(item.cartItemId, -1));
+    let freeDeliveryBannerHtml = "";
+    if (threshold > 0) {
+        if (subtotal >= threshold) {
+            freeDeliveryBannerHtml = `
+                <div style="background:#ECFDF5; border:1.5px solid #A7F3D0; border-radius:12px; padding:10px 14px; margin-bottom:12px; font-size:12px; font-weight:700; color:#065F46; display:flex; align-items:center; gap:8px; box-shadow:0 2px 8px rgba(16,185,129,0.1);">
+                    <span style="font-size:16px;">🎉</span>
+                    <div>
+                        <div>Elérted az INGYENES szállítást!</div>
+                        <div style="font-size:10px; font-weight:500; color:#047857;">A szállítási díj le lett vonva a végösszegből.</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const needed = threshold - subtotal;
+            const pct = Math.min(100, Math.round((subtotal / threshold) * 100));
+            freeDeliveryBannerHtml = `
+                <div style="background:#FFFBEB; border:1.5px solid #FDE68A; border-radius:12px; padding:10px 14px; margin-bottom:12px; font-size:12px; box-shadow:0 2px 8px rgba(245,158,11,0.08);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:700; color:#92400E; margin-bottom:6px;">
+                        <span style="display:flex; align-items:center; gap:5px;">🚚 Ingyenes szállítás</span>
+                        <span style="background:#FEF3C7; color:#B45309; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:800;">Még ${needed.toLocaleString('hu-HU')} Ft</span>
+                    </div>
+                    <div style="background:#E2E8F0; height:6px; border-radius:3px; overflow:hidden;">
+                        <div style="background:var(--primary); height:100%; width:${pct}%; transition:width 0.3s ease; border-radius:3px;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:10px; color:#A16207; margin-top:4px;">
+                        <span>${subtotal.toLocaleString('hu-HU')} Ft</span>
+                        <span>Cél: ${threshold.toLocaleString('hu-HU')} Ft</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
 
-        container.appendChild(el);
+    container.innerHTML = freeDeliveryBannerHtml + itemsHtml;
+
+    container.querySelectorAll(".qty-btn.plus").forEach(btn => {
+        btn.addEventListener("click", () => adjustQty(btn.getAttribute("data-id"), 1));
+    });
+    container.querySelectorAll(".qty-btn.minus").forEach(btn => {
+        btn.addEventListener("click", () => adjustQty(btn.getAttribute("data-id"), -1));
     });
 
     const deliveryFee = getRestaurantDeliveryFee(cartRes, subtotal);
@@ -3601,8 +3675,29 @@ function renderCheckoutScreen() {
 
     const subtotalEl = document.getElementById("checkout-subtotal-val");
     if (subtotalEl) subtotalEl.textContent = `${subtotal} Ft`;
+    const allSettings = (typeof GastroGoDB !== "undefined") ? GastroGoDB.read("restaurantSettings", {}) : {};
+    const resSettings = (cartRes && cartRes.id && allSettings[cartRes.id]) ? allSettings[cartRes.id] : {};
+    const threshold = (resSettings.freeDeliveryThreshold !== undefined && resSettings.freeDeliveryThreshold !== null && resSettings.freeDeliveryThreshold !== "")
+        ? Number(resSettings.freeDeliveryThreshold)
+        : (cartRes && cartRes.freeDeliveryThreshold ? Number(cartRes.freeDeliveryThreshold) : 0);
+
     const deliveryEl = document.getElementById("checkout-delivery-val");
-    if (deliveryEl) deliveryEl.textContent = deliveryFee === 0 ? "Ingyenes" : `${deliveryFee} Ft`;
+    if (deliveryEl) {
+        if (deliveryFee === 0) {
+            deliveryEl.textContent = "Ingyenes (0 Ft)";
+            deliveryEl.style.color = "#059669";
+            deliveryEl.style.fontWeight = "700";
+        } else if (threshold > 0) {
+            const needed = threshold - subtotal;
+            deliveryEl.textContent = `${deliveryFee} Ft (Még ${needed.toLocaleString('hu-HU')} Ft az ingyenesig)`;
+            deliveryEl.style.color = "var(--text-dark)";
+            deliveryEl.style.fontWeight = "600";
+        } else {
+            deliveryEl.textContent = `${deliveryFee} Ft`;
+            deliveryEl.style.color = "var(--text-dark)";
+            deliveryEl.style.fontWeight = "600";
+        }
+    }
     
     const extraEl = document.getElementById("checkout-extra-fees-val");
     let extraHtml = extraFees.map(f => `<div class="summary-row" style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-muted); margin-bottom:6px;"><span>${f.name}:</span><span>${f.amount} Ft</span></div>`).join("");

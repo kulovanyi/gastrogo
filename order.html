@@ -471,11 +471,15 @@
                         <h2 id="menu-restaurant-name">Étterem</h2>
                         <p id="menu-restaurant-desc">Különleges gasztronómiai kínálat.</p>
                         
-                        <!-- Clean Helpline Button -->
-                        <div id="menu-helpline-container" style="margin-top: 10px;">
-                            <button id="menu-helpline-phone" class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px; border-radius: 12px; font-weight: 700; color: var(--accent); background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.2); display: inline-flex; align-items: center;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px;">
+                            <!-- Clean Helpline Button -->
+                            <button id="menu-helpline-phone" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; border-radius: 10px; font-weight: 700; color: var(--accent); background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.2); display: inline-flex; align-items: center;">
                                 📞 +36 35 123 456
                             </button>
+                            <!-- Live Delivery Fee & Free Delivery Threshold Info Badge -->
+                            <div id="menu-delivery-info-banner" style="display: none; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A;">
+                                🚚 Szállítási információ
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1186,6 +1190,6 @@
     <!-- Cloud Adapter & App Scripts -->
     <script src="firebase-config.js?v=3"></script>
     <script src="shared-data.js?v=8"></script>
-    <script src="app.js?v=82"></script>
+    <script src="app.js?v=83"></script>
 </body>
 </html>
