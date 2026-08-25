@@ -198,7 +198,122 @@ window.GastroGoDB = (() => {
         }).catch(() => {});
     }
 
-    return { read, write, subscribe, initCloudSeed };
+    // ================= AUTOMATIC END-OF-DAY ORDER CLEANUP & ARCHIVING =================
+    function cleanupPastDayOrders() {
+        const allOrders = read("orders", []);
+        if (!Array.isArray(allOrders) || allOrders.length === 0) return;
+
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+        const ordersToKeep = [];
+        const ordersToRemove = [];
+
+        allOrders.forEach(order => {
+            if (!order) return;
+            const st = (order.status || "").toLowerCase();
+            const isCompleted = (st === "dispatched" || st === "delivered" || st === "completed");
+            
+            // Check createdTimestamp
+            const createdTs = order.createdTimestamp ? Number(order.createdTimestamp) : 0;
+            let isPastDay = false;
+            
+            if (createdTs > 0) {
+                const ordDate = new Date(createdTs);
+                const ordDateStr = `${ordDate.getFullYear()}-${String(ordDate.getMonth() + 1).padStart(2, '0')}-${String(ordDate.getDate()).padStart(2, '0')}`;
+                
+                // If created on a calendar day before today OR older than 12 hours
+                if (ordDateStr < todayStr || (now.getTime() - createdTs > 12 * 60 * 60 * 1000)) {
+                    isPastDay = true;
+                }
+            } else {
+                // If no timestamp and completed, consider expired past order
+                isPastDay = true;
+            }
+
+            if (isCompleted && isPastDay) {
+                ordersToRemove.push(order);
+            } else {
+                ordersToKeep.push(order);
+            }
+        });
+
+        if (ordersToRemove.length > 0) {
+            console.log(`🧹 [GastroGoDB] ${ordersToRemove.length} db korábbi napról származó teljesített rendelés törlése és archiválása...`);
+            archiveAndPurgeOrders(ordersToRemove, ordersToKeep);
+        }
+    }
+
+    function manualArchiveDispatchedOrders(restaurantId = null) {
+        const allOrders = read("orders", []);
+        if (!Array.isArray(allOrders) || allOrders.length === 0) return 0;
+
+        const ordersToKeep = [];
+        const ordersToRemove = [];
+
+        allOrders.forEach(order => {
+            if (!order) return;
+            const matchesRes = !restaurantId || order.restaurantId === restaurantId;
+            const st = (order.status || "").toLowerCase();
+            const isCompleted = (st === "dispatched" || st === "delivered" || st === "completed");
+
+            if (matchesRes && isCompleted) {
+                ordersToRemove.push(order);
+            } else {
+                ordersToKeep.push(order);
+            }
+        });
+
+        if (ordersToRemove.length > 0) {
+            console.log(`🧹 [GastroGoDB] Manuális nap végi takarítás: ${ordersToRemove.length} db rendelés archiválva.`);
+            archiveAndPurgeOrders(ordersToRemove, ordersToKeep);
+        }
+        return ordersToRemove.length;
+    }
+
+    function archiveAndPurgeOrders(ordersToRemove, ordersToKeep) {
+        // 1. Save to archivedOrders in localStorage
+        const existingArchived = read("archivedOrders", []);
+        const mergedArchived = [...existingArchived];
+        ordersToRemove.forEach(rem => {
+            if (!mergedArchived.find(a => a.id === rem.id)) {
+                mergedArchived.push(rem);
+            }
+        });
+        localStorage.setItem(prefix + "archivedOrders", JSON.stringify(mergedArchived));
+
+        // 2. Write kept orders to local database
+        localStorage.setItem(prefix + "orders", JSON.stringify(ordersToKeep));
+        window.dispatchEvent(new CustomEvent("gastrogo:local_update", { detail: { key: "orders", value: ordersToKeep } }));
+
+        // 3. Delete removed orders from Firebase Firestore directly & save to archivedOrders collection
+        const db = getFirestore();
+        if (db) {
+            ordersToRemove.forEach(rem => {
+                if (rem && rem.id) {
+                    // Save to archivedOrders
+                    db.collection("archivedOrders").doc(rem.id).set(JSON.parse(JSON.stringify(rem)), { merge: true }).catch(() => {});
+                    // Delete from active orders
+                    db.collection("orders").doc(rem.id).delete()
+                        .then(() => console.log(`🗑️ Firestore aktív rendelés törölve: ${rem.id}`))
+                        .catch(err => console.error("Firestore rendelés törlési hiba:", err));
+                }
+            });
+        }
+    }
+
+    // Auto-run cleanup on initialization & every 5 minutes
+    setTimeout(cleanupPastDayOrders, 2000);
+    setInterval(cleanupPastDayOrders, 5 * 60 * 1000);
+
+    return { 
+        read, 
+        write, 
+        subscribe, 
+        initCloudSeed, 
+        cleanupPastDayOrders, 
+        manualArchiveDispatchedOrders 
+    };
 })();
 
 // ================= OFFICIAL 1-14 EU/HUNGARIAN ALLERGENS =================

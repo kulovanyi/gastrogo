@@ -2773,5 +2773,56 @@ body.on-screen-menu .mobile-floating-cart {
     }
 }
 
+/* ================= PRODUCT VARIANTS SELECTION (SIZES / QUANTITIES) ================= */
+.variant-selection-group {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(203, 213, 225, 0.6);
+}
+
+.variant-option-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 14px;
+    background: #F8FAFC;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.variant-option-row:hover {
+    border-color: var(--primary);
+    background: rgba(255, 159, 28, 0.04);
+}
+
+.variant-option-row.selected {
+    border-color: var(--primary) !important;
+    background: rgba(255, 159, 28, 0.1) !important;
+    box-shadow: 0 3px 10px rgba(255, 159, 28, 0.15);
+}
+
+.variant-option-row input[type="radio"] {
+    accent-color: var(--primary);
+    width: 17px;
+    height: 17px;
+    cursor: pointer;
+}
+
+body.dark-mode .variant-option-row,
+html.dark-mode .variant-option-row {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+
+body.dark-mode .variant-option-row.selected,
+html.dark-mode .variant-option-row.selected {
+    border-color: var(--primary) !important;
+    background: rgba(255, 159, 28, 0.18) !important;
+}
+
 
 

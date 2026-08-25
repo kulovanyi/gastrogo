@@ -1052,8 +1052,26 @@
                                 </div>
 
                                 <div class="input-group" style="margin: 0;">
-                                    <label for="food-price">Ár (Ft)</label>
+                                    <label for="food-price">Alapár (Ft)</label>
                                     <input type="number" id="food-price" placeholder="pl. 2190">
+                                </div>
+
+                                <!-- Sizes / Quantities / Variants section -->
+                                <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 10px; margin: 0;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                        <label style="font-size: 11px; font-weight: 700; color: #1E293B; margin: 0;">
+                                            📐 Méret / Kiszerelés variációk
+                                        </label>
+                                        <button type="button" class="btn btn-secondary" id="btn-add-food-variant" style="padding: 2px 8px; font-size: 10px; font-weight: 700; border-radius: 6px; background: #FFFFFF; border: 1px solid #94A3B8; color: #0F172A; cursor: pointer;">
+                                            + Új méret
+                                        </button>
+                                    </div>
+                                    <p style="font-size: 10px; color: #64748B; margin-bottom: 6px;">
+                                        Opcionális. Pl. 28 cm, 32 cm / 0.33 l, 0.5 l / 6 db, 12 db.
+                                    </p>
+                                    <div id="food-variants-container" style="display: flex; flex-direction: column; gap: 6px;">
+                                        <!-- Dynamically added variant rows -->
+                                    </div>
                                 </div>
 
                                 <div class="input-group" style="margin: 0;">
@@ -1934,7 +1952,7 @@
 
     <!-- Cloud Adapter & App Scripts -->
     <script src="firebase-config.js?v=3"></script>
-    <script src="shared-data.js?v=6"></script>
+    <script src="shared-data.js?v=8"></script>
     <script>
         // Helper to safely access opener properties under file:// security policies
         function getOpenerData(key, fallback) {
@@ -2532,7 +2550,7 @@
             if (!activeRestaurant) return;
             
             // UTF-8 BOM to guarantee Excel parses accented characters correctly
-            let csvContent = "\ufeffID,Megnevezés,Kategória,Ár,Leírás,Feltétek,Allergének,KépURL\n";
+            let csvContent = "\ufeffID,Megnevezés,Kategória,Ár,Leírás,Feltétek,Allergének,Variációk,KépURL\n";
             
             (activeRestaurant.menu || []).forEach((item, idx) => {
                 // Sequential integer ID starting from 1
@@ -2540,6 +2558,7 @@
                 item.id = String(numericId);
 
                 const toppingsStr = item.toppings ? item.toppings.map(t => `${t.name}:${t.price}`).join('|') : '';
+                const variantsStr = item.variants ? item.variants.map(v => `${v.name}:${v.price}`).join('|') : '';
                 
                 // Format allergens cleanly as comma-separated numbers (e.g. "1, 7" or "1, 3, 7")
                 let allergensStr = '';
@@ -2559,6 +2578,7 @@
                     `"${(item.description || '').replace(/"/g, '""')}"`,
                     `"${toppingsStr.replace(/"/g, '""')}"`,
                     `"${allergensStr.replace(/"/g, '""')}"`,
+                    `"${variantsStr.replace(/"/g, '""')}"`,
                     `"${imgStr.replace(/"/g, '""')}"`
                 ].join(",");
                 csvContent += row + "\n";
@@ -3999,7 +4019,11 @@
                                 </div>
                             </div>
                             <div class="menu-card-footer">
-                                <span class="menu-card-price">${item.price} Ft</span>
+                                <span class="menu-card-price">
+                                    ${item.variants && item.variants.length > 0 
+                                        ? `${Math.min(...item.variants.map(v => v.price)).toLocaleString('hu-HU')} Ft-tól <small style="font-size:10px; font-weight:600; color:#64748B;">(${item.variants.length} méret)</small>` 
+                                        : `${(item.price || 0).toLocaleString('hu-HU')} Ft`}
+                                </span>
                                 <div>
                                     <button class="btn-action-small btn-edit" onclick="populateEditForm('${item.id}')">Szerkeszt</button>
                                     <button class="btn-action-small btn-delete" onclick="deleteFood('${item.id}')">Töröl</button>
@@ -4078,6 +4102,9 @@
                     cb.checked = Array.isArray(item.allergens) && item.allergens.includes(aId);
                 });
 
+                // Populate Variants (Sizes / Quantities)
+                renderFoodVariants(item.variants || []);
+
                 document.getElementById("form-action-title").textContent = "✏️ Étel szerkesztése";
                 document.getElementById("btn-cancel-edit").style.display = "inline-flex";
                 
@@ -4091,6 +4118,57 @@
             clearForm();
         });
 
+        function addFoodVariantRow(name = "", price = "") {
+            const container = document.getElementById("food-variants-container");
+            if (!container) return;
+
+            const row = document.createElement("div");
+            row.className = "food-variant-row";
+            row.style = "display: grid; grid-template-columns: 2fr 1fr auto; gap: 6px; align-items: center;";
+            row.innerHTML = `
+                <input type="text" class="food-variant-name" value="${name}" placeholder="pl. 28 cm / 0.5 l / 6 db" style="padding: 6px 8px; font-size: 11px; border-radius: 6px; border: 1px solid #CBD5E1; background: white;">
+                <input type="number" class="food-variant-price" value="${price}" placeholder="Ár (Ft)" style="padding: 6px 8px; font-size: 11px; border-radius: 6px; border: 1px solid #CBD5E1; background: white;">
+                <button type="button" class="btn-remove-variant" style="background: none; border: none; color: #EF4444; font-size: 14px; cursor: pointer; padding: 2px 4px;" title="Törlés">🗑️</button>
+            `;
+
+            row.querySelector(".btn-remove-variant").addEventListener("click", () => {
+                row.remove();
+                updateFoodPreview();
+            });
+
+            row.querySelectorAll("input").forEach(inp => {
+                inp.addEventListener("input", updateFoodPreview);
+            });
+
+            container.appendChild(row);
+            updateFoodPreview();
+        }
+
+        function getFoodVariantsFromForm() {
+            const variants = [];
+            document.querySelectorAll(".food-variant-row").forEach(row => {
+                const name = row.querySelector(".food-variant-name").value.trim();
+                const price = parseInt(row.querySelector(".food-variant-price").value, 10);
+                if (name && !isNaN(price) && price >= 0) {
+                    variants.push({ name, price });
+                }
+            });
+            return variants;
+        }
+
+        function renderFoodVariants(variants = []) {
+            const container = document.getElementById("food-variants-container");
+            if (!container) return;
+            container.innerHTML = "";
+            if (Array.isArray(variants)) {
+                variants.forEach(v => {
+                    addFoodVariantRow(v.name, v.price);
+                });
+            }
+        }
+
+        document.getElementById("btn-add-food-variant")?.addEventListener("click", () => addFoodVariantRow());
+
         function clearForm() {
             document.getElementById("edit-food-id").value = "";
             document.getElementById("food-name").value = "";
@@ -4099,6 +4177,9 @@
             document.getElementById("food-img-base64").value = "";
             document.getElementById("food-img-file").value = "";
             
+            // Reset variants
+            renderFoodVariants([]);
+
             // Reset custom per-item toppings
             window._foodCustomToppings = [];
             
@@ -4115,12 +4196,19 @@
             const id = document.getElementById("edit-food-id").value;
             const name = document.getElementById("food-name").value.trim();
             const category = document.getElementById("food-category-select").value || "Egyéb";
-            const price = parseInt(document.getElementById("food-price").value);
+            let price = parseInt(document.getElementById("food-price").value);
             const desc = document.getElementById("food-desc").value.trim();
             const img = document.getElementById("food-img-base64").value;
 
+            const variants = getFoodVariantsFromForm();
+
+            // If variants are set, price can default to first variant
+            if (isNaN(price) && variants.length > 0) {
+                price = variants[0].price;
+            }
+
             if (!name || isNaN(price)) {
-                alert("Kérlek töltsd ki a Megnevezést és az Árat!");
+                alert("Kérlek töltsd ki a Megnevezést és az Árat (vagy adj meg legalább egy méret variációt árával)!");
                 return;
             }
 
@@ -4147,6 +4235,7 @@
                     item.description = desc;
                     item.toppings = toppings;
                     item.allergens = allergens;
+                    item.variants = variants;
                     item.image = img || null;
                 }
             } else {
@@ -4158,6 +4247,7 @@
                     description: desc,
                     toppings,
                     allergens,
+                    variants,
                     image: img || null
                 });
             }
@@ -4713,13 +4803,21 @@
 
             // 3. SECTION: DISPATCHED / COURIER ORDERS (Muted Grey - Auto daily cleanup note)
             const secDisp = document.createElement("div");
+            const hasDispatched = dispatchedOrders.length > 0;
+            const archiveBtnHtml = hasDispatched ? `
+                <button type="button" class="btn btn-secondary" onclick="triggerManualArchiveOrders()" style="padding: 4px 10px; font-size: 11px; font-weight: 700; border-radius: 8px; background: #F1F5F9; border: 1px solid #CBD5E1; cursor: pointer; color: #475569; margin-left: auto;">
+                    🧹 Teljesítettek törlése most
+                </button>
+            ` : '';
+
             secDisp.innerHTML = `
-                <div class="orders-section-header">
-                    <div class="orders-section-title dispatched">
+                <div class="orders-section-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="orders-section-title dispatched" style="margin-bottom:0;">
                         <span>🚚 Feladva a futárnak</span>
                         <span class="badge-count" style="background:#64748B; font-size:11px; padding:3px 8px;">${dispatchedOrders.length} db</span>
                         <span style="font-size:11px; font-weight:600; color:#64748B; margin-left:8px;">(A nap végén automatikusan archiválódik)</span>
                     </div>
+                    ${archiveBtnHtml}
                 </div>
                 <div class="orders-grid-2col" id="orders-grid-dispatched">
                     ${dispatchedOrders.length > 0 
@@ -4731,6 +4829,16 @@
 
             container.appendChild(mainWrapper);
         }
+
+        function triggerManualArchiveOrders() {
+            if (!activeRestaurant) return;
+            if (confirm("Biztosan archiválni és törölni szeretnéd a futárnak átadott, teljesített rendeléseket az élő listából? (A bevételek és statisztikák megmaradnak.)")) {
+                const count = GastroGoDB.manualArchiveDispatchedOrders(activeRestaurant.id);
+                alert(`Sikeresen törölve és archiválva ${count} db teljesített rendelés.`);
+                initDashboard();
+            }
+        }
+        window.triggerManualArchiveOrders = triggerManualArchiveOrders;
 
         function setOrderStatus(id, newStatus) {
             const order = orders.find(o => o.id === id);
@@ -4791,6 +4899,7 @@
                 let descIdx = headerCols.findIndex(c => c.includes("leír") || c.includes("leir") || c.includes("desc"));
                 let topIdx = headerCols.findIndex(c => c.includes("feltét") || c.includes("feltet") || c.includes("top"));
                 let allIdx = headerCols.findIndex(c => c.includes("allerg") || c.includes("all"));
+                let varIdx = headerCols.findIndex(c => c.includes("variác") || c.includes("variac") || c.includes("méret") || c.includes("meret") || c.includes("variant") || c.includes("size"));
                 let imgIdx = headerCols.findIndex(c => c.includes("kép") || c.includes("kep") || c.includes("img") || c.includes("image"));
 
                 // Fallback default column indexes if header is simple
@@ -4815,7 +4924,7 @@
                     if (!name) continue;
 
                     const category = (catIdx !== -1 && row[catIdx]) ? row[catIdx].trim() || "Egyéb" : "Egyéb";
-                    const price = (priceIdx !== -1 && row[priceIdx]) ? (parseInt(String(row[priceIdx]).replace(/[^\d]/g, "")) || 0) : 0;
+                    let price = (priceIdx !== -1 && row[priceIdx]) ? (parseInt(String(row[priceIdx]).replace(/[^\d]/g, "")) || 0) : 0;
                     const desc = (descIdx !== -1 && row[descIdx]) ? row[descIdx].trim() : "";
 
                     if (category && !activeRestaurant.categories.includes(category)) {
@@ -4828,6 +4937,19 @@
                             const sub = t.split(":");
                             if (sub.length === 2) toppings.push({ name: sub[0].trim(), price: parseInt(String(sub[1]).replace(/[^\d]/g, "")) || 0 });
                         });
+                    }
+
+                    const variants = [];
+                    if (varIdx !== -1 && row[varIdx]) {
+                        row[varIdx].trim().split("|").forEach(v => {
+                            const sub = v.split(":");
+                            if (sub.length === 2) variants.push({ name: sub[0].trim(), price: parseInt(String(sub[1]).replace(/[^\d]/g, "")) || 0 });
+                        });
+                    }
+
+                    // If price is 0 but variants exist, default price to first variant
+                    if ((!price || price === 0) && variants.length > 0) {
+                        price = variants[0].price;
                     }
 
                     const allergens = [];
@@ -4860,6 +4982,7 @@
                         item.price = price;
                         item.description = desc;
                         if (toppings.length > 0 || row[topIdx] !== undefined) item.toppings = toppings;
+                        if (variants.length > 0 || row[varIdx] !== undefined) item.variants = variants;
                         if (allergens.length > 0 || row[allIdx] !== undefined) item.allergens = allergens;
                         if (img) item.image = img;
                         updatedCount++;
@@ -4876,6 +4999,7 @@
                             price,
                             description: desc,
                             toppings,
+                            variants,
                             allergens,
                             image: img || null
                         });
@@ -4944,12 +5068,19 @@
         function updateFoodPreview() {
             const name = document.getElementById("food-name").value || "Termék neve";
             const desc = document.getElementById("food-desc").value || "Termék leírása...";
-            const price = document.getElementById("food-price").value || "0";
+            let price = document.getElementById("food-price").value || "0";
             const imgBase64 = document.getElementById("food-img-base64").value || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3";
+
+            const variants = getFoodVariantsFromForm();
+            let priceDisplay = `${price} Ft`;
+            if (variants.length > 0) {
+                const minPrice = Math.min(...variants.map(v => v.price));
+                priceDisplay = `${minPrice.toLocaleString('hu-HU')} Ft-tól (${variants[0].name})`;
+            }
 
             document.getElementById("food-preview-title").textContent = name;
             document.getElementById("food-preview-desc").textContent = desc;
-            document.getElementById("food-preview-price").textContent = `${price} Ft`;
+            document.getElementById("food-preview-price").textContent = priceDisplay;
             document.getElementById("food-preview-img").style.backgroundImage = `url('${imgBase64}')`;
 
             // Allergens preview

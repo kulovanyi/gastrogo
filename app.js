@@ -363,8 +363,11 @@ if (!window.reviewsDb) {
 }
 const reviews = window.reviewsDb;
 
-// Auto-wipe any legacy synthetic mock orders from Firebase Firestore
+// Auto-wipe any legacy synthetic mock orders & past day completed orders from Firebase Firestore
 try {
+    if (window.GastroGoDB && typeof window.GastroGoDB.cleanupPastDayOrders === "function") {
+        window.GastroGoDB.cleanupPastDayOrders();
+    }
     const db = window.firestoreDb || (typeof firebase !== "undefined" && firebase.apps && firebase.apps.length > 0 ? firebase.firestore() : null);
     if (db) {
         db.collection("orders").get().then(snapshot => {
@@ -1640,8 +1643,12 @@ function openRestaurantMenu(restaurant) {
                                     ${allergensHtml}
                                 </div>
                                 <div class="menu-card-footer">
-                                    <span class="menu-card-price">${item.price} Ft</span>
-                                    <button class="btn-add-cart" data-id="${item.id}">+</button>
+                                    <span class="menu-card-price">
+                                        ${item.variants && item.variants.length > 0 
+                                            ? `${Math.min(...item.variants.map(v => v.price)).toLocaleString('hu-HU')} Ft-tól` 
+                                            : `${(item.price || 0).toLocaleString('hu-HU')} Ft`}
+                                    </span>
+                                    <button class="btn-add-cart" data-id="${item.id}" title="Kosárba helyezés">+</button>
                                 </div>
                             </div>
                         `;
@@ -1860,44 +1867,116 @@ window.getCategoryToppings = getCategoryToppings;
 
 const toppingModal = document.getElementById("topping-modal");
 let currentAvailableToppings = [];
+let currentAvailableVariants = [];
+let selectedVariantIndex = 0;
 
 function handleAddToCartClick(item) {
     if (!item) return;
-    const toppings = (typeof getCategoryToppings === "function") ? getCategoryToppings(item.category, item) : [];
-    
+    const toppings = (typeof getCategoryToppings === "function") ? getCategoryToppings(item.category, item) : (item.toppings || []);
+    const variants = (Array.isArray(item.variants) && item.variants.length > 0) ? item.variants : [];
+
     const modal = document.getElementById("topping-modal");
 
-    // Ha nincsenek feltétek vagy nincs modal a DOM-ban, közvetlenül tegye a kosárba
-    if (!toppings || toppings.length === 0 || !modal) {
+    // Ha sem variáció, sem feltét nincs, vagy nincs modal -> közvetlenül tegye a kosárba
+    if ((!variants || variants.length === 0) && (!toppings || toppings.length === 0) || !modal) {
         addToCart(item, []);
         return;
     }
 
     customizingItem = item;
-    currentAvailableToppings = toppings;
+    currentAvailableToppings = toppings || [];
+    currentAvailableVariants = variants || [];
+    selectedVariantIndex = 0; // Alapértelmezett az első méret
 
     const titleEl = document.getElementById("topping-modal-title");
     if (titleEl) titleEl.textContent = `${item.name} testreszabása`;
     const descEl = document.getElementById("topping-modal-desc");
-    if (descEl) descEl.textContent = `Válassz extra feltéteket a(z) ${item.category || 'étel'} kategóriához:`;
+    if (descEl) {
+        if (variants.length > 0 && toppings.length > 0) {
+            descEl.textContent = `Válassz méretet / kiszerelést és plusz feltéteket:`;
+        } else if (variants.length > 0) {
+            descEl.textContent = `Válassz méretet / kiszerelést a termékhez:`;
+        } else {
+            descEl.textContent = `Válassz extra feltéteket a(z) ${item.category || 'étel'} kategóriához:`;
+        }
+    }
 
     const container = document.getElementById("topping-options-container");
     if (container) {
         container.innerHTML = "";
 
-        toppings.forEach((topping, index) => {
-            const option = document.createElement("label");
-            option.className = "topping-row";
-            option.innerHTML = `
-                <div class="topping-label-wrapper">
-                    <input type="checkbox" class="topping-checkbox" data-index="${index}" data-price="${topping.price}">
-                    <span>${topping.name}</span>
+        // 1. SECTION: SIZE / QUANTITY VARIANTS (if any)
+        if (variants.length > 0) {
+            const varSection = document.createElement("div");
+            varSection.className = "variant-selection-group";
+            varSection.style.cssText = "margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #CBD5E1;";
+            varSection.innerHTML = `
+                <div style="font-size: 11px; font-weight: 800; color: #0F172A; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span>📐 1. Válassz méretet / kiszerelést:</span>
                 </div>
-                <span class="topping-price">${topping.price > 0 ? `+${topping.price} Ft` : 'Ingyenes'}</span>
+                <div id="variant-radios-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    ${variants.map((v, idx) => `
+                        <label class="variant-option-row topping-row ${idx === 0 ? 'selected' : ''}" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px;">
+                            <div class="topping-label-wrapper" style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="item-variant-radio" class="variant-radio" value="${idx}" ${idx === 0 ? 'checked' : ''}>
+                                <span style="font-weight: 700; color: #1E293B;">${v.name}</span>
+                            </div>
+                            <span class="topping-price" style="font-weight: 800; color: var(--primary); font-size: 13px;">${(v.price || 0).toLocaleString('hu-HU')} Ft</span>
+                        </label>
+                    `).join("")}
+                </div>
             `;
-            option.querySelector("input").addEventListener("change", updateToppingPriceSum);
-            container.appendChild(option);
-        });
+
+            varSection.querySelectorAll(".variant-radio").forEach(radio => {
+                radio.addEventListener("change", (e) => {
+                    selectedVariantIndex = parseInt(e.target.value, 10);
+                    varSection.querySelectorAll(".variant-option-row").forEach(r => {
+                        r.classList.remove("selected");
+                        r.style.borderColor = "#CBD5E1";
+                        r.style.backgroundColor = "#F8FAFC";
+                    });
+                    const parentRow = radio.closest(".variant-option-row");
+                    if (parentRow) {
+                        parentRow.classList.add("selected");
+                        parentRow.style.borderColor = "var(--primary)";
+                        parentRow.style.backgroundColor = "rgba(255, 159, 28, 0.08)";
+                    }
+                    updateToppingPriceSum();
+                });
+            });
+
+            container.appendChild(varSection);
+        }
+
+        // 2. SECTION: TOPPINGS (if any)
+        if (toppings.length > 0) {
+            const topSection = document.createElement("div");
+            topSection.className = "toppings-selection-group";
+            topSection.innerHTML = `
+                <div style="font-size: 11px; font-weight: 800; color: #0F172A; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span>🧀 ${variants.length > 0 ? '2. Választható plusz feltétek:' : 'Választható plusz feltétek:'}</span>
+                </div>
+                <div id="toppings-checkboxes-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            `;
+
+            const topListContainer = topSection.querySelector("#toppings-checkboxes-list");
+            toppings.forEach((topping, index) => {
+                const option = document.createElement("label");
+                option.className = "topping-row";
+                option.style.cursor = "pointer";
+                option.innerHTML = `
+                    <div class="topping-label-wrapper">
+                        <input type="checkbox" class="topping-checkbox" data-index="${index}" data-price="${topping.price}">
+                        <span>${topping.name}</span>
+                    </div>
+                    <span class="topping-price">${topping.price > 0 ? `+${topping.price} Ft` : 'Ingyenes'}</span>
+                `;
+                option.querySelector("input").addEventListener("change", updateToppingPriceSum);
+                topListContainer.appendChild(option);
+            });
+
+            container.appendChild(topSection);
+        }
     }
 
     updateToppingPriceSum();
@@ -1906,26 +1985,60 @@ function handleAddToCartClick(item) {
 
 function updateToppingPriceSum() {
     if (!customizingItem) return;
-    let sum = customizingItem.price;
+    
+    // Base price is either selected variant price or item.price
+    let basePrice = customizingItem.price || 0;
+    if (currentAvailableVariants.length > 0 && currentAvailableVariants[selectedVariantIndex]) {
+        basePrice = currentAvailableVariants[selectedVariantIndex].price || 0;
+    }
+
+    let toppingsSum = 0;
     document.querySelectorAll(".topping-checkbox:checked").forEach(checkbox => {
-        sum += parseInt(checkbox.getAttribute("data-price"), 10);
+        toppingsSum += parseInt(checkbox.getAttribute("data-price"), 10) || 0;
     });
+
+    const total = basePrice + toppingsSum;
     const confirmBtn = document.getElementById("btn-confirm-toppings");
-    if (confirmBtn) confirmBtn.textContent = `Kosárba helyezés: ${sum} Ft`;
+    if (confirmBtn) confirmBtn.textContent = `Kosárba helyezés: ${total.toLocaleString('hu-HU')} Ft`;
 }
 
 document.getElementById("btn-confirm-toppings")?.addEventListener("click", () => {
     if (!customizingItem) return;
+
+    // Check selected variant
+    let selectedVariant = null;
+    let finalItemName = customizingItem.name;
+    let finalItemPrice = customizingItem.price || 0;
+    let finalItemId = customizingItem.id;
+
+    if (currentAvailableVariants.length > 0 && currentAvailableVariants[selectedVariantIndex]) {
+        selectedVariant = currentAvailableVariants[selectedVariantIndex];
+        finalItemName = `${customizingItem.name} (${selectedVariant.name})`;
+        finalItemPrice = selectedVariant.price || 0;
+        finalItemId = `${customizingItem.id}-${selectedVariant.name.replace(/\s+/g, '_')}`;
+    }
+
     const selectedToppings = [...document.querySelectorAll(".topping-checkbox:checked")].map(checkbox => {
         const idx = parseInt(checkbox.getAttribute("data-index"), 10);
         return currentAvailableToppings[idx];
     }).filter(Boolean);
 
-    addToCart(customizingItem, selectedToppings);
+    const customizedItem = {
+        ...customizingItem,
+        id: finalItemId,
+        name: finalItemName,
+        price: finalItemPrice,
+        selectedVariant: selectedVariant
+    };
+
+    addToCart(customizedItem, selectedToppings);
+    
     const modal = document.getElementById("topping-modal");
     if (modal) modal.classList.remove("active");
     customizingItem = null;
     currentAvailableToppings = [];
+    currentAvailableVariants = [];
+    selectedVariantIndex = 0;
 });
 
 document.getElementById("btn-close-topping")?.addEventListener("click", () => {
@@ -1933,6 +2046,8 @@ document.getElementById("btn-close-topping")?.addEventListener("click", () => {
     if (modal) modal.classList.remove("active");
     customizingItem = null;
     currentAvailableToppings = [];
+    currentAvailableVariants = [];
+    selectedVariantIndex = 0;
 });
 
 document.getElementById("topping-backdrop")?.addEventListener("click", () => {
@@ -1940,6 +2055,8 @@ document.getElementById("topping-backdrop")?.addEventListener("click", () => {
     if (modal) modal.classList.remove("active");
     customizingItem = null;
     currentAvailableToppings = [];
+    currentAvailableVariants = [];
+    selectedVariantIndex = 0;
 });
 
 // ================= CUSTOMER: LIVE TRACKING TIMELINE SYNC =================
