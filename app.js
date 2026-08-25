@@ -4154,11 +4154,151 @@ function initAppSession() {
     updateCartBadges();
     renderSettingsAddresses();
     renderRestaurants();
+    checkPWAInstalledState();
 
     try {
         GastroGoDB.initCloudSeed(restaurants, reviews);
     } catch(e){}
 }
+
+// ================= PROGRESSIVE WEB APP (PWA) HOMESCREEN INSTALL CONTROLLER =================
+let deferredInstallPrompt = null;
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration skipped:', err));
+    });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.getElementById("btn-install-pwa");
+    if (btn && !isAppInStandaloneMode()) {
+        btn.innerHTML = "<span>📲 Ikon Kirakása a Főképernyőre</span>";
+    }
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    const btn = document.getElementById("btn-install-pwa");
+    if (btn) {
+        btn.innerHTML = "<span>✅ Sikeresen Hozzáadva a Főképernyőhöz!</span>";
+        btn.style.background = "#10B981";
+    }
+});
+
+function isAppInStandaloneMode() {
+    return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone === true);
+}
+
+function checkPWAInstalledState() {
+    const btn = document.getElementById("btn-install-pwa");
+    if (!btn) return;
+
+    if (isAppInStandaloneMode()) {
+        btn.innerHTML = "<span>✅ Már a Főképernyőn Fut (Alkalmazás Mód)</span>";
+        btn.style.background = "#10B981";
+        btn.style.color = "#FFFFFF";
+    }
+}
+
+function handlePWAInstallClick() {
+    if (isAppInStandaloneMode()) {
+        alert("🎉 A GastroGo már telepítve van és közvetlenül a főképernyődről, önálló alkalmazásként fut!");
+        return;
+    }
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if (deferredInstallPrompt) {
+        // Native Android / Chrome installation prompt
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                const btn = document.getElementById("btn-install-pwa");
+                if (btn) {
+                    btn.innerHTML = "<span>✅ Sikeresen Hozzáadva!</span>";
+                    btn.style.background = "#10B981";
+                }
+            }
+            deferredInstallPrompt = null;
+        }).catch(() => {
+            showAndroidPwaInstructions();
+        });
+    } else if (isIOS) {
+        // Apple iOS Safari visual step-by-step guidance
+        showIOSPwaInstructions();
+    } else {
+        // Android / desktop fallback guidance
+        showAndroidPwaInstructions();
+    }
+}
+window.handlePWAInstallClick = handlePWAInstallClick;
+
+function showIOSPwaInstructions() {
+    const modal = document.getElementById("modal-pwa-instructions");
+    const container = document.getElementById("pwa-steps-container");
+    const title = document.getElementById("pwa-modal-title");
+    const desc = document.getElementById("pwa-modal-desc");
+
+    if (!modal || !container) return;
+
+    title.textContent = "📱 Hozzáadás iPhone Főképernyőhöz";
+    desc.textContent = "A Safari böngészőből 3 gyors érintéssel kiteheted az ikont:";
+
+    container.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span>
+            <span style="font-size:12px; color:#1E293B;">Érintsd meg a Safari alsó sávjában a <strong>Megosztás</strong> gombot (<span style="font-size:14px;">⬆️</span> vagy <span style="font-size:14px;">⎋</span>).</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</span>
+            <span style="font-size:12px; color:#1E293B;">Görgess a listában és válaszd a <strong>„Főképernyőhöz adás”</strong> (<span style="font-size:14px;">➕</span>) opciót.</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</span>
+            <span style="font-size:12px; color:#1E293B;">A jobb felső sarokban érintsd meg a <strong>„Hozzáadás”</strong> gombot.</span>
+        </div>
+    `;
+
+    modal.style.display = "flex";
+}
+
+function showAndroidPwaInstructions() {
+    const modal = document.getElementById("modal-pwa-instructions");
+    const container = document.getElementById("pwa-steps-container");
+    const title = document.getElementById("pwa-modal-title");
+    const desc = document.getElementById("pwa-modal-desc");
+
+    if (!modal || !container) return;
+
+    title.textContent = "📱 Hozzáadás a Kezdőképernyőre";
+    desc.textContent = "A Chrome / böngésző menüjéből egyszerűen kiteheted az ikont:";
+
+    container.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span>
+            <span style="font-size:12px; color:#1E293B;">Érintsd meg a jobb felső sarokban a <strong>Három pont (⋮)</strong> menü gombot.</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</span>
+            <span style="font-size:12px; color:#1E293B;">Válaszd az <strong>„Alkalmazás telepítése”</strong> vagy <strong>„Hozzáadás a kezdőképernyőhöz”</strong> pontot.</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</span>
+            <span style="font-size:12px; color:#1E293B;">Hagyd jóvá a <strong>„Telepítés”</strong> gombbal, és az ikon megjelenik a képernyődön!</span>
+        </div>
+    `;
+
+    modal.style.display = "flex";
+}
+
+function closePwaModal() {
+    const modal = document.getElementById("modal-pwa-instructions");
+    if (modal) modal.style.display = "none";
+}
+window.closePwaModal = closePwaModal;
 
 window.addEventListener("DOMContentLoaded", initAppSession);
 initAppSession();

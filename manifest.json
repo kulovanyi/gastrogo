@@ -1,0 +1,25 @@
+{
+  "name": "GastroGo - Ételrendelés",
+  "short_name": "GastroGo",
+  "description": "Gyors és egyszerű online ételrendelés közvetlenül a helyi éttermekből.",
+  "start_url": "order.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0E17",
+  "theme_color": "#FF9F1C",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=192&auto=format&fit=crop&q=80",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=512&auto=format&fit=crop&q=80",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
