@@ -474,6 +474,16 @@ function navigateTo(screenId) {
         document.body.classList.remove("auth-mode");
     }
 
+    // Dynamic bottom position class when viewing menu
+    document.body.classList.toggle("on-screen-menu", screenId === "screen-menu");
+
+    // Floating cart button visibility on mobile
+    const floatingCart = document.getElementById("mobile-floating-cart-btn");
+    if (floatingCart) {
+        const isBrowseScreen = ["screen-home", "screen-restaurant", "screen-menu"].includes(screenId);
+        floatingCart.style.display = isBrowseScreen ? "flex" : "none";
+    }
+
     // Global static bottom nav visibility for customer tabs
     const globalNav = document.getElementById("global-customer-bottom-nav");
     if (globalNav) {
@@ -2857,6 +2867,14 @@ function updateCartBadges() {
     if (cartBadge) cartBadge.textContent = totalQty;
     const menuCartBadge = document.getElementById("cart-badge-count-menu");
     if (menuCartBadge) menuCartBadge.textContent = totalQty;
+
+    // Mobile Floating Action Cart Button
+    const floatingBadge = document.getElementById("floating-cart-badge-count");
+    if (floatingBadge) floatingBadge.textContent = totalQty;
+    const floatingCart = document.getElementById("mobile-floating-cart-btn");
+    if (floatingCart) {
+        floatingCart.classList.toggle("has-items", totalQty > 0);
+    }
 }
 
 // ================= SAVED ADDRESSES SYSTEM =================

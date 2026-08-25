@@ -2683,5 +2683,95 @@ body.dark-mode #success-order-meta-card {
     }
 }
 
+/* ================= FLOATING ACTION CART BUTTON (MOBILE MENU) ================= */
+.mobile-floating-cart {
+    position: fixed;
+    bottom: 82px;
+    right: 20px;
+    z-index: 1300;
+    background: linear-gradient(135deg, #FF9F1C 0%, #FFBE0B 100%);
+    color: #0A0E17;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(255, 159, 28, 0.45), 0 4px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, opacity 0.25s ease, bottom 0.3s ease;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* On screen-menu where bottom nav is hidden, drop floating cart lower */
+body.on-screen-menu .mobile-floating-cart {
+    bottom: 24px;
+}
+
+.mobile-floating-cart:hover {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 0 12px 30px rgba(255, 159, 28, 0.55), 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-floating-cart:active {
+    transform: scale(0.92);
+}
+
+.mobile-floating-cart.has-items {
+    animation: fab-cart-pulse 2.2s infinite ease-in-out;
+}
+
+@keyframes fab-cart-pulse {
+    0%, 100% {
+        box-shadow: 0 8px 24px rgba(255, 159, 28, 0.45), 0 0 0 0 rgba(255, 159, 28, 0.45);
+    }
+    50% {
+        box-shadow: 0 12px 32px rgba(255, 159, 28, 0.65), 0 0 0 9px rgba(255, 159, 28, 0);
+    }
+}
+
+.fab-cart-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fab-cart-icon-wrapper svg {
+    stroke: #0A0E17;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+.fab-cart-badge {
+    position: absolute;
+    top: -10px;
+    right: -12px;
+    background: #E71D36;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 12px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    transform: scale(1);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hide floating cart on desktop screens */
+@media screen and (min-width: 769px) {
+    .mobile-floating-cart {
+        display: none !important;
+    }
+}
+
 
 
