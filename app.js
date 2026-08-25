@@ -477,11 +477,11 @@ function navigateTo(screenId) {
     // Dynamic bottom position class when viewing menu
     document.body.classList.toggle("on-screen-menu", screenId === "screen-menu");
 
-    // Floating cart button visibility on mobile
+    // Floating cart button visibility on mobile (strictly on restaurant menu screens)
     const floatingCart = document.getElementById("mobile-floating-cart-btn");
     if (floatingCart) {
-        const isBrowseScreen = ["screen-home", "screen-restaurant", "screen-menu"].includes(screenId);
-        floatingCart.style.display = isBrowseScreen ? "flex" : "none";
+        const isRestaurantMenuScreen = (screenId === "screen-menu" || screenId === "screen-restaurant");
+        floatingCart.style.display = isRestaurantMenuScreen ? "flex" : "none";
     }
 
     // Global static bottom nav visibility for customer tabs
@@ -2747,12 +2747,36 @@ function parseAndImportCSV(csvText) {
 }
 
 function addToCart(item, selectedToppings = []) {
+    const resId = item.restaurantId || (activeRestaurant ? activeRestaurant.id : (cart[0] ? cart[0].restaurantId : "r1"));
+
+    // Prevent mixing items from different restaurants
+    if (cart.length > 0) {
+        const existingResId = cart[0].restaurantId;
+        if (existingResId && existingResId !== resId) {
+            const currentRes = restaurants.find(r => r.id === existingResId);
+            const currentResName = currentRes ? currentRes.name : "egy másik étteremből";
+            const newRes = restaurants.find(r => r.id === resId);
+            const newResName = newRes ? newRes.name : "az új étterem";
+
+            const userConfirmed = confirm(
+                `A kosarad jelenleg a(z) "${currentResName}" termékeit tartalmazza.\n\nEgyszerre csak egy étteremből lehet rendelni. Szeretnéd törölni a korábbi tételeket, és a(z) "${newResName}" ételét betenni a kosárba?`
+            );
+
+            if (!userConfirmed) {
+                return false;
+            }
+
+            // Clear previous restaurant items
+            cart = [];
+            try { localStorage.removeItem("gastrogo_cart"); } catch(e){}
+        }
+    }
+
     const toppingsId = selectedToppings.map(t => t.name).sort().join("|");
     const cartItemId = `${item.id}-${toppingsId}`;
 
     const toppingsPrice = selectedToppings.reduce((s, t) => s + (t.price || 0), 0);
     const unitPrice = (item.price || 0) + toppingsPrice;
-    const resId = item.restaurantId || (activeRestaurant ? activeRestaurant.id : (cart[0] ? cart[0].restaurantId : "r1"));
 
     const existing = cart.find(c => c.cartItemId === cartItemId);
     if (existing) {
@@ -3004,13 +3028,33 @@ window.deleteAddressFromSettings = deleteAddressFromSettings;
 // ================= CART SYSTEM & DELIVERY FEE RESOLVER =================
 function getRestaurantDeliveryFee(res, subtotal = 0) {
     if (!res) return 0;
-    const fee = (res.deliveryFee !== undefined && res.deliveryFee !== null && res.deliveryFee !== "") ? Number(res.deliveryFee) : 300;
-    if (isNaN(fee) || fee <= 0) return 0;
     
-    // Ha van ingyenes szállítási limit beállítva és eléri a részösszeg:
-    if (res.freeDeliveryThreshold && subtotal >= Number(res.freeDeliveryThreshold)) {
+    // 1. Get live synced settings from GastroGoDB
+    const allSettings = GastroGoDB.read("restaurantSettings", {});
+    const resId = typeof res === "string" ? res : res.id;
+    const settings = (resId && allSettings[resId]) ? allSettings[resId] : {};
+
+    // 2. Resolve configured delivery fee (from live settings or restaurant object)
+    let fee = 0;
+    if (settings.deliveryFee !== undefined && settings.deliveryFee !== null && settings.deliveryFee !== "") {
+        fee = Number(settings.deliveryFee);
+    } else if (res.deliveryFee !== undefined && res.deliveryFee !== null && res.deliveryFee !== "") {
+        fee = Number(res.deliveryFee);
+    } else {
+        fee = 0;
+    }
+
+    if (isNaN(fee) || fee < 0) fee = 0;
+
+    // 3. Resolve free delivery threshold
+    const thresholdVal = (settings.freeDeliveryThreshold !== undefined && settings.freeDeliveryThreshold !== null && settings.freeDeliveryThreshold !== "")
+        ? Number(settings.freeDeliveryThreshold)
+        : (res.freeDeliveryThreshold ? Number(res.freeDeliveryThreshold) : null);
+
+    if (thresholdVal && !isNaN(thresholdVal) && thresholdVal > 0 && subtotal >= thresholdVal) {
         return 0;
     }
+
     return fee;
 }
 window.getRestaurantDeliveryFee = getRestaurantDeliveryFee;
@@ -3820,6 +3864,8 @@ GastroGoDB.subscribe("restaurants", updatedRestaurants => {
         const fresh = restaurants.find(r => r.id === activeRestaurant.id);
         if (fresh) activeRestaurant = fresh;
     }
+    try { renderCartItems(); } catch(e){}
+    try { renderDesktopSidebarCart(); } catch(e){}
 });
 
 GastroGoDB.subscribe("reviews", updatedReviews => {
@@ -3842,6 +3888,8 @@ GastroGoDB.subscribe("restaurantSettings", updatedSettings => {
         }
     });
     renderRestaurants();
+    try { renderCartItems(); } catch(e){}
+    try { renderDesktopSidebarCart(); } catch(e){}
 });
 
 GastroGoDB.subscribe("convenienceFee", fee => {

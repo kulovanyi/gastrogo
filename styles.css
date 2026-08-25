@@ -2686,7 +2686,7 @@ body.dark-mode #success-order-meta-card {
 /* ================= FLOATING ACTION CART BUTTON (MOBILE MENU) ================= */
 .mobile-floating-cart {
     position: fixed;
-    bottom: 82px;
+    bottom: 24px;
     right: 20px;
     z-index: 1300;
     background: linear-gradient(135deg, #FF9F1C 0%, #FFBE0B 100%);
@@ -2694,7 +2694,7 @@ body.dark-mode #success-order-meta-card {
     border-radius: 50%;
     width: 60px;
     height: 60px;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     box-shadow: 0 8px 24px rgba(255, 159, 28, 0.45), 0 4px 10px rgba(0, 0, 0, 0.25);
