@@ -1846,6 +1846,14 @@ function openRestaurantMenu(restaurant) {
         if (timeVal) timeVal.textContent = liveTime;
         const prepStatsVal = document.getElementById("res-prep-stats-val");
         if (prepStatsVal) prepStatsVal.textContent = `⏱ Élő becsült idő · Napszaki átlag: ~${avgPrep}p`;
+        
+        // Update Reviews Badge Count on Banner
+        const resReviews = (typeof reviews !== "undefined" && Array.isArray(reviews)) 
+            ? reviews.filter(r => r.restaurantId === restaurant.id) 
+            : [];
+        const reviewsCountBadge = document.getElementById("banner-reviews-count-badge");
+        if (reviewsCountBadge) reviewsCountBadge.textContent = resReviews.length;
+
         const bannerBg = document.getElementById("restaurant-banner-bg");
         if (bannerBg && restaurant.image) bannerBg.style.backgroundImage = `url('${restaurant.image}')`;
 
@@ -2079,14 +2087,71 @@ function resetCustomerReviewForm() {
     starsSelector.forEach(s => s.classList.add("active"));
 }
 
-document.getElementById("btn-submit-review")?.addEventListener("click", () => {
+// ================= RESTAURANT REVIEWS MODAL SYSTEM =================
+function openRestaurantReviewsModal() {
+    if (!activeRestaurant) return;
+    const modal = document.getElementById("modal-restaurant-reviews");
+    if (!modal) return;
+
+    const liveRating = getRestaurantAverageRating(activeRestaurant.id, activeRestaurant.rating);
+    const resReviews = reviews.filter(r => r.restaurantId === activeRestaurant.id);
+
+    const nameEl = document.getElementById("modal-reviews-res-name");
+    if (nameEl) nameEl.textContent = `${activeRestaurant.name} - Vélemények`;
+
+    const ratingEl = document.getElementById("modal-reviews-res-rating");
+    if (ratingEl) ratingEl.textContent = `★ ${liveRating}`;
+
+    const countEl = document.getElementById("modal-reviews-count-text");
+    if (countEl) countEl.textContent = `(${resReviews.length} értékelés)`;
+
+    setModalReviewRating(5);
+    const commentInput = document.getElementById("modal-review-comment-input");
+    if (commentInput) commentInput.value = "";
+
+    renderCustomerReviews(activeRestaurant.id);
+
+    modal.style.display = "flex";
+    modal.classList.add("active");
+}
+window.openRestaurantReviewsModal = openRestaurantReviewsModal;
+
+function closeRestaurantReviewsModal() {
+    const modal = document.getElementById("modal-restaurant-reviews");
+    if (!modal) return;
+    modal.style.display = "none";
+    modal.classList.remove("active");
+}
+window.closeRestaurantReviewsModal = closeRestaurantReviewsModal;
+
+function setModalReviewRating(val) {
+    const hiddenInput = document.getElementById("modal-review-rating-value");
+    if (hiddenInput) hiddenInput.value = val;
+
+    const stars = document.querySelectorAll("#modal-review-stars-select .modal-star-btn");
+    stars.forEach((star, index) => {
+        const starVal = index + 1;
+        if (starVal <= val) {
+            star.style.color = "#FBBF24";
+            star.classList.add("active");
+        } else {
+            star.style.color = "#CBD5E1";
+            star.classList.remove("active");
+        }
+    });
+}
+window.setModalReviewRating = setModalReviewRating;
+
+function submitModalReview() {
     if (!activeRestaurant) return;
 
-    const ratingVal = parseInt(document.getElementById("review-rating-value").value);
-    const commentText = document.getElementById("review-comment-input").value.trim();
+    const ratingVal = parseInt(document.getElementById("modal-review-rating-value")?.value || "5");
+    const commentInput = document.getElementById("modal-review-comment-input");
+    const commentText = commentInput ? commentInput.value.trim() : "";
 
     if (!commentText) {
-        alert("Kérlek írj valamilyen szöveges véleményt is!");
+        alert("Kérlek írj néhány mondatos szöveges véleményt is az étteremről!");
+        commentInput?.focus();
         return;
     }
 
@@ -2101,48 +2166,72 @@ document.getElementById("btn-submit-review")?.addEventListener("click", () => {
 
     reviews.push(newReview);
     GastroGoDB.write("reviews", reviews);
-    
-    const newRating = getRestaurantAverageRating(activeRestaurant.id, activeRestaurant.rating);
-    const ratingEl = document.getElementById("res-rating-val");
-    if (ratingEl) ratingEl.textContent = newRating;
 
-    resetCustomerReviewForm();
+    // Update live metrics & badges
+    const newRating = getRestaurantAverageRating(activeRestaurant.id, activeRestaurant.rating);
+    const resRatingEl = document.getElementById("res-rating-val");
+    if (resRatingEl) resRatingEl.textContent = newRating;
+
+    const modalRatingEl = document.getElementById("modal-reviews-res-rating");
+    if (modalRatingEl) modalRatingEl.textContent = `★ ${newRating}`;
+
+    const resReviews = reviews.filter(r => r.restaurantId === activeRestaurant.id);
+    const modalCountEl = document.getElementById("modal-reviews-count-text");
+    if (modalCountEl) modalCountEl.textContent = `(${resReviews.length} értékelés)`;
+
+    const bannerBadge = document.getElementById("banner-reviews-count-badge");
+    if (bannerBadge) bannerBadge.textContent = resReviews.length;
+
+    // Reset input & render reviews list
+    if (commentInput) commentInput.value = "";
     renderCustomerReviews(activeRestaurant.id);
     renderRestaurants();
 
     try {
         const gData = calculateUserGamification();
         updateUserAvatarUI();
-        showGamificationToast("✍️", "Értékelés Rögzítve!", "Köszönjük a véleményed! +XP jóváírva a profilodban.");
+        showGamificationToast("✍️", "Vélemény Beküldve!", "Köszönjük az értékelést! +XP és szintlépési pontok jóváírva.");
     } catch(e) {}
-});
+}
+window.submitModalReview = submitModalReview;
 
 function renderCustomerReviews(resId) {
-    const container = document.getElementById("reviews-list-container");
-    if (!container) return;
-    container.innerHTML = "";
+    const containers = [
+        document.getElementById("modal-reviews-list-container"),
+        document.getElementById("reviews-list-container")
+    ].filter(Boolean);
 
     const resReviews = reviews.filter(r => r.restaurantId === resId);
 
-    if (resReviews.length === 0) {
-        container.innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px 0;">Még nincs értékelés ehhez a helyhez. Légy te az első!</div>`;
-        return;
-    }
+    containers.forEach(container => {
+        container.innerHTML = "";
 
-    resReviews.slice().reverse().forEach(rev => {
-        const starsStr = "★".repeat(rev.rating) + "☆".repeat(5 - rev.rating);
-        
-        const el = document.createElement("div");
-        el.className = "review-card";
-        el.innerHTML = `
-            <div class="review-card-header">
-                <span class="review-author">${rev.customerName}</span>
-                <span class="review-stars-gold">${starsStr}</span>
-            </div>
-            <div class="review-comment-text">${rev.comment}</div>
-            <div style="font-size: 9px; color: var(--text-muted); text-align: right; margin-top: 4px;">${rev.date}</div>
-        `;
-        container.appendChild(el);
+        if (resReviews.length === 0) {
+            container.innerHTML = `
+                <div style="font-size:12.5px; color:var(--text-muted); text-align:center; padding:16px; background:#F8FAFC; border-radius:12px; border:1px dashed #CBD5E1;">
+                    <span style="font-size:24px; display:block; margin-bottom:4px;">💬</span>
+                    Még nincs értékelés ehhez a helyhez. Légy te az első, aki véleményt mond!
+                </div>
+            `;
+            return;
+        }
+
+        resReviews.slice().reverse().forEach(rev => {
+            const starsStr = "★".repeat(rev.rating) + "☆".repeat(5 - rev.rating);
+            
+            const el = document.createElement("div");
+            el.className = "review-card";
+            el.style.cssText = "background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; padding:12px 14px; margin-bottom:4px; box-shadow:0 2px 6px rgba(0,0,0,0.03);";
+            el.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <strong style="font-size:13px; color:#0F172A;">${rev.customerName}</strong>
+                    <span style="color:#D97706; font-size:13px; font-weight:800; letter-spacing:1px;">${starsStr}</span>
+                </div>
+                <div style="font-size:12.5px; color:#334155; line-height:1.45; margin:4px 0;">${rev.comment}</div>
+                <div style="font-size:10px; color:#94A3B8; text-align:right;">${rev.date}</div>
+            `;
+            container.appendChild(el);
+        });
     });
 }
 
