@@ -1370,7 +1370,61 @@
                                 </div>
                             </div>
 
-                            <!-- 2. Delivery & Fees -->
+                            <!-- 2. Opening Hours & Pre-order Lead Time Buffer -->
+                            <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:18px; border-radius:14px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+                                    <h4 style="font-size:14px; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:8px;">
+                                        <span>⏰ Nyitvatartás & Előrendelési Idősáv</span>
+                                    </h4>
+                                    <span id="settings-open-status-badge" style="font-size:11px; font-weight:800; padding:3px 10px; border-radius:6px; background:#DCFCE7; color:#15803D; display:inline-flex; align-items:center; gap:4px;">
+                                        🟢 Nyitva
+                                    </span>
+                                </div>
+                                <p style="font-size:11px; color:var(--text-muted); margin-bottom:14px; line-height:1.4;">
+                                    Állítsd be a hét minden napjára a nyitvatartást, valamint azt, hogy a vevők hány perccel / órával a nyitás előtt adhatnak le előrendelést.
+                                </p>
+
+                                <!-- Pre-order lead time & Override controls -->
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; background:#FFFFFF; border:1px solid #E2E8F0; padding:14px; border-radius:10px;">
+                                    <div class="input-group" style="margin-bottom:0;">
+                                        <label for="settings-preorder-lead" style="font-size:11px; font-weight:700; color:#0F172A;">⏱️ Előrendelési idősáv (Nyitás előtt)</label>
+                                        <select id="settings-preorder-lead" style="font-size:12.5px; font-weight:600; padding:8px 10px; border-radius:8px; border:1px solid #CBD5E1; background:#F8FAFC;">
+                                            <option value="0">0 perc (Csak nyitvatartás alatt rendelhetnek)</option>
+                                            <option value="30">30 perccel nyitás előtt már rendelhetnek</option>
+                                            <option value="60" selected>60 perccel (1 órával) nyitás előtt</option>
+                                            <option value="90">90 perccel (1.5 órával) nyitás előtt</option>
+                                            <option value="120">120 perccel (2 órával) nyitás előtt</option>
+                                            <option value="180">180 perccel (3 órával) nyitás előtt</option>
+                                        </select>
+                                        <span style="font-size:10px; color:var(--text-muted); margin-top:4px;">A vevő már nyitás előtt leadhatja a rendelést, amit a konyha nyitáskor kezd készíteni.</span>
+                                    </div>
+                                    
+                                    <div class="input-group" style="margin-bottom:0;">
+                                        <label for="settings-manual-status" style="font-size:11px; font-weight:700; color:#0F172A;">⚡ Kézi Rendkívüli Állapot</label>
+                                        <select id="settings-manual-status" style="font-size:12.5px; font-weight:600; padding:8px 10px; border-radius:8px; border:1px solid #CBD5E1; background:#F8FAFC;">
+                                            <option value="auto">🔄 Automatikus (A nyitvatartás szerint)</option>
+                                            <option value="forced_open">🟢 Kényszerített Nyitva (Azonnali nyitás)</option>
+                                            <option value="forced_closed">🔴 Kényszerített Zárva (Rendkívüli szünet)</option>
+                                        </select>
+                                        <span style="font-size:10px; color:var(--text-muted); margin-top:4px;">Ha túlterhelt a konyha vagy azonnal szüneteltetni kell a rendeléseket.</span>
+                                    </div>
+                                </div>
+
+                                <!-- Schedule Header & Copy button -->
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                                    <span style="font-size:12px; font-weight:700; color:#334155;">Heti Nyitvatartási Időpontok:</span>
+                                    <button type="button" id="btn-copy-monday-schedule" class="btn btn-secondary" style="font-size:11px; font-weight:700; padding:5px 10px; border-radius:8px; background:#EEF2F6;">
+                                        📋 Hétfői idő másolása az összes napra
+                                    </button>
+                                </div>
+
+                                <!-- Dynamic Grid for 7 Days -->
+                                <div id="settings-opening-hours-grid" style="display:flex; flex-direction:column; gap:8px; background:#FFFFFF; border:1px solid #E2E8F0; padding:12px; border-radius:10px;">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+
+                            <!-- 3. Delivery & Fees -->
                             <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:18px; border-radius:14px;">
                                 <h4 style="font-size:14px; font-weight:800; color:#0F172A; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
                                     <span>🚚 Kiszállítási Beállítások & Díjak</span>
@@ -1914,8 +1968,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <!-- Cloud Adapter & App Scripts -->
-    <script src="firebase-config.js?v=3"></script>
-    <script src="shared-data.js?v=8"></script>
+    <script src="firebase-config.js"></script>
+    <script src="shared-data.js"></script>
     <script>
         // Helper to safely access opener properties under file:// security policies
         function getOpenerData(key, fallback) {
@@ -2620,8 +2674,105 @@
             const cardCvcEl = document.getElementById("settings-card-cvc");
             if (cardCvcEl) cardCvcEl.value = restaurant.bankData.cardCvc || "";
 
+            // Opening Hours & Pre-order settings
+            const leadEl = document.getElementById("settings-preorder-lead");
+            if (leadEl) leadEl.value = restaurant.preOrderLeadTimeMinutes !== undefined ? String(restaurant.preOrderLeadTimeMinutes) : "60";
+
+            const manualEl = document.getElementById("settings-manual-status");
+            if (manualEl) manualEl.value = restaurant.manualOverrideStatus || "auto";
+
+            renderOpeningHoursGrid();
             renderExtraFeeRows();
             updateRestaurantCustomerPreview();
+        }
+
+        const DAY_LABELS = {
+            mon: "Hétfő",
+            tue: "Kedd",
+            wed: "Szerda",
+            thu: "Csütörtök",
+            fri: "Péntek",
+            sat: "Szombat",
+            sun: "Vasárnap"
+        };
+
+        function renderOpeningHoursGrid() {
+            const container = document.getElementById("settings-opening-hours-grid");
+            if (!container || !activeRestaurant) return;
+
+            const schedule = activeRestaurant.openingHours || {
+                mon: { open: "11:00", close: "22:00", closed: false },
+                tue: { open: "11:00", close: "22:00", closed: false },
+                wed: { open: "11:00", close: "22:00", closed: false },
+                thu: { open: "11:00", close: "22:00", closed: false },
+                fri: { open: "11:00", close: "23:00", closed: false },
+                sat: { open: "11:00", close: "23:00", closed: false },
+                sun: { open: "11:00", close: "21:00", closed: false }
+            };
+
+            const statusObj = (typeof window.getRestaurantOpenStatus === "function") 
+                ? window.getRestaurantOpenStatus(activeRestaurant)
+                : { badgeText: "🟢 Nyitva", badgeClass: "status-open" };
+
+            const statusBadge = document.getElementById("settings-open-status-badge");
+            if (statusBadge) {
+                statusBadge.textContent = statusObj.badgeText;
+                if (statusObj.status === "OPEN") {
+                    statusBadge.style.background = "#DCFCE7";
+                    statusBadge.style.color = "#15803D";
+                } else if (statusObj.status === "PREORDER") {
+                    statusBadge.style.background = "#FEF3C7";
+                    statusBadge.style.color = "#B45309";
+                } else {
+                    statusBadge.style.background = "#FFE4E6";
+                    statusBadge.style.color = "#E11D48";
+                }
+            }
+
+            container.innerHTML = "";
+
+            Object.keys(DAY_LABELS).forEach(dayKey => {
+                const dayData = schedule[dayKey] || { open: "11:00", close: "22:00", closed: false };
+                const isClosed = Boolean(dayData.closed);
+
+                const row = document.createElement("div");
+                row.className = "opening-hour-row";
+                row.style.cssText = "display:grid; grid-template-columns: 100px 100px 1fr 1fr; align-items:center; gap:8px; padding:6px 8px; border-radius:8px; background:" + (isClosed ? "#F1F5F9" : "#FFFFFF") + "; border:1px solid #E2E8F0;";
+
+                row.innerHTML = `
+                    <span style="font-size:12.5px; font-weight:700; color:${isClosed ? '#94A3B8' : '#0F172A'};">${DAY_LABELS[dayKey]}</span>
+                    <label style="font-size:11.5px; font-weight:600; color:#475569; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" class="day-is-open-cb" data-day="${dayKey}" ${!isClosed ? 'checked' : ''} style="accent-color:var(--primary); cursor:pointer;">
+                        <span>${!isClosed ? '🟢 Nyitva' : '🔴 Zárva'}</span>
+                    </label>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span style="font-size:10px; color:#64748B;">Nyitás:</span>
+                        <input type="time" class="day-time-open" data-day="${dayKey}" value="${dayData.open || '11:00'}" ${isClosed ? 'disabled' : ''} style="padding:4px 6px; font-size:12px; font-weight:600; border-radius:6px; border:1px solid #CBD5E1; opacity:${isClosed ? '0.4' : '1'};">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span style="font-size:10px; color:#64748B;">Zárás:</span>
+                        <input type="time" class="day-time-close" data-day="${dayKey}" value="${dayData.close || '22:00'}" ${isClosed ? 'disabled' : ''} style="padding:4px 6px; font-size:12px; font-weight:600; border-radius:6px; border:1px solid #CBD5E1; opacity:${isClosed ? '0.4' : '1'};">
+                    </div>
+                `;
+
+                row.querySelector(".day-is-open-cb").addEventListener("change", (e) => {
+                    const isOpen = e.target.checked;
+                    const openInput = row.querySelector(".day-time-open");
+                    const closeInput = row.querySelector(".day-time-close");
+                    const labelSpan = row.querySelector("label span");
+                    const dayLabel = row.querySelector("span");
+
+                    openInput.disabled = !isOpen;
+                    closeInput.disabled = !isOpen;
+                    openInput.style.opacity = isOpen ? "1" : "0.4";
+                    closeInput.style.opacity = isOpen ? "1" : "0.4";
+                    row.style.background = isOpen ? "#FFFFFF" : "#F1F5F9";
+                    labelSpan.textContent = isOpen ? "🟢 Nyitva" : "🔴 Zárva";
+                    dayLabel.style.color = isOpen ? "#0F172A" : "#94A3B8";
+                });
+
+                container.appendChild(row);
+            });
         }
 
         function updateRestaurantCustomerPreview() {
@@ -2874,6 +3025,25 @@
                 amount: Math.max(0, Number(document.querySelector(`[data-fee-amount='${index}']`).value) || 0)
             })).filter(fee => fee.name && fee.amount > 0);
 
+            // Opening Hours & Pre-order Lead Time
+            const newOpeningHours = {};
+            document.querySelectorAll(".day-is-open-cb").forEach(cb => {
+                const dayKey = cb.getAttribute("data-day");
+                const row = cb.closest(".opening-hour-row");
+                const openVal = row.querySelector(".day-time-open")?.value || "11:00";
+                const closeVal = row.querySelector(".day-time-close")?.value || "22:00";
+                const isOpen = cb.checked;
+
+                newOpeningHours[dayKey] = {
+                    open: openVal,
+                    close: closeVal,
+                    closed: !isOpen
+                };
+            });
+            activeRestaurant.openingHours = newOpeningHours;
+            activeRestaurant.preOrderLeadTimeMinutes = Number(document.getElementById("settings-preorder-lead")?.value) || 60;
+            activeRestaurant.manualOverrideStatus = document.getElementById("settings-manual-status")?.value || "auto";
+
             const savedSettings = JSON.parse(localStorage.getItem("gastrogoRestaurantSettings") || "{}");
             savedSettings[activeRestaurant.id] = {
                 name: activeRestaurant.name,
@@ -2888,7 +3058,10 @@
                 deliveryLocations: activeRestaurant.deliveryLocations,
                 adminPin: activeRestaurant.adminPin,
                 bankData: activeRestaurant.bankData,
-                extraFees: activeRestaurant.extraFees
+                extraFees: activeRestaurant.extraFees,
+                openingHours: activeRestaurant.openingHours,
+                preOrderLeadTimeMinutes: activeRestaurant.preOrderLeadTimeMinutes,
+                manualOverrideStatus: activeRestaurant.manualOverrideStatus
             };
             localStorage.setItem("gastrogoRestaurantSettings", JSON.stringify(savedSettings));
             GastroGoDB.write("restaurantSettings", savedSettings);
@@ -2901,9 +3074,39 @@
             
             const statusEl = document.getElementById("settings-save-status");
             if (statusEl) {
-                statusEl.textContent = "✅ Étterem beállítások, megjelenés és biztonsági kód sikeresen elmentve!";
+                statusEl.textContent = "✅ Étterem beállítások, nyitvatartás és előrendelési idősáv sikeresen elmentve!";
                 setTimeout(() => { statusEl.textContent = ""; }, 3500);
             }
+        });
+
+        // Copy Monday schedule to all days button
+        document.getElementById("btn-copy-monday-schedule")?.addEventListener("click", () => {
+            const monRow = document.querySelector(".day-is-open-cb[data-day='mon']")?.closest(".opening-hour-row");
+            if (!monRow) return;
+
+            const monIsOpen = monRow.querySelector(".day-is-open-cb").checked;
+            const monOpen = monRow.querySelector(".day-time-open").value;
+            const monClose = monRow.querySelector(".day-time-close").value;
+
+            document.querySelectorAll(".opening-hour-row").forEach(row => {
+                const cb = row.querySelector(".day-is-open-cb");
+                const openInput = row.querySelector(".day-time-open");
+                const closeInput = row.querySelector(".day-time-close");
+                const labelSpan = row.querySelector("label span");
+                const dayLabel = row.querySelector("span");
+
+                cb.checked = monIsOpen;
+                openInput.value = monOpen;
+                closeInput.value = monClose;
+
+                openInput.disabled = !monIsOpen;
+                closeInput.disabled = !monIsOpen;
+                openInput.style.opacity = monIsOpen ? "1" : "0.4";
+                closeInput.style.opacity = monIsOpen ? "1" : "0.4";
+                row.style.background = monIsOpen ? "#FFFFFF" : "#F1F5F9";
+                labelSpan.textContent = monIsOpen ? "🟢 Nyitva" : "🔴 Zárva";
+                dayLabel.style.color = monIsOpen ? "#0F172A" : "#94A3B8";
+            });
         });
 
         // ================= SIDEBAR TABS CONTROLLERS =================

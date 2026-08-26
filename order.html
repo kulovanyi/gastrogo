@@ -2,6 +2,11 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            console.error("GastroGo Runtime Error:", msg, url, line, col, error);
+        };
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
     <title>GastroGo - Ételrendelés</title>
     
@@ -14,7 +19,7 @@
     <meta name="apple-mobile-web-app-title" content="GastroGo">
     <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=192&auto=format&fit=crop&q=80">
     
-    <link rel="stylesheet" href="styles.css?v=39">
+    <link rel="stylesheet" href="styles.css">
     <style>
         #tab-login-restaurant,
         #form-restaurant,
@@ -59,7 +64,7 @@
     <div class="app-container">
         <!-- Left Column: Interactive Screens Viewport -->
         <main class="desktop-main-pane">
-        <section id="screen-login" class="screen active">
+        <section id="screen-login" class="screen" style="display: none;">
             <div class="login-bg-decor"></div>
             <div class="login-content">
                 <div class="logo-container">
@@ -144,13 +149,13 @@
                         <label for="res-pass">Admin Jelszó</label>
                         <input type="password" id="res-pass" placeholder="••••••••" value="admin123">
                     </div>
-                    <button id="btn-login-res" class="btn btn-primary">Étterem Belépés</button>
+                    <button id="btn-login-res" class="btn btn-primary" style="margin-top: 6px;">Éttermi Belépés</button>
                 </div>
             </div>
         </section>
 
         <!-- ================= HOME SCREEN ================= -->
-        <section id="screen-home" class="screen">
+        <section id="screen-home" class="screen active">
             <header class="app-header">
                 <div class="user-info user-info-clickable" id="user-profile-trigger" title="Profil és Beállítások megnyitása">
                     <div class="avatar header-avatar">G</div>
@@ -330,6 +335,16 @@
                     <button id="btn-install-pwa" onclick="window.handlePWAInstallClick()" class="btn btn-primary btn-block" style="padding: 12px; font-size: 13px; font-weight: 800; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(255,159,28,0.3); cursor: pointer;">
                         <span>📲 Ikon Kirakása a Főképernyőre</span>
                     </button>
+
+                    <!-- Direct visual step guide under button -->
+                    <div id="pwa-inline-instruction" style="display:none; margin-top:12px; padding:14px; background:#FFFFFF; border:1.5px solid var(--primary); border-radius:12px; font-size:12px; text-align:left; color:#0F172A; box-shadow:0 4px 12px rgba(255,159,28,0.15);">
+                        <div style="font-weight:800; margin-bottom:8px; color:#D97706; display:flex; align-items:center; gap:6px;">
+                            <span>📱</span> Lépések a Főképernyőre tételhez:
+                        </div>
+                        <div id="pwa-inline-steps" style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; line-height:1.4;">
+                            <!-- Dynamically loaded -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Appearance Settings -->
@@ -507,6 +522,11 @@
                             <div id="menu-delivery-info-banner" style="display: none; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A;">
                                 🚚 Szállítási információ
                             </div>
+                        </div>
+
+                        <!-- Live Opening Hours & Pre-order Alert Banner -->
+                        <div id="menu-open-status-banner" style="display: none; margin-top: 10px; padding: 10px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 700; align-items: center; gap: 8px;">
+                            <!-- Dynamic Status -->
                         </div>
                     </div>
                 </div>
@@ -1210,9 +1230,9 @@
     </div>
 
     <!-- PWA Homescreen Instructions Modal Popup (iOS / Android Helper) -->
-    <div id="modal-pwa-instructions" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.8); backdrop-filter:blur(8px); z-index:99999; align-items:center; justify-content:center; padding:16px;">
-        <div style="background:#FFFFFF; border-radius:24px; width:100%; max-width:380px; padding:28px 22px; box-shadow:0 25px 60px rgba(0,0,0,0.4); text-align:center; box-sizing:border-box; animation:modalScaleIn 0.25s ease; position:relative;">
-            <button onclick="window.closePwaModal()" style="position:absolute; top:14px; right:14px; background:none; border:none; font-size:18px; color:#94A3B8; cursor:pointer; padding:4px;">✕</button>
+    <div id="modal-pwa-instructions" class="pwa-modal-overlay">
+        <div class="pwa-modal-card">
+            <button onclick="window.closePwaModal()" style="position:absolute; top:14px; right:14px; background:none; border:none; font-size:20px; color:#94A3B8; cursor:pointer; padding:6px; line-height:1;">✕</button>
             <div style="width:60px; height:60px; background:#FFF7ED; border:2px solid #FDBA74; color:#EA580C; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 14px auto;">
                 📱
             </div>
@@ -1223,11 +1243,21 @@
 
             <!-- Step-by-step guidance -->
             <div id="pwa-steps-container" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:14px; padding:14px; text-align:left; display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-                <!-- Dynamically filled by JS for iOS or Android -->
+                <!-- Dynamically filled by JS for iOS Chrome, iOS Safari or Android -->
             </div>
 
-            <button onclick="window.closePwaModal()" class="btn btn-primary btn-block" style="padding:12px; font-size:13px; font-weight:800; border-radius:12px;">
-                Értem, köszönöm! 👍
+            <!-- Top pointer for iOS Chrome (Share button is top-right in iOS Chrome) -->
+            <div id="pwa-chrome-top-arrow" style="display:none; font-size:12px; font-weight:700; color:#D97706; margin-bottom:12px; background:#FFFBEB; border:1px dashed #FCD34D; padding:8px; border-radius:10px;">
+                <span class="pwa-arrow-bounce">↗️</span> Keresd a <strong>Megosztás gombot (⬆️) fent, a címsor mellett jobbra!</strong> <span class="pwa-arrow-bounce">↗️</span>
+            </div>
+
+            <!-- Bottom pointer for iOS Safari -->
+            <div id="pwa-ios-bottom-arrow" style="display:none; font-size:12px; font-weight:700; color:#D97706; margin-bottom:12px; background:#FFFBEB; border:1px dashed #FCD34D; padding:8px; border-radius:10px;">
+                <span class="pwa-arrow-bounce">⬇️</span> Érintsd meg a <strong>Megosztás gombot (⬆️) lent a Safari sávban!</strong> <span class="pwa-arrow-bounce">⬇️</span>
+            </div>
+
+            <button onclick="window.closePwaModal()" class="btn btn-primary btn-block" style="padding:12px; font-size:13px; font-weight:800; border-radius:12px; cursor:pointer;">
+                Értem, megcsinálom! 👍
             </button>
         </div>
     </div>
@@ -1238,8 +1268,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <!-- Cloud Adapter & App Scripts -->
-    <script src="firebase-config.js?v=3"></script>
-    <script src="shared-data.js?v=8"></script>
-    <script src="app.js?v=85"></script>
+    <script src="firebase-config.js"></script>
+    <script src="shared-data.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

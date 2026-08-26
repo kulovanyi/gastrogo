@@ -333,3 +333,141 @@ window.OFFICIAL_ALLERGENS = [
     { id: 13, name: "Csillagfürt", icon: "🌸", desc: "Csillagfürt és belőle készült termékek" },
     { id: 14, name: "Puhatestűek", icon: "🦪", desc: "Kagylók, polipok, csigák és tintahal" }
 ];
+
+// ================= GLOBAL RESTAURANT OPENING HOURS & PRE-ORDER STATUS CALCULATOR =================
+window.getRestaurantOpenStatus = function(restaurant, now = new Date()) {
+    if (!restaurant) return { status: "CLOSED", badgeText: "Zárva", badgeClass: "status-closed", isOrderable: false, message: "Az étterem jelenleg nem elérhető." };
+
+    // 1. Check manual override
+    if (restaurant.manualOverrideStatus === "forced_open") {
+        return { 
+            status: "OPEN", 
+            badgeText: "🟢 Nyitva", 
+            badgeClass: "status-open", 
+            isOrderable: true, 
+            isPreOrder: false,
+            message: "Nyitva tart, azonnali rendelésfelvétel." 
+        };
+    }
+    if (restaurant.manualOverrideStatus === "forced_closed") {
+        return { 
+            status: "CLOSED", 
+            badgeText: "🔴 Rendkívüli szünet", 
+            badgeClass: "status-closed", 
+            isOrderable: false, 
+            isPreOrder: false,
+            message: "Az étterem átmenetileg szünetelteti a rendelésfelvételt." 
+        };
+    }
+
+    // Default fallback schedule if none exists
+    const schedule = restaurant.openingHours || {
+        mon: { open: "11:00", close: "22:00", closed: false },
+        tue: { open: "11:00", close: "22:00", closed: false },
+        wed: { open: "11:00", close: "22:00", closed: false },
+        thu: { open: "11:00", close: "22:00", closed: false },
+        fri: { open: "11:00", close: "23:00", closed: false },
+        sat: { open: "11:00", close: "23:00", closed: false },
+        sun: { open: "11:00", close: "21:00", closed: false }
+    };
+
+    const dayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    const dayNames = { mon: "Hétfő", tue: "Kedd", wed: "Szerda", thu: "Csütörtök", fri: "Péntek", sat: "Szombat", sun: "Vasárnap" };
+    const currentDayIndex = now.getDay();
+    const currentDayKey = dayKeys[currentDayIndex];
+    const todaySched = schedule[currentDayKey] || { open: "11:00", close: "22:00", closed: false };
+
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    function parseTimeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        const parts = timeStr.split(":").map(Number);
+        return (parts[0] || 0) * 60 + (parts[1] || 0);
+    }
+
+    const preOrderMinutes = restaurant.preOrderLeadTimeMinutes !== undefined ? Number(restaurant.preOrderLeadTimeMinutes) : 60;
+
+    if (!todaySched.closed && todaySched.open && todaySched.close) {
+        const openMinutes = parseTimeToMinutes(todaySched.open);
+        const closeMinutes = parseTimeToMinutes(todaySched.close);
+        const preOrderStartMinutes = Math.max(0, openMinutes - preOrderMinutes);
+
+        // A. OPEN NOW (Inside business hours)
+        if (currentMinutes >= openMinutes && currentMinutes < closeMinutes) {
+            return {
+                status: "OPEN",
+                badgeText: `🟢 Nyitva (${todaySched.close}-ig)`,
+                badgeClass: "status-open",
+                isOrderable: true,
+                isPreOrder: false,
+                openTime: todaySched.open,
+                closeTime: todaySched.close,
+                message: `Nyitva tart: ${todaySched.open} - ${todaySched.close}`
+            };
+        }
+
+        // B. PRE-ORDER TIME WINDOW (Before opening within preOrderMinutes buffer)
+        if (preOrderMinutes > 0 && currentMinutes >= preOrderStartMinutes && currentMinutes < openMinutes) {
+            return {
+                status: "PREORDER",
+                badgeText: `⏱️ Előrendelés (Nyitás: ${todaySched.open})`,
+                badgeClass: "status-preorder",
+                isOrderable: true,
+                isPreOrder: true,
+                openTime: todaySched.open,
+                closeTime: todaySched.close,
+                message: `Előrendelési időszak! Nyitás: ${todaySched.open}. A rendeléseket a nyitáskor azonnal készítik.`
+            };
+        }
+    }
+
+    // C. CLOSED (Find next opening time)
+    // Check if opening later today
+    if (!todaySched.closed && todaySched.open) {
+        const openMin = parseTimeToMinutes(todaySched.open);
+        if (currentMinutes < openMin) {
+            const preOrderStart = Math.max(0, openMin - preOrderMinutes);
+            const preOrderHour = String(Math.floor(preOrderStart / 60)).padStart(2, '0');
+            const preOrderMin = String(preOrderStart % 60).padStart(2, '0');
+            return {
+                status: "CLOSED",
+                badgeText: `🔴 Zárva (Nyitás: ${todaySched.open})`,
+                badgeClass: "status-closed",
+                isOrderable: false,
+                isPreOrder: false,
+                nextOpenText: `Ma ${todaySched.open}`,
+                message: `Az étterem jelenleg zárva tart. Nyitás: Ma ${todaySched.open} (Előrendelés ${preOrderMinutes > 0 ? preOrderHour + ":" + preOrderMin + "-tól" : todaySched.open + "-tól"}).`
+            };
+        }
+    }
+
+    // Find next open day in the upcoming week
+    for (let i = 1; i <= 7; i++) {
+        const nextDayIndex = (currentDayIndex + i) % 7;
+        const nextKey = dayKeys[nextDayIndex];
+        const nextSched = schedule[nextKey];
+        if (nextSched && !nextSched.closed && nextSched.open) {
+            const dayLabel = i === 1 ? "Holnap" : dayNames[nextKey];
+            return {
+                status: "CLOSED",
+                badgeText: `🔴 Zárva (Nyitás: ${dayLabel} ${nextSched.open})`,
+                badgeClass: "status-closed",
+                isOrderable: false,
+                isPreOrder: false,
+                nextOpenText: `${dayLabel} ${nextSched.open}`,
+                message: `Az étterem jelenleg zárva tart. Következő nyitás: ${dayLabel} ${nextSched.open}.`
+            };
+        }
+    }
+
+    return {
+        status: "CLOSED",
+        badgeText: "🔴 Zárva",
+        badgeClass: "status-closed",
+        isOrderable: false,
+        isPreOrder: false,
+        nextOpenText: "Hamarosan",
+        message: "Az étterem jelenleg zárva tart."
+    };
+};
+

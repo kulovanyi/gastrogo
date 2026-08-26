@@ -313,12 +313,16 @@ const restaurants = [
     }
 ];
 
-const savedRestaurantData = GastroGoDB.read("restaurants", null);
-if (Array.isArray(savedRestaurantData)) {
+const savedRestaurantData = (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.read === "function") 
+    ? GastroGoDB.read("restaurants", null) 
+    : null;
+if (Array.isArray(savedRestaurantData) && savedRestaurantData.length > 0) {
     restaurants.splice(0, restaurants.length, ...savedRestaurantData);
 }
 
-window.ordersDb = GastroGoDB.read("orders", []);
+window.ordersDb = (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.read === "function") 
+    ? GastroGoDB.read("orders", []) 
+    : [];
 const orders = window.ordersDb;
 let lastPlacedOrderId = null;
 
@@ -381,7 +385,9 @@ try {
 } catch (e) {}
 
 try {
-    const savedRestaurantSettings = GastroGoDB.read("restaurantSettings", {});
+    const savedRestaurantSettings = (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.read === "function") 
+        ? GastroGoDB.read("restaurantSettings", {}) 
+        : {};
     Object.entries(savedRestaurantSettings).forEach(([restaurantId, settings]) => {
         const restaurant = restaurants.find(item => item.id === restaurantId);
         if (restaurant) {
@@ -753,7 +759,8 @@ function handleLoginCustomer(usernameVal, displayName = null) {
     });
 
     updateCustomerNavActiveTab("explore");
-    document.getElementById("home-section-title").textContent = "Felfedezés a környéken";
+    const homeTitle = document.getElementById("home-section-title");
+    if (homeTitle) homeTitle.textContent = "Felfedezés a környéken";
 
     document.body.classList.add("user-authenticated");
     renderRestaurants();
@@ -782,14 +789,17 @@ function handleLogout() {
 window.handleLogout = handleLogout;
 
 function handleLoginRestaurant() {
-    const selectedResId = document.getElementById("restaurant-select").value;
+    const resSelect = document.getElementById("restaurant-select");
+    if (!resSelect) return;
+    const selectedResId = resSelect.value;
     const res = restaurants.find(r => r.id === selectedResId);
     if (!res) return;
 
     activeRestaurant = res;
     currentUserRole = "restaurant";
 
-    document.getElementById("dash-restaurant-name").textContent = res.name;
+    const dashResName = document.getElementById("dash-restaurant-name");
+    if (dashResName) dashResName.textContent = res.name;
     
     switchDashboardTab("menu");
     clearEditorForm();
@@ -802,17 +812,13 @@ function handleLoginRestaurant() {
 }
 window.handleLoginRestaurant = handleLoginRestaurant;
 
-document.getElementById("btn-login").addEventListener("click", () => {
-    const user = document.getElementById("username").value;
+document.getElementById("btn-login")?.addEventListener("click", () => {
+    const user = document.getElementById("username")?.value;
     handleLoginCustomer(user || "kovacs.peter");
 });
 
-document.getElementById("btn-guest").addEventListener("click", () => {
+document.getElementById("btn-guest")?.addEventListener("click", () => {
     handleLoginCustomer("guest", "Vendég");
-});
-
-document.getElementById("btn-login-res").addEventListener("click", () => {
-    handleLoginRestaurant();
 });
 
 // ================= CUSTOMER NAVIGATION TABS =================
@@ -1430,6 +1436,7 @@ document.querySelectorAll("#category-tabs-container .category-item").forEach(ite
 // ================= CUSTOMER: RENDER RESTAURANTS =================
 function renderRestaurants() {
     const container = document.getElementById("restaurants-list-container");
+    if (!container) return;
     const promoBanner = document.querySelector("#screen-home .promo-banner");
     const searchContainer = document.querySelector("#screen-home .search-container");
     const categoriesSection = document.querySelector("#screen-home .categories-section");
@@ -1439,12 +1446,13 @@ function renderRestaurants() {
     if (categoriesSection) categoriesSection.style.display = isSavedView ? "none" : "block";
     container.innerHTML = "";
 
-    const searchQuery = document.getElementById("restaurant-search").value.toLowerCase();
+    const searchInput = document.getElementById("restaurant-search");
+    const searchQuery = searchInput ? searchInput.value.toLowerCase() : "";
     
-    let filteredList = restaurants;
+    let filteredList = [...restaurants];
 
     if (activeTab === "saved") {
-        filteredList = restaurants.filter(res => savedRestaurants.includes(res.id));
+        filteredList = filteredList.filter(res => savedRestaurants.includes(res.id));
     }
 
     if (activeCategory !== "all") {
@@ -1457,6 +1465,19 @@ function renderRestaurants() {
             res.menu.some(item => item.name.toLowerCase().includes(searchQuery))
         );
     }
+
+    // Smart Sort: 1. OPEN (🟢), 2. PREORDER (⏱️), 3. CLOSED (🔴)
+    filteredList.sort((a, b) => {
+        const statusA = (typeof window.getRestaurantOpenStatus === "function") ? window.getRestaurantOpenStatus(a).status : "OPEN";
+        const statusB = (typeof window.getRestaurantOpenStatus === "function") ? window.getRestaurantOpenStatus(b).status : "OPEN";
+
+        const scoreMap = { "OPEN": 3, "PREORDER": 2, "CLOSED": 1 };
+        const scoreA = scoreMap[statusA] || 2;
+        const scoreB = scoreMap[statusB] || 2;
+
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+    });
 
     if (filteredList.length === 0) {
         container.innerHTML = `
@@ -1477,6 +1498,11 @@ function renderRestaurants() {
         const liveTime = getLiveRestaurantDeliveryTime(res);
         const baseFee = getRestaurantDeliveryFee(res, 0);
         const threshold = Number(res.freeDeliveryThreshold) || 0;
+
+        const openStatus = (typeof window.getRestaurantOpenStatus === "function") 
+            ? window.getRestaurantOpenStatus(res) 
+            : { status: "OPEN", badgeText: "🟢 Nyitva", isOrderable: true, isPreOrder: false };
+
         let deliveryBadgeText = "";
         if (baseFee === 0) {
             deliveryBadgeText = "Ingyenes szállítás";
@@ -1486,23 +1512,46 @@ function renderRestaurants() {
             deliveryBadgeText = `Szállítás: ${baseFee} Ft`;
         }
 
-            card.innerHTML = `
-                <button class="fav-btn ${isSaved ? 'saved' : ''}" data-id="${res.id}">
-                    ${isSaved ? '♥' : '♡'}
-                </button>
-                <div class="restaurant-img" style="background-image: url('${res.image}')">
-                    <span class="restaurant-badge">★ ${liveRating}</span>
-                    <span class="restaurant-badge badge-delivery">${deliveryBadgeText}</span>
+        let statusBadgeBg = "#10B981";
+        let statusBadgeColor = "#FFFFFF";
+        if (openStatus.status === "PREORDER") {
+            statusBadgeBg = "#F59E0B";
+            statusBadgeColor = "#FFFFFF";
+        } else if (openStatus.status === "CLOSED") {
+            statusBadgeBg = "#E11D48";
+            statusBadgeColor = "#FFFFFF";
+            card.style.opacity = "0.85";
+        }
+
+        let timeFooterText = `⏱ ${liveTime}`;
+        if (openStatus.status === "PREORDER") {
+            timeFooterText = `<span style="color:#D97706; font-weight:700;">⏱️ Előrendelhető nyitásra</span>`;
+        } else if (openStatus.status === "CLOSED") {
+            timeFooterText = `<span style="color:#E11D48; font-weight:700;">🔴 Zárva</span>`;
+        }
+
+        card.innerHTML = `
+            <button class="fav-btn ${isSaved ? 'saved' : ''}" data-id="${res.id}">
+                ${isSaved ? '♥' : '♡'}
+            </button>
+            <div class="restaurant-img" style="background-image: url('${res.image}')">
+                <span class="restaurant-badge" style="background:${statusBadgeBg}; color:${statusBadgeColor}; font-weight:800;">
+                    ${openStatus.badgeText}
+                </span>
+                <span class="restaurant-badge badge-delivery">${deliveryBadgeText}</span>
+            </div>
+            <div class="restaurant-info">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4 style="margin:0;">${res.name}</h4>
+                    <span style="font-size:12px; font-weight:800; color:#D97706;">★ ${liveRating}</span>
                 </div>
-                <div class="restaurant-info">
-                    <h4>${res.name}</h4>
-                    <p class="restaurant-desc">${res.description}</p>
-                    <div class="restaurant-footer">
-                        <span>🍽️ Kínálat (${res.menu.length} étel)</span>
-                        <span>⏱ ${liveTime}</span>
-                    </div>
+                <p class="restaurant-desc">${res.description}</p>
+                <div class="restaurant-footer">
+                    <span>🍽️ Kínálat (${res.menu.length} étel)</span>
+                    <span>${timeFooterText}</span>
                 </div>
-            `;
+            </div>
+        `;
 
         card.querySelector(".fav-btn").addEventListener("click", (e) => {
             e.stopPropagation();
@@ -1517,7 +1566,7 @@ function renderRestaurants() {
     });
 }
 
-document.getElementById("restaurant-search").addEventListener("input", renderRestaurants);
+document.getElementById("restaurant-search")?.addEventListener("input", renderRestaurants);
 
 function toggleFavorite(resId) {
     if (savedRestaurants.includes(resId)) {
@@ -1592,6 +1641,34 @@ function openRestaurantMenu(restaurant) {
                 deliveryInfoEl.style.borderColor = "#CBD5E1";
                 deliveryInfoEl.style.color = "#334155";
                 deliveryInfoEl.style.display = "inline-flex";
+            }
+        }
+
+        // Live Opening Hours & Pre-order Status Banner in Menu
+        const openStatus = (typeof window.getRestaurantOpenStatus === "function") 
+            ? window.getRestaurantOpenStatus(restaurant) 
+            : { status: "OPEN", badgeText: "🟢 Nyitva", isOrderable: true, isPreOrder: false };
+
+        const statusBannerEl = document.getElementById("menu-open-status-banner");
+        if (statusBannerEl) {
+            if (openStatus.status === "OPEN") {
+                statusBannerEl.innerHTML = `<span>🟢</span> <div><strong>Nyitva vagyunk!</strong> Azonnali rendelésfelvétel (${openStatus.closeTime ? openStatus.closeTime + '-ig' : ''}).</div>`;
+                statusBannerEl.style.background = "#ECFDF5";
+                statusBannerEl.style.borderColor = "#A7F3D0";
+                statusBannerEl.style.color = "#065F46";
+                statusBannerEl.style.display = "flex";
+            } else if (openStatus.status === "PREORDER") {
+                statusBannerEl.innerHTML = `<span>⏱️</span> <div><strong>Előrendelési időszak!</strong> Nyitás: <strong>${openStatus.openTime}</strong>. A leadott rendelésedet a konyha nyitáskor azonnal elkezdi készíteni.</div>`;
+                statusBannerEl.style.background = "#FFFBEB";
+                statusBannerEl.style.borderColor = "#FDE68A";
+                statusBannerEl.style.color = "#92400E";
+                statusBannerEl.style.display = "flex";
+            } else {
+                statusBannerEl.innerHTML = `<span>🔴</span> <div><strong>Az étterem jelenleg zárva tart.</strong> ${openStatus.message || 'Következő nyitás: ' + openStatus.nextOpenText}. Rendelésfelvétel most szünetel.</div>`;
+                statusBannerEl.style.background = "#FFE4E6";
+                statusBannerEl.style.borderColor = "#FECDD3";
+                statusBannerEl.style.color = "#9F1239";
+                statusBannerEl.style.display = "flex";
             }
         }
 
@@ -1706,7 +1783,7 @@ function openRestaurantMenu(restaurant) {
     }
 }
 
-document.getElementById("btn-back-to-home").addEventListener("click", () => {
+document.getElementById("btn-back-to-home")?.addEventListener("click", () => {
     navigateTo("screen-home");
 });
 
@@ -1749,7 +1826,7 @@ function resetCustomerReviewForm() {
     starsSelector.forEach(s => s.classList.add("active"));
 }
 
-document.getElementById("btn-submit-review").addEventListener("click", () => {
+document.getElementById("btn-submit-review")?.addEventListener("click", () => {
     if (!activeRestaurant) return;
 
     const ratingVal = parseInt(document.getElementById("review-rating-value").value);
@@ -2164,12 +2241,12 @@ function switchDashboardTab(tabId) {
     }
 }
 
-dashNavBtns.menu.addEventListener("click", () => switchDashboardTab("menu"));
-dashNavBtns.add.addEventListener("click", () => switchDashboardTab("add"));
-dashNavBtns.orders.addEventListener("click", () => switchDashboardTab("orders"));
-dashNavBtns.analytics.addEventListener("click", () => switchDashboardTab("analytics"));
-dashNavBtns.toppings.addEventListener("click", () => switchDashboardTab("toppings"));
-document.getElementById("nav-btn-dash-logout").addEventListener("click", handleLogout);
+if (dashNavBtns.menu) dashNavBtns.menu.addEventListener("click", () => switchDashboardTab("menu"));
+if (dashNavBtns.add) dashNavBtns.add.addEventListener("click", () => switchDashboardTab("add"));
+if (dashNavBtns.orders) dashNavBtns.orders.addEventListener("click", () => switchDashboardTab("orders"));
+if (dashNavBtns.analytics) dashNavBtns.analytics.addEventListener("click", () => switchDashboardTab("analytics"));
+if (dashNavBtns.toppings) dashNavBtns.toppings.addEventListener("click", () => switchDashboardTab("toppings"));
+document.getElementById("nav-btn-dash-logout")?.addEventListener("click", handleLogout);
 
 // ── Mobile Analytics Renderer ────────────────────────────────────────────────
 function renderMobAnalytics() {
@@ -2272,13 +2349,13 @@ window.mobDeleteCategory = function(catName) {
     renderCategoryDropdown();
 };
 
-document.getElementById("btn-add-category").addEventListener("click", () => {
+document.getElementById("btn-add-category")?.addEventListener("click", () => {
     const input = document.getElementById("new-category-name");
-    const name = input.value.trim();
+    const name = input ? input.value.trim() : "";
     if (!name || !activeRestaurant) return;
     if (!activeRestaurant.categories.includes(name)) {
         activeRestaurant.categories.push(name);
-        input.value = "";
+        if (input) input.value = "";
         syncData();
         renderMobToppingsEditor();
         renderCategoryDropdown();
@@ -2326,36 +2403,40 @@ window.mobDeleteToppingPreset = function(cat, idx) {
     }
 };
 
-document.getElementById("mob-topping-cat-select").addEventListener("change", renderMobToppingPresetsList);
+document.getElementById("mob-topping-cat-select")?.addEventListener("change", renderMobToppingPresetsList);
 
-document.getElementById("btn-mob-add-topping-preset").addEventListener("click", () => {
-    const cat = document.getElementById("mob-topping-cat-select").value;
+document.getElementById("btn-mob-add-topping-preset")?.addEventListener("click", () => {
+    const cat = document.getElementById("mob-topping-cat-select")?.value;
     const nameEl = document.getElementById("mob-new-topping-name");
     const priceEl = document.getElementById("mob-new-topping-price");
-    const name = nameEl.value.trim();
-    const price = parseInt(priceEl.value) || 0;
-    if (!cat || !name) { nameEl.focus(); return; }
+    const name = nameEl ? nameEl.value.trim() : "";
+    const price = priceEl ? (parseInt(priceEl.value) || 0) : 0;
+    if (!cat || !name) { if (nameEl) nameEl.focus(); return; }
     if (!mobCategoryToppings[cat]) mobCategoryToppings[cat] = [];
     mobCategoryToppings[cat].push({ name, price });
-    nameEl.value = ""; priceEl.value = "";
+    if (nameEl) nameEl.value = ""; 
+    if (priceEl) priceEl.value = "";
     renderMobToppingPresetsList();
 });
 
 // ── Mobile custom topping adder in "Új Étel" tab ────────────────────────────
 let _mobItemCustomToppings = [];
-document.getElementById("btn-mob-add-custom-topping").addEventListener("click", () => {
+document.getElementById("btn-mob-add-custom-topping")?.addEventListener("click", () => {
     const nameEl = document.getElementById("mob-custom-topping-name");
     const priceEl = document.getElementById("mob-custom-topping-price");
-    const name = nameEl.value.trim();
-    const price = parseInt(priceEl.value) || 0;
-    if (!name) { nameEl.focus(); return; }
+    const name = nameEl ? nameEl.value.trim() : "";
+    const price = priceEl ? (parseInt(priceEl.value) || 0) : 0;
+    if (!name) { if (nameEl) nameEl.focus(); return; }
     _mobItemCustomToppings.push({ name, price });
-    nameEl.value = ""; priceEl.value = "";
+    if (nameEl) nameEl.value = ""; 
+    if (priceEl) priceEl.value = "";
     renderMobCustomToppingTags();
     // Append to burger-toppings field
     const tf = document.getElementById("burger-toppings");
-    const existing = tf.value.trim();
-    tf.value = existing ? existing + `, ${name}:${price}` : `${name}:${price}`;
+    if (tf) {
+        const existing = tf.value.trim();
+        tf.value = existing ? existing + `, ${name}:${price}` : `${name}:${price}`;
+    }
 });
 
 function renderMobCustomToppingTags() {
@@ -2418,8 +2499,8 @@ function renderCategoryManagerList() {
     });
 }
 
-document.getElementById("btn-add-category").addEventListener("click", () => {
-    const name = document.getElementById("new-category-name").value.trim();
+document.getElementById("btn-add-category")?.addEventListener("click", () => {
+    const name = document.getElementById("new-category-name")?.value.trim();
     if (!name) {
         alert("Kérlek írd be a kategória nevét!");
         return;
@@ -2433,7 +2514,8 @@ document.getElementById("btn-add-category").addEventListener("click", () => {
     }
 
     activeRestaurant.categories.push(name);
-    document.getElementById("new-category-name").value = "";
+    const catInput = document.getElementById("new-category-name");
+    if (catInput) catInput.value = "";
 
     renderCategoryManagerList();
     renderCategoryDropdown();
@@ -2728,14 +2810,14 @@ function populateEditForm(item) {
     document.getElementById("btn-cancel-edit").style.display = "inline-flex";
 }
 
-document.getElementById("btn-save-burger").addEventListener("click", () => {
-    const itemId = document.getElementById("edit-burger-id").value;
-    const name = document.getElementById("burger-name").value.trim();
-    const cat = document.getElementById("burger-category-select").value || "Egyéb";
-    const price = parseInt(document.getElementById("burger-price").value);
-    const desc = document.getElementById("burger-desc").value.trim();
-    const toppingsInput = document.getElementById("burger-toppings").value.trim();
-    const img = document.getElementById("burger-img").value.trim();
+document.getElementById("btn-save-burger")?.addEventListener("click", () => {
+    const itemId = document.getElementById("edit-burger-id")?.value;
+    const name = document.getElementById("burger-name")?.value.trim();
+    const cat = document.getElementById("burger-category-select")?.value || "Egyéb";
+    const price = parseInt(document.getElementById("burger-price")?.value);
+    const desc = document.getElementById("burger-desc")?.value.trim();
+    const toppingsInput = document.getElementById("burger-toppings")?.value.trim();
+    const img = document.getElementById("burger-img")?.value.trim();
 
     if (!name || isNaN(price) || !desc) {
         alert("Kérlek töltsd ki a Nevet, az Árat és a Leírást!");
@@ -2798,31 +2880,33 @@ function deleteBurger(itemId) {
 const csvDropZone = document.getElementById("csv-drop-zone");
 const csvFileInput = document.getElementById("csv-file-input");
 
-csvDropZone.addEventListener("click", () => csvFileInput.click());
+if (csvDropZone && csvFileInput) {
+    csvDropZone.addEventListener("click", () => csvFileInput.click());
 
-csvFileInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) handleCSVFile(file);
-});
+    csvFileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) handleCSVFile(file);
+    });
 
-csvDropZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    csvDropZone.style.borderColor = "var(--primary)";
-    csvDropZone.style.backgroundColor = "#FFFDF5";
-});
+    csvDropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        csvDropZone.style.borderColor = "var(--primary)";
+        csvDropZone.style.backgroundColor = "#FFFDF5";
+    });
 
-csvDropZone.addEventListener("dragleave", () => {
-    csvDropZone.style.borderColor = "";
-    csvDropZone.style.backgroundColor = "";
-});
+    csvDropZone.addEventListener("dragleave", () => {
+        csvDropZone.style.borderColor = "";
+        csvDropZone.style.backgroundColor = "";
+    });
 
-csvDropZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    csvDropZone.style.borderColor = "";
-    csvDropZone.style.backgroundColor = "";
-    const file = e.dataTransfer.files[0];
-    if (file) handleCSVFile(file);
-});
+    csvDropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        csvDropZone.style.borderColor = "";
+        csvDropZone.style.backgroundColor = "";
+        const file = e.dataTransfer.files[0];
+        if (file) handleCSVFile(file);
+    });
+}
 
 function handleCSVFile(file) {
     const reader = new FileReader();
@@ -3318,6 +3402,35 @@ function renderCartItems() {
     extraFeesContainer.innerHTML = feesHtml;
     
     document.getElementById("cart-total").textContent = `${subtotal + deliveryFee + extraTotal + convenienceFee} Ft`;
+
+    // Mobile Go to Checkout Button State
+    const btnGoToCheckout = document.getElementById("btn-go-to-checkout");
+    if (btnGoToCheckout) {
+        const openStatus = (typeof window.getRestaurantOpenStatus === "function") 
+            ? window.getRestaurantOpenStatus(cartRes) 
+            : { isOrderable: true, status: "OPEN" };
+
+        if (!openStatus.isOrderable) {
+            btnGoToCheckout.disabled = true;
+            btnGoToCheckout.textContent = "🔴 Az étterem jelenleg zárva tart";
+            btnGoToCheckout.style.background = "#E11D48";
+            btnGoToCheckout.style.opacity = "0.7";
+            btnGoToCheckout.style.cursor = "not-allowed";
+        } else if (openStatus.status === "PREORDER") {
+            btnGoToCheckout.disabled = false;
+            btnGoToCheckout.textContent = "⏱️ Tovább a fizetéshez (Előrendelés) ➔";
+            btnGoToCheckout.style.background = "#F59E0B";
+            btnGoToCheckout.style.opacity = "1";
+            btnGoToCheckout.style.cursor = "pointer";
+        } else {
+            btnGoToCheckout.disabled = false;
+            btnGoToCheckout.textContent = "Tovább a fizetéshez ➔";
+            btnGoToCheckout.style.background = "var(--primary)";
+            btnGoToCheckout.style.opacity = "1";
+            btnGoToCheckout.style.cursor = "pointer";
+        }
+    }
+
     try { renderDesktopSidebarCart(); } catch(e){}
 }
 
@@ -3355,16 +3468,40 @@ function renderDesktopSidebarCart() {
         if (totalEl) totalEl.textContent = "0 Ft";
         if (nextBtn) {
             nextBtn.disabled = true;
+            nextBtn.textContent = "Tovább a fizetéshez ➔";
+            nextBtn.style.background = "var(--primary)";
             nextBtn.style.opacity = "0.5";
             nextBtn.style.cursor = "not-allowed";
         }
         return;
     }
 
+    const cartResId = cart[0].restaurantId;
+    const cartRes = restaurants.find(r => r.id === cartResId);
+    const openStatus = (typeof window.getRestaurantOpenStatus === "function") 
+        ? window.getRestaurantOpenStatus(cartRes) 
+        : { isOrderable: true, status: "OPEN" };
+
     if (nextBtn) {
-        nextBtn.disabled = false;
-        nextBtn.style.opacity = "1";
-        nextBtn.style.cursor = "pointer";
+        if (!openStatus.isOrderable) {
+            nextBtn.disabled = true;
+            nextBtn.textContent = "🔴 Az étterem jelenleg zárva tart";
+            nextBtn.style.background = "#E11D48";
+            nextBtn.style.opacity = "0.7";
+            nextBtn.style.cursor = "not-allowed";
+        } else if (openStatus.status === "PREORDER") {
+            nextBtn.disabled = false;
+            nextBtn.textContent = "⏱️ Előrendelés Nyitásra ➔";
+            nextBtn.style.background = "#F59E0B";
+            nextBtn.style.opacity = "1";
+            nextBtn.style.cursor = "pointer";
+        } else {
+            nextBtn.disabled = false;
+            nextBtn.textContent = "Tovább a fizetéshez ➔";
+            nextBtn.style.background = "var(--primary)";
+            nextBtn.style.opacity = "1";
+            nextBtn.style.cursor = "pointer";
+        }
     }
 
     let subtotal = 0;
@@ -3829,6 +3966,17 @@ function submitOrder() {
     const orderId = `ord-${Date.now()}`;
     const cartResId = cart[0].restaurantId;
     const cartRes = restaurants.find(r => r.id === cartResId);
+
+    // Opening Hours & Pre-order validation
+    const openStatus = (typeof window.getRestaurantOpenStatus === "function") 
+        ? window.getRestaurantOpenStatus(cartRes) 
+        : { isOrderable: true, isPreOrder: false };
+
+    if (!openStatus.isOrderable) {
+        alert(`❌ Az étterem (${cartRes ? cartRes.name : 'Étterem'}) jelenleg zárva tart és nem tud rendelést fogadni.\n\n${openStatus.message || ''}`);
+        return;
+    }
+
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryFee = getRestaurantDeliveryFee(cartRes, subtotal);
     const extraFees = cartRes && cartRes.extraFees ? cartRes.extraFees : [];
@@ -3849,6 +3997,8 @@ function submitOrder() {
         note: note || "",
         paymentMethod: paymentLabel,
         paymentStatus: paymentStatus,
+        isPreOrder: Boolean(openStatus.isPreOrder),
+        preOrderNote: openStatus.isPreOrder ? `⏱️ Előrendelés nyitásra (${openStatus.openTime || '11:00'})` : null,
         convenienceFee: convenienceFee,
         time: new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }),
         createdTimestamp: Date.now(),
@@ -4056,62 +4206,66 @@ function renderCustomerOrders() {
 }
 window.renderCustomerOrders = renderCustomerOrders;
 
-document.getElementById("btn-back-home-success").addEventListener("click", () => {
+document.getElementById("btn-back-home-success")?.addEventListener("click", () => {
     navigateTo("screen-home");
 });
 
-GastroGoDB.subscribe("orders", updatedOrders => {
-    orders.splice(0, orders.length, ...updatedOrders);
-    updateCartBadges();
-    if (currentScreen === "screen-orders") renderCustomerOrders();
-    if (currentScreen === "screen-achievements") renderAchievements();
-    if (currentScreen === "screen-success") updateTrackingTimeline();
-    try { renderAchievements(); } catch(e){}
-});
+if (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.subscribe === "function") {
+    GastroGoDB.subscribe("orders", updatedOrders => {
+        orders.splice(0, orders.length, ...updatedOrders);
+        updateCartBadges();
+        if (currentScreen === "screen-orders") renderCustomerOrders();
+        if (currentScreen === "screen-achievements") renderAchievements();
+        if (currentScreen === "screen-success") updateTrackingTimeline();
+        try { renderAchievements(); } catch(e){}
+    });
 
-GastroGoDB.subscribe("restaurants", updatedRestaurants => {
-    restaurants.splice(0, restaurants.length, ...updatedRestaurants);
-    renderRestaurants();
-    if (activeRestaurant) {
-        const fresh = restaurants.find(r => r.id === activeRestaurant.id);
-        if (fresh) activeRestaurant = fresh;
-    }
-    try { renderCartItems(); } catch(e){}
-    try { renderDesktopSidebarCart(); } catch(e){}
-});
-
-GastroGoDB.subscribe("reviews", updatedReviews => {
-    reviews.splice(0, reviews.length, ...updatedReviews);
-    if (activeRestaurant) {
-        renderCustomerReviews(activeRestaurant.id);
-        const newRating = getRestaurantAverageRating(activeRestaurant.id, activeRestaurant.rating);
-        const ratingEl = document.getElementById("res-rating-val");
-        if (ratingEl) ratingEl.textContent = newRating;
-    }
-    renderRestaurants();
-});
-
-GastroGoDB.subscribe("restaurantSettings", updatedSettings => {
-    Object.entries(updatedSettings).forEach(([restaurantId, settings]) => {
-        const restaurant = restaurants.find(item => item.id === restaurantId);
-        if (restaurant) {
-            Object.assign(restaurant, settings);
-            restaurant.deliveryConfigured = true;
+    GastroGoDB.subscribe("restaurants", updatedRestaurants => {
+        if (Array.isArray(updatedRestaurants) && updatedRestaurants.length > 0) {
+            restaurants.splice(0, restaurants.length, ...updatedRestaurants);
+            renderRestaurants();
+            if (activeRestaurant) {
+                const fresh = restaurants.find(r => r.id === activeRestaurant.id);
+                if (fresh) activeRestaurant = fresh;
+            }
+            try { renderCartItems(); } catch(e){}
+            try { renderDesktopSidebarCart(); } catch(e){}
         }
     });
-    renderRestaurants();
-    try { renderCartItems(); } catch(e){}
-    try { renderDesktopSidebarCart(); } catch(e){}
-});
 
-GastroGoDB.subscribe("convenienceFee", fee => {
-    if (currentScreen === "screen-checkout") renderCheckoutScreen();
-    try { renderCartItems(); } catch(e){}
-});
+    GastroGoDB.subscribe("reviews", updatedReviews => {
+        reviews.splice(0, reviews.length, ...updatedReviews);
+        if (activeRestaurant) {
+            renderCustomerReviews(activeRestaurant.id);
+            const newRating = getRestaurantAverageRating(activeRestaurant.id, activeRestaurant.rating);
+            const ratingEl = document.getElementById("res-rating-val");
+            if (ratingEl) ratingEl.textContent = newRating;
+        }
+        renderRestaurants();
+    });
 
-GastroGoDB.subscribe("userProfiles", profiles => {
-    updateUserAvatarUI();
-});
+    GastroGoDB.subscribe("restaurantSettings", updatedSettings => {
+        Object.entries(updatedSettings).forEach(([restaurantId, settings]) => {
+            const restaurant = restaurants.find(item => item.id === restaurantId);
+            if (restaurant) {
+                Object.assign(restaurant, settings);
+                restaurant.deliveryConfigured = true;
+            }
+        });
+        renderRestaurants();
+        try { renderCartItems(); } catch(e){}
+        try { renderDesktopSidebarCart(); } catch(e){}
+    });
+
+    GastroGoDB.subscribe("convenienceFee", fee => {
+        if (currentScreen === "screen-checkout") renderCheckoutScreen();
+        try { renderCartItems(); } catch(e){}
+    });
+
+    GastroGoDB.subscribe("userProfiles", profiles => {
+        updateUserAvatarUI();
+    });
+}
 
 // ================= INITIALIZE =================
 function initAppSession() {
@@ -4126,28 +4280,23 @@ function initAppSession() {
         }
     } catch (e) {}
 
-    // Restore active user if already logged in
-    const activeUserKey = localStorage.getItem("gastrogo_current_user");
-    if (activeUserKey) {
-        currentUser = activeUserKey;
-        currentUserRole = "customer";
-        document.body.classList.add("user-authenticated");
+    // Restore active user if already logged in or default to guest
+    const activeUserKey = localStorage.getItem("gastrogo_current_user") || "guest";
+    currentUser = activeUserKey;
+    currentUserRole = "customer";
+    localStorage.setItem("gastrogo_current_user", activeUserKey);
+    document.body.classList.add("user-authenticated");
 
-        const users = getRegisteredUsers();
-        const account = users[activeUserKey] || {};
-        const nameToShow = account.name || (activeUserKey.charAt(0).toUpperCase() + activeUserKey.slice(1));
-        document.querySelectorAll(".username-display").forEach(el => {
-            el.textContent = nameToShow;
-        });
-        const userLabel = document.getElementById("settings-username-label");
-        if (userLabel) userLabel.textContent = `${nameToShow} (${currentUser})`;
+    const users = getRegisteredUsers();
+    const account = users[activeUserKey] || {};
+    const nameToShow = (activeUserKey === "guest") ? "Vendég" : (account.name || (activeUserKey.charAt(0).toUpperCase() + activeUserKey.slice(1)));
+    document.querySelectorAll(".username-display").forEach(el => {
+        el.textContent = nameToShow;
+    });
+    const userLabel = document.getElementById("settings-username-label");
+    if (userLabel) userLabel.textContent = `${nameToShow} (${currentUser})`;
 
-        navigateTo("screen-home");
-    } else {
-        currentUser = null;
-        document.body.classList.remove("user-authenticated");
-        navigateTo("screen-login");
-    }
+    navigateTo("screen-home");
 
     updateUserAvatarUI();
     setupAvatarHandlers();
@@ -4209,7 +4358,11 @@ function handlePWAInstallClick() {
         return;
     }
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+                  (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
+
+    const isIOSChrome = isIOS && (/CriOS/i.test(navigator.userAgent) || /Chrome/i.test(navigator.userAgent));
 
     if (deferredInstallPrompt) {
         // Native Android / Chrome installation prompt
@@ -4226,9 +4379,12 @@ function handlePWAInstallClick() {
         }).catch(() => {
             showAndroidPwaInstructions();
         });
+    } else if (isIOSChrome) {
+        // Apple iOS Chrome (Share button is top-right next to URL bar)
+        showIOSChromePwaInstructions();
     } else if (isIOS) {
-        // Apple iOS Safari visual step-by-step guidance
-        showIOSPwaInstructions();
+        // Apple iOS Safari (Share button is bottom toolbar)
+        showIOSSafariPwaInstructions();
     } else {
         // Android / desktop fallback guidance
         showAndroidPwaInstructions();
@@ -4236,18 +4392,61 @@ function handlePWAInstallClick() {
 }
 window.handlePWAInstallClick = handlePWAInstallClick;
 
-function showIOSPwaInstructions() {
+function showIOSChromePwaInstructions() {
     const modal = document.getElementById("modal-pwa-instructions");
     const container = document.getElementById("pwa-steps-container");
     const title = document.getElementById("pwa-modal-title");
     const desc = document.getElementById("pwa-modal-desc");
+    const topArrow = document.getElementById("pwa-chrome-top-arrow");
+    const bottomArrow = document.getElementById("pwa-ios-bottom-arrow");
 
-    if (!modal || !container) return;
+    const inlineBox = document.getElementById("pwa-inline-instruction");
+    const inlineSteps = document.getElementById("pwa-inline-steps");
 
-    title.textContent = "📱 Hozzáadás iPhone Főképernyőhöz";
-    desc.textContent = "A Safari böngészőből 3 gyors érintéssel kiteheted az ikont:";
+    const stepsHtml = `
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span>
+            <span style="font-size:12px; color:#1E293B;">Érintsd meg a <strong>Megosztás</strong> gombot (<span style="font-size:14px;">⬆️</span> vagy <span style="font-size:14px;">⎋</span>) <strong>fent a címsor jobb szélén</strong> (vagy alul a <strong>···</strong> menüt)!</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</span>
+            <span style="font-size:12px; color:#1E293B;">Görgess le a felnyíló lapon és válaszd a <strong>„Hozzáadás a kezdőképernyőhöz”</strong> (<span style="font-size:14px;">➕</span>) pontot.</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</span>
+            <span style="font-size:12px; color:#1E293B;">A jobb felső sarokban érintsd meg a <strong>„Hozzáadás”</strong> gombot.</span>
+        </div>
+    `;
 
-    container.innerHTML = `
+    // Also populate inline card in settings
+    if (inlineBox && inlineSteps) {
+        inlineSteps.innerHTML = stepsHtml;
+        inlineBox.style.display = "block";
+    }
+
+    if (modal && container) {
+        if (title) title.textContent = "📱 Hozzáadás iPhone Chrome-ból";
+        if (desc) desc.textContent = "A Chrome böngészőből 3 gyors érintéssel kiteheted az ikont:";
+        if (topArrow) topArrow.style.display = "block";
+        if (bottomArrow) bottomArrow.style.display = "none";
+        container.innerHTML = stepsHtml;
+        modal.classList.add("active");
+        modal.style.display = "flex";
+    }
+}
+
+function showIOSSafariPwaInstructions() {
+    const modal = document.getElementById("modal-pwa-instructions");
+    const container = document.getElementById("pwa-steps-container");
+    const title = document.getElementById("pwa-modal-title");
+    const desc = document.getElementById("pwa-modal-desc");
+    const topArrow = document.getElementById("pwa-chrome-top-arrow");
+    const bottomArrow = document.getElementById("pwa-ios-bottom-arrow");
+
+    const inlineBox = document.getElementById("pwa-inline-instruction");
+    const inlineSteps = document.getElementById("pwa-inline-steps");
+
+    const stepsHtml = `
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span>
             <span style="font-size:12px; color:#1E293B;">Érintsd meg a Safari alsó sávjában a <strong>Megosztás</strong> gombot (<span style="font-size:14px;">⬆️</span> vagy <span style="font-size:14px;">⎋</span>).</span>
@@ -4262,7 +4461,21 @@ function showIOSPwaInstructions() {
         </div>
     `;
 
-    modal.style.display = "flex";
+    // Also populate inline card in settings
+    if (inlineBox && inlineSteps) {
+        inlineSteps.innerHTML = stepsHtml;
+        inlineBox.style.display = "block";
+    }
+
+    if (modal && container) {
+        if (title) title.textContent = "📱 Hozzáadás iPhone Safari-ból";
+        if (desc) desc.textContent = "A Safari böngészőből 3 gyors érintéssel kiteheted az ikont:";
+        if (topArrow) topArrow.style.display = "none";
+        if (bottomArrow) bottomArrow.style.display = "block";
+        container.innerHTML = stepsHtml;
+        modal.classList.add("active");
+        modal.style.display = "flex";
+    }
 }
 
 function showAndroidPwaInstructions() {
@@ -4270,13 +4483,12 @@ function showAndroidPwaInstructions() {
     const container = document.getElementById("pwa-steps-container");
     const title = document.getElementById("pwa-modal-title");
     const desc = document.getElementById("pwa-modal-desc");
+    const arrow = document.getElementById("pwa-ios-bottom-arrow");
 
-    if (!modal || !container) return;
+    const inlineBox = document.getElementById("pwa-inline-instruction");
+    const inlineSteps = document.getElementById("pwa-inline-steps");
 
-    title.textContent = "📱 Hozzáadás a Kezdőképernyőre";
-    desc.textContent = "A Chrome / böngésző menüjéből egyszerűen kiteheted az ikont:";
-
-    container.innerHTML = `
+    const stepsHtml = `
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="background:#FF9F1C; color:#000; font-weight:800; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span>
             <span style="font-size:12px; color:#1E293B;">Érintsd meg a jobb felső sarokban a <strong>Három pont (⋮)</strong> menü gombot.</span>
@@ -4291,12 +4503,28 @@ function showAndroidPwaInstructions() {
         </div>
     `;
 
-    modal.style.display = "flex";
+    // Also populate inline card in settings
+    if (inlineBox && inlineSteps) {
+        inlineSteps.innerHTML = stepsHtml;
+        inlineBox.style.display = "block";
+    }
+
+    if (modal && container) {
+        if (title) title.textContent = "📱 Hozzáadás a Kezdőképernyőre";
+        if (desc) desc.textContent = "A Chrome / böngésző menüjéből egyszerűen kiteheted az ikont:";
+        if (arrow) arrow.style.display = "none";
+        container.innerHTML = stepsHtml;
+        modal.classList.add("active");
+        modal.style.display = "flex";
+    }
 }
 
 function closePwaModal() {
     const modal = document.getElementById("modal-pwa-instructions");
-    if (modal) modal.style.display = "none";
+    if (modal) {
+        modal.classList.remove("active");
+        modal.style.display = "none";
+    }
 }
 window.closePwaModal = closePwaModal;
 

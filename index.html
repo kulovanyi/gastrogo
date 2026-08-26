@@ -857,10 +857,40 @@
 
         function handleCustomerLogin(e) {
             e.preventDefault();
-            const username = document.getElementById("cust-login-user").value.trim().toLowerCase();
-            if (!username) return;
+            const usernameInput = document.getElementById("cust-login-user").value.trim();
+            if (!usernameInput) return;
 
-            localStorage.setItem("gastrogo_current_user", username);
+            const cleanUser = usernameInput.toLowerCase();
+            localStorage.setItem("gastrogo_current_user", cleanUser);
+
+            // Auto-create profile if user doesn't exist yet
+            let users = {};
+            try {
+                const raw = localStorage.getItem("gastrogo_registered_users");
+                if (raw) users = JSON.parse(raw);
+            } catch(err){}
+
+            if (!users[cleanUser]) {
+                const displayName = usernameInput.charAt(0).toUpperCase() + usernameInput.slice(1);
+                users[cleanUser] = {
+                    name: displayName,
+                    username: cleanUser,
+                    phone: "+36 30 123 4567",
+                    address: "Budapest, Fő utca 1.",
+                    createdAt: Date.now()
+                };
+                localStorage.setItem("gastrogo_registered_users", JSON.stringify(users));
+
+                const defaultAddr = [{
+                    id: `addr-${cleanUser}-1`,
+                    label: "Otthon",
+                    name: displayName,
+                    address: "Budapest, Fő utca 1.",
+                    phone: "+36 30 123 4567"
+                }];
+                localStorage.setItem(`gastrogo_saved_addresses_${cleanUser}`, JSON.stringify(defaultAddr));
+            }
+
             window.location.href = "order.html";
         }
 
