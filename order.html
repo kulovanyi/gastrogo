@@ -19,7 +19,7 @@
     <meta name="apple-mobile-web-app-title" content="GastroGo">
     <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=192&auto=format&fit=crop&q=80">
     
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=5.3">
     <style>
         #tab-login-restaurant,
         #form-restaurant,
@@ -425,26 +425,34 @@
         <!-- ================= RESTAURANT MENU SCREEN ================= -->
         <section id="screen-menu" class="screen">
             <div class="screen-scrollable menu-content-container" style="padding: 0; padding-bottom: 90px;">
-                <div class="restaurant-banner-img" id="restaurant-banner-bg" style="position: relative;">
-                    <!-- Floating Back Button on Banner -->
-                    <button class="back-btn" id="btn-back-to-home" onclick="window.navigateTo('screen-home')" style="position: absolute; top: 16px; left: 16px; z-index: 10; cursor: pointer;" title="Vissza a főoldalra">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                    </button>
+                <div class="restaurant-hero-wrapper" style="position: relative; width: 100%; height: 220px; overflow: hidden; background: #0F172A;">
+                    <!-- Background Image Div -->
+                    <div class="restaurant-banner-img" id="restaurant-banner-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
 
-                    <!-- Top-Right Floating Reviews Button on Banner -->
-                    <button class="btn-banner-reviews" id="btn-open-restaurant-reviews" onclick="window.openRestaurantReviewsModal()" style="position: absolute; top: 16px; right: 16px; z-index: 10; cursor: pointer; display: flex; align-items: center; gap: 6px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.25); color: #FFFFFF; padding: 8px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: transform 0.2s ease;" title="Étterem vélemények megtekintése és írása">
-                        <span style="color: #FBBF24; font-size: 14px;">⭐</span>
-                        <span>Vélemények</span>
-                        <span id="banner-reviews-count-badge" style="background: rgba(255,255,255,0.22); padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 800;">0</span>
-                    </button>
+                    <!-- Standalone Top-Left Back Button Container -->
+                    <div style="position: absolute; top: 16px; left: 16px; z-index: 999;">
+                        <button type="button" id="btn-back-to-home" onclick="window.navigateTo('screen-home')" style="width: 44px; height: 44px; border-radius: 50%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.25); color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.35);" title="Vissza a főoldalra">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                        </button>
+                    </div>
 
-                    <div class="restaurant-meta-overlay">
-                        <span class="res-meta-rating">★ <span id="res-rating-val">4.8</span></span>
-                        <span class="res-meta-time">⏱ <span id="res-time-val">20-30 perc</span></span>
-                        <span class="res-meta-stats" id="res-prep-stats-val">⏱ Napszaki átlag: ~20 perc</span>
+                    <!-- Standalone Top-Right Reviews Button Container -->
+                    <div class="banner-reviews-btn-wrapper" onclick="window.openReviewsView(event)" style="position: absolute; top: 16px; right: 16px; z-index: 9999; cursor: pointer;">
+                        <button type="button" id="btn-open-reviews" onclick="window.openReviewsView(event)" ontouchend="window.openReviewsView(event)" class="btn-banner-reviews" title="Étterem vélemények">
+                            <span style="color: #FBBF24; font-size: 15px; pointer-events: none;">⭐</span>
+                            <span style="pointer-events: none;">Vélemények</span>
+                            <span id="banner-reviews-count-badge" style="background: var(--primary); color: #FFFFFF; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 10px; margin-left: 2px; pointer-events: none;">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Bottom Meta Info Bar -->
+                    <div class="restaurant-meta-overlay" style="position: absolute; bottom: 16px; left: 16px; display: flex; gap: 8px; flex-wrap: wrap; z-index: 10; pointer-events: none;">
+                        <span style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); color: #FFFFFF; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; pointer-events: auto; cursor: pointer;" onclick="window.openReviewsView(event)" ontouchend="window.openReviewsView(event)" title="Vélemények megnyitása">★ <span id="res-rating-val">4.8</span></span>
+                        <span style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); color: #FFFFFF; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; pointer-events: auto;">⏱ <span id="res-time-val">20-30 perc</span></span>
+                        <span id="res-prep-stats-val" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); color: #FFFFFF; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; pointer-events: auto;">⏱ Napszaki átlag: ~20 perc</span>
                     </div>
                 </div>
 
@@ -848,8 +856,8 @@
         <div id="topping-modal" class="cart-sheet">
             <div class="cart-sheet-backdrop" id="topping-backdrop"></div>
             <div class="cart-sheet-content">
+                <div class="drag-handle"></div>
                 <div class="cart-sheet-header">
-                    <div class="drag-handle"></div>
                     <div>
                         <h2 id="topping-modal-title">Étel testreszabása</h2>
                         <p id="topping-modal-desc">Válassz hozzá plusz feltéteket!</p>
@@ -865,9 +873,9 @@
         <div id="cart-sheet" class="cart-sheet">
             <div class="cart-sheet-backdrop" id="cart-backdrop" onclick="window.toggleCart(false)"></div>
             <div class="cart-sheet-content">
+                <div class="drag-handle"></div>
                 <div class="cart-sheet-header">
-                    <div class="drag-handle"></div>
-                    <h2>Kosarad</h2>
+                    <h2>Kosár</h2>
                     <button class="close-cart-btn" id="btn-close-cart" onclick="window.toggleCart(false)" style="cursor: pointer;">✕</button>
                 </div>
                 <div class="cart-items-wrapper" id="cart-items-container"></div>
@@ -1236,53 +1244,47 @@
         </div>
     </div>
 
-    <!-- ================= RESTAURANT REVIEWS & SUBMISSION MODAL ================= -->
-    <div id="modal-restaurant-reviews" class="pwa-modal-overlay" style="display:none; z-index:9999;">
-        <div class="pwa-modal-card" style="max-width:540px; width:94%; max-height:88vh; display:flex; flex-direction:column; padding:22px; text-align:left; border-radius:24px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid #E2E8F0; padding-bottom:12px;">
-                <div>
-                    <h3 id="modal-reviews-res-name" style="font-size:18px; font-weight:800; color:#0F172A; margin:0;">Étterem Vélemények</h3>
-                    <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
-                        <span id="modal-reviews-res-rating" style="font-size:14px; font-weight:800; color:#D97706;">★ 4.8</span>
-                        <span id="modal-reviews-count-text" style="font-size:12px; color:#64748B;">(0 értékelés)</span>
-                    </div>
+    <!-- ================= RESTAURANT REVIEWS MODAL ================= -->
+    <div id="restaurant-reviews-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; height:100dvh; background:rgba(10, 14, 23, 0.82); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:999999; align-items:center; justify-content:center; padding:16px; box-sizing:border-box;" onclick="if(event.target===this) window.closeReviewsView()">
+        <div style="background:#0F172A; border:1px solid #334155; border-radius:24px; max-width:520px; width:95%; max-height:88vh; display:flex; flex-direction:column; padding:22px; box-sizing:border-box; box-shadow:0 25px 60px rgba(0,0,0,0.6); color:#F8FAFC; animation: popInReviews 0.25s cubic-bezier(0.4, 0, 0.2, 1);" class="reviews-modal-card" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px dashed #334155; padding-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">⭐</span>
+                    <h3 id="reviews-modal-title" style="font-size:18px; font-weight:800; margin:0; color:#FFFFFF;">Vélemények és Értékelések</h3>
                 </div>
-                <button onclick="window.closeRestaurantReviewsModal()" style="background:none; border:none; font-size:24px; color:#94A3B8; cursor:pointer; padding:4px; line-height:1;">✕</button>
+                <button type="button" onclick="window.closeReviewsView()" style="background:rgba(255,255,255,0.08); border:none; width:34px; height:34px; border-radius:50%; font-size:16px; color:#94A3B8; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.18)'; this.style.color='#FFF';" onmouseout="this.style.background='rgba(255,255,255,0.08)'; this.style.color='#94A3B8';" title="Bezárás">✕</button>
             </div>
 
-            <!-- Scrollable Modal Content (Form + Reviews List) -->
+            <!-- Scrollable Content -->
             <div style="flex:1; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:16px;">
-                <!-- Review Submission Card -->
-                <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:16px;">
-                    <h4 style="font-size:14px; font-weight:800; color:#0F172A; margin:0 0 8px 0;">✍️ Írj Te is véleményt!</h4>
+                <!-- Review Form Card -->
+                <div style="background:#1E293B; border:1px solid #334155; border-radius:18px; padding:18px;" class="review-box-inner">
+                    <h4 style="font-size:16px; font-weight:800; margin:0 0 8px 0; color:#FFFFFF;" class="review-form-title">Értékeld a helyet!</h4>
+                    <p style="font-size:12px; color:#94A3B8; margin:0 0 12px 0;">Oszd meg véleményed, és segíts másoknak választani!</p>
                     
-                    <!-- Star Rating Selector -->
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                        <span style="font-size:12px; font-weight:700; color:#475569;">Értékelésed:</span>
-                        <div id="modal-review-stars-select" style="display:flex; gap:4px; font-size:24px; color:#CBD5E1; cursor:pointer;">
-                            <span class="modal-star-btn" data-value="1" onclick="window.setModalReviewRating(1)">★</span>
-                            <span class="modal-star-btn" data-value="2" onclick="window.setModalReviewRating(2)">★</span>
-                            <span class="modal-star-btn" data-value="3" onclick="window.setModalReviewRating(3)">★</span>
-                            <span class="modal-star-btn" data-value="4" onclick="window.setModalReviewRating(4)">★</span>
-                            <span class="modal-star-btn active" data-value="5" onclick="window.setModalReviewRating(5)" style="color:#FBBF24;">★</span>
-                        </div>
-                        <input type="hidden" id="modal-review-rating-value" value="5">
+                    <!-- Star selector -->
+                    <div style="display:flex; gap:8px; font-size:32px; cursor:pointer; margin-bottom:14px; user-select:none;">
+                        <span class="review-star-item" onclick="window.setReviewStars(1)" style="color:#FBBF24;">★</span>
+                        <span class="review-star-item" onclick="window.setReviewStars(2)" style="color:#FBBF24;">★</span>
+                        <span class="review-star-item" onclick="window.setReviewStars(3)" style="color:#FBBF24;">★</span>
+                        <span class="review-star-item" onclick="window.setReviewStars(4)" style="color:#FBBF24;">★</span>
+                        <span class="review-star-item" onclick="window.setReviewStars(5)" style="color:#FBBF24;">★</span>
                     </div>
 
-                    <!-- Comment Input -->
-                    <textarea id="modal-review-comment-input" rows="2" placeholder="Oszd meg a tapasztalataidat (pl. Friss, forró és nagyon finom volt!)..." style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #CBD5E1; font-family:inherit; font-size:13px; resize:vertical; box-sizing:border-box; background:#FFFFFF; margin-bottom:10px; outline:none;"></textarea>
-
-                    <button type="button" onclick="window.submitModalReview()" class="btn btn-primary btn-block" style="padding:10px 14px; font-size:13px; font-weight:800; border-radius:10px; cursor:pointer;">
-                        📝 Vélemény Elküldése (+XP)
+                    <!-- Textarea -->
+                    <textarea id="review-text-input" rows="3" placeholder="Írd le a tapasztalataidat (pl. Nagyon finom volt, gyors és kedves kiszolgálás...)" style="width:100%; padding:12px 14px; border-radius:14px; border:1px solid #334155; font-family:inherit; font-size:13.5px; resize:vertical; box-sizing:border-box; margin-bottom:14px; outline:none; background:#0F172A; color:#F8FAFC; line-height:1.4;"></textarea>
+                    
+                    <!-- Submit button -->
+                    <button type="button" onclick="window.submitNewReview()" style="width:100%; padding:13px; font-size:15px; font-weight:800; border-radius:16px; cursor:pointer; background:#FF9F1C; color:#FFFFFF; border:none; box-shadow:0 4px 14px rgba(255, 159, 28, 0.4); transition:all 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+                        <span>✍️</span> Vélemény Beküldése
                     </button>
                 </div>
 
-                <!-- Reviews Header & List -->
+                <!-- Reviews List -->
                 <div>
-                    <h4 style="font-size:13px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 10px 0;">Vásárlói Értékelések</h4>
-                    <div id="modal-reviews-list-container" style="display:flex; flex-direction:column; gap:10px;">
-                        <!-- Dynamically filled by JS -->
-                    </div>
+                    <h4 style="font-size:13px; font-weight:800; color:#94A3B8; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 10px 0;">Korábbi Értékelések</h4>
+                    <div id="reviews-modal-list" style="display:flex; flex-direction:column; gap:8px;"></div>
                 </div>
             </div>
         </div>
@@ -1294,8 +1296,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <!-- Cloud Adapter & App Scripts -->
-    <script src="firebase-config.js"></script>
-    <script src="shared-data.js"></script>
-    <script src="app.js"></script>
+    <script src="firebase-config.js?v=5.3"></script>
+    <script src="shared-data.js?v=5.3"></script>
+    <script src="app.js?v=5.3"></script>
 </body>
 </html>
