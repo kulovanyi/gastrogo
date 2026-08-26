@@ -2443,12 +2443,16 @@ body.dark-mode #success-order-meta-card {
         border-radius: 20px;
     }
 
-    /* Hide Mobile Bottom Nav, Mobile Top App Header, and Floating Mobile Cart Sheet on Desktop */
+    /* Hide Mobile Bottom Nav, Mobile Top App Header, Floating Mobile Cart Sheet, PWA Install Card, and GPS button on Desktop */
     #global-customer-bottom-nav,
     .cart-trigger,
     #cart-icon-btn,
     #cart-icon-btn-menu,
-    #cart-sheet {
+    #cart-sheet,
+    #card-pwa-install,
+    #modal-pwa-instructions,
+    .desktop-gps-btn,
+    .mobile-only-gps {
         display: none !important;
     }
 
@@ -2747,9 +2751,11 @@ body.on-screen-menu .mobile-floating-cart {
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Hide floating cart on desktop screens */
+/* Hide floating cart & mobile PWA install card on desktop screens */
 @media screen and (min-width: 769px) {
-    .mobile-floating-cart {
+    .mobile-floating-cart,
+    #card-pwa-install,
+    #modal-pwa-instructions {
         display: none !important;
     }
 }

@@ -471,3 +471,124 @@ window.getRestaurantOpenStatus = function(restaurant, now = new Date()) {
     };
 };
 
+// ================= LIVE INTERNET GEOCODING & SETTLEMENTS SEARCH API =================
+window.searchHungarianSettlementsOnline = async function(query) {
+    if (!query || query.trim().length === 0) return [];
+    const q = query.trim();
+    const isNationwideQuery = q.toLowerCase().includes("ország") || q.toLowerCase().includes("minden");
+
+    let results = [];
+    if (isNationwideQuery) {
+        results.push({ name: "Országos (Mindenhova)", county: "Egész Magyarország", isNationwide: true });
+    }
+
+    try {
+        // Direct Open-Meteo Geocoding API with strict Hungary (HU) country validation
+        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&language=hu&count=20`;
+        const res = await fetch(url);
+        if (res.ok) {
+            const data = await res.json();
+            if (data && Array.isArray(data.results)) {
+                data.results.forEach(item => {
+                    // Strict Hungary Only Guard
+                    const isHU = (item.country_code && item.country_code.toUpperCase() === "HU") ||
+                                 (item.country && (item.country === "Magyarország" || item.country === "Hungary")) ||
+                                 (item.country_id === 719819);
+
+                    if (isHU && item.name && !results.some(r => r.name.toLowerCase() === item.name.toLowerCase())) {
+                        results.push({
+                            name: item.name,
+                            county: item.admin1 ? (item.admin1.includes("megye") || item.admin1.includes("Budapest") ? item.admin1 : `${item.admin1} megye`) : "Magyarország",
+                            lat: item.latitude,
+                            lng: item.longitude
+                        });
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.warn("Online geocoding network notice:", err);
+    }
+
+    return results;
+};
+
+// ================= LIVE GPS REVERSE GEOCODING (ONLINE NOMINATIM / BIGDATACLOUD) =================
+window.getSettlementFromCoordinatesOnline = async function(lat, lng) {
+    if (typeof lat !== "number" || typeof lng !== "number") return "Budapest";
+
+    try {
+        // OpenStreetMap Nominatim reverse geocode for real settlement name (village, town, suburb)
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1&accept-language=hu`;
+        const res = await fetch(url);
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.address) {
+                const addr = data.address;
+                const settlement = addr.city || addr.town || addr.village || addr.municipality || addr.hamlet || addr.suburb || addr.county || "Magyarország";
+                return settlement;
+            }
+        }
+    } catch (e) {
+        console.warn("Reverse geocode network fallback:", e);
+    }
+
+    return "Magyarország";
+};
+
+// ================= LOCATION NORMALIZER & DELIVERY AVAILABILITY CHECKER =================
+window.normalizeLocationString = function(str) {
+    if (!str) return "";
+    return str.toString()
+        .toLowerCase()
+        .replace(/[,.-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+};
+
+window.isDeliveryAvailableForLocation = function(restaurant, targetLocation) {
+    if (!restaurant) return { available: false, message: "Étterem nem található" };
+    if (!targetLocation) return { available: true, message: "Nincs megadva szűrés" };
+
+    const locs = Array.isArray(restaurant.deliveryLocations) && restaurant.deliveryLocations.length > 0
+        ? restaurant.deliveryLocations
+        : ["Budapest", "Országos"]; // Default coverage if unconfigured
+
+    const normTarget = window.normalizeLocationString(targetLocation);
+
+    // If restaurant delivers nationwide ("Országos" or "Mindenhova")
+    const isNationwide = locs.some(loc => {
+        const n = window.normalizeLocationString(loc);
+        return n.includes("országos") || n.includes("mindenhova") || n === "all" || n === "*";
+    });
+    if (isNationwide) {
+        return { available: true, isNationwide: true, matchedZone: "Országos kiszállítás" };
+    }
+
+    // Match by exact or partial substring
+    const matched = locs.find(loc => {
+        const normLoc = window.normalizeLocationString(loc);
+        if (!normLoc) return false;
+        
+        // Budapest special: if target is Budapest or any district and restaurant delivers to Budapest
+        if ((normTarget.includes("budapest") || normTarget.includes("kerület")) && (normLoc.includes("budapest") || normLoc.includes("bp"))) {
+            return true;
+        }
+        
+        return normTarget.includes(normLoc) || normLoc.includes(normTarget);
+    });
+
+    if (matched) {
+        return { available: true, isNationwide: false, matchedZone: matched };
+    }
+
+    return {
+        available: false,
+        isNationwide: false,
+        allowedZones: locs,
+        message: `Erre a területre (${targetLocation}) ez az étterem nem vállal kiszállítást. Elérhető zónák: ${locs.join(", ")}`
+    };
+};
+
+
+

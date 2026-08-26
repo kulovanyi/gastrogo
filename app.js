@@ -9,6 +9,7 @@ const restaurants = [
         time: "20-30 perc",
         image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
         deliveryFee: 300,
+        deliveryLocations: ["Budapest", "Budaörs", "Szentendre", "Érd", "Dunakeszi"],
         phone: "+36 35 301 245",
         categories: ["Akciós Menük", "Pizza", "Tészták", "Desszertek", "Italok"],
         menu: [
@@ -224,6 +225,7 @@ const restaurants = [
         time: "15-25 perc",
         image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
         deliveryFee: 0,
+        deliveryLocations: ["Budapest", "Debrecen", "Szeged", "Győr", "Kecskemét", "Székesfehérvár"],
         phone: "+36 35 412 879",
         categories: ["Burger", "Köretek", "Italok"],
         menu: [
@@ -256,6 +258,7 @@ const restaurants = [
         time: "15-20 perc",
         image: "https://images.unsplash.com/photo-1626700051175-6518c4793fde?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
         deliveryFee: 200,
+        deliveryLocations: ["Budapest", "Miskolc", "Pécs", "Nyíregyháza", "Szolnok"],
         phone: "+36 35 523 961",
         categories: ["Főétel", "Gyors étel", "Italok"],
         menu: [
@@ -288,6 +291,7 @@ const restaurants = [
         time: "10-15 perc",
         image: "https://images.unsplash.com/photo-1547592180-85f173990554?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
         deliveryFee: 400,
+        deliveryLocations: ["Országos", "Budapest", "Debrecen", "Szeged", "Miskolc", "Pécs", "Győr", "Kecskemét", "Székesfehérvár"],
         phone: "+36 35 634 012",
         categories: ["Napi Menü", "Levesek", "Desszertek"],
         menu: [
@@ -312,12 +316,62 @@ const restaurants = [
         ]
     }
 ];
+const defaultSeedRestaurants = JSON.parse(JSON.stringify(restaurants));
+
+function deduplicateRestaurants(resList) {
+    if (!Array.isArray(resList)) return [];
+    const seenIds = new Set();
+    const seenNames = new Set();
+    return resList.filter(res => {
+        if (!res || !res.id) return false;
+        const normName = (res.name || "").trim().toLowerCase();
+        if (seenIds.has(res.id) || (normName && seenNames.has(normName))) return false;
+        seenIds.add(res.id);
+        if (normName) seenNames.add(normName);
+        return true;
+    });
+}
+
+function ensureCoreRestaurants(list) {
+    if (!Array.isArray(list) || list.length === 0) {
+        return JSON.parse(JSON.stringify(defaultSeedRestaurants));
+    }
+    
+    // Auto-repair if r1 identity was accidentally overwritten
+    list.forEach(res => {
+        if (res.id === "r1" && (!res.name || res.name.toLowerCase().includes("burger"))) {
+            res.name = "Vár Pizzéria";
+            res.category = "pizza";
+            res.description = "Kemencés nápolyi pizzák és olasz tészta különlegességek.";
+            res.image = "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3";
+        }
+        if (res.id === "r2" && (!res.name || res.name.toLowerCase().includes("pizz"))) {
+            res.name = "Burger Haven";
+            res.category = "burger";
+            res.description = "Prémium marhahúsból készült szaftos kézműves burgerek.";
+            res.image = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3";
+        }
+    });
+
+    const cleanList = deduplicateRestaurants(list);
+    defaultSeedRestaurants.forEach(coreRes => {
+        const exists = cleanList.some(r => r.id === coreRes.id);
+        if (!exists) {
+            cleanList.push(JSON.parse(JSON.stringify(coreRes)));
+        }
+    });
+    return cleanList;
+}
 
 const savedRestaurantData = (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.read === "function") 
     ? GastroGoDB.read("restaurants", null) 
     : null;
 if (Array.isArray(savedRestaurantData) && savedRestaurantData.length > 0) {
-    restaurants.splice(0, restaurants.length, ...savedRestaurantData);
+    const cleanList = ensureCoreRestaurants(savedRestaurantData);
+    restaurants.splice(0, restaurants.length, ...cleanList);
+    if (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.write === "function") {
+        GastroGoDB.write("restaurants", cleanList);
+    }
 }
 
 window.ordersDb = (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.read === "function") 
@@ -378,6 +432,23 @@ try {
             snapshot.forEach(doc => {
                 if (doc.id && doc.id.startsWith("ord-gen-")) {
                     doc.ref.delete().catch(() => {});
+                }
+            });
+        }).catch(() => {});
+
+        // Auto-cleanup any duplicate restaurants in Firestore
+        db.collection("restaurants").get().then(snapshot => {
+            const seenNames = new Set();
+            const seenIds = new Set();
+            snapshot.forEach(doc => {
+                const data = doc.data() || {};
+                const normName = (data.name || "").trim().toLowerCase();
+                if (seenIds.has(doc.id) || (normName && seenNames.has(normName))) {
+                    console.log("🗑️ Duplikált étterem törlése Firestore-ból:", doc.id, data.name);
+                    doc.ref.delete().catch(() => {});
+                } else {
+                    seenIds.add(doc.id);
+                    if (normName) seenNames.add(normName);
                 }
             });
         }).catch(() => {});
@@ -1016,6 +1087,24 @@ const OFFICIAL_BADGES = [
     }
 ];
 
+function getOrderTimestamp(o) {
+    if (!o) return Date.now();
+    if (o.createdTimestamp && !isNaN(Number(o.createdTimestamp))) return Number(o.createdTimestamp);
+    if (o.createdAt) {
+        const parsed = new Date(o.createdAt).getTime();
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
+    if (o.timestamp) {
+        const parsed = new Date(o.timestamp).getTime();
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
+    if (o.id && typeof o.id === "string" && o.id.startsWith("ord-")) {
+        const num = Number(o.id.replace("ord-", ""));
+        if (!isNaN(num) && num > 1000000000000) return num;
+    }
+    return Date.now();
+}
+
 function getWeeklyQuests() {
     const orders = getCustomerOrders();
     const now = new Date();
@@ -1023,18 +1112,17 @@ function getWeeklyQuests() {
     // Check orders from the last 7 days (this week)
     const sevenDaysAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
     const thisWeekOrders = orders.filter(o => {
-        const t = o.createdAt ? new Date(o.createdAt).getTime() : 
-                 (o.time ? new Date(o.time).getTime() : 0);
+        const t = getOrderTimestamp(o);
         return t >= sevenDaysAgo;
     });
 
     const weekendOrders = thisWeekOrders.filter(o => {
-        const d = o.createdAt ? new Date(o.createdAt) : new Date();
+        const d = new Date(getOrderTimestamp(o));
         const day = d.getDay();
-        return day === 0 || day === 5 || day === 6; // Friday, Saturday, Sunday
+        return day === 0 || day === 5 || day === 6; // Friday (5), Saturday (6), Sunday (0)
     });
 
-    const distinctResThisWeek = new Set(thisWeekOrders.map(o => o.restaurantId)).size;
+    const distinctResThisWeek = new Set(thisWeekOrders.map(o => o.restaurantId).filter(Boolean)).size;
 
     return [
         {
@@ -1093,17 +1181,11 @@ function calculateUserGamification() {
         if (o.restaurantId) distinctRestaurants.add(o.restaurantId);
         
         const orderTotal = Number(o.total) || 0;
-        if (orderTotal >= 8000) hasBigOrder = true;
+        if (orderTotal >= 10000) hasBigOrder = true;
 
         // Time checks
-        let orderDate = null;
-        if (o.createdAt) orderDate = new Date(o.createdAt);
-        else if (o.time) {
-            const parsed = new Date(o.time);
-            if (!isNaN(parsed)) orderDate = parsed;
-        }
-
-        if (orderDate && !isNaN(orderDate)) {
+        const orderDate = new Date(getOrderTimestamp(o));
+        if (orderDate && !isNaN(orderDate.getTime())) {
             const hour = orderDate.getHours();
             const minutes = orderDate.getMinutes();
             const timeInHours = hour + (minutes / 60);
@@ -1111,9 +1193,8 @@ function calculateUserGamification() {
 
             if (timeInHours >= 19) hasNightOrder = true;
             if (timeInHours >= 11 && timeInHours <= 13.5) hasLunchOrder = true;
-            if (day === 5 || day === 6) hasWeekendOrder = true;
+            if (day === 5 || day === 6 || day === 0) hasWeekendOrder = true;
         } else {
-            // Fallback for demo orders
             if (totalOrders >= 1) hasNightOrder = true;
             if (totalOrders >= 2) hasLunchOrder = true;
             if (totalOrders >= 3) hasWeekendOrder = true;
@@ -1420,6 +1501,140 @@ function setupDarkMode() {
     }
 }
 
+// ================= NATIONWIDE DELIVERY LOCATION & GPS CONTROLLER =================
+let currentDeliveryLocation = localStorage.getItem("gastrogo_delivery_location") || "Budapest (Összes kerület)";
+
+function updateLocationUI() {
+    const deskText = document.getElementById("desk-current-location-text");
+    if (deskText) deskText.textContent = currentDeliveryLocation;
+    const homeText = document.getElementById("home-current-location-text");
+    if (homeText) homeText.textContent = currentDeliveryLocation;
+}
+
+function openLocationPickerModal() {
+    const modal = document.getElementById("modal-delivery-location");
+    if (!modal) return;
+    modal.style.display = "flex";
+    modal.classList.add("active");
+    const searchInput = document.getElementById("location-picker-search");
+    if (searchInput) {
+        searchInput.value = "";
+        setTimeout(() => searchInput.focus(), 150);
+    }
+    filterLocationPickerList("");
+}
+window.openLocationPickerModal = openLocationPickerModal;
+
+function closeLocationPickerModal() {
+    const modal = document.getElementById("modal-delivery-location");
+    if (!modal) return;
+    modal.style.display = "none";
+    modal.classList.remove("active");
+}
+window.closeLocationPickerModal = closeLocationPickerModal;
+
+let locationSearchDebounce = null;
+async function filterLocationPickerList(query = "") {
+    const listEl = document.getElementById("location-picker-list");
+    if (!listEl) return;
+    const q = (query || "").trim();
+
+    if (!q) {
+        listEl.innerHTML = `
+            <div style="padding:28px 14px; text-align:center; color:var(--text-muted); font-size:13px; line-height:1.5;">
+                <span style="font-size:32px; display:block; margin-bottom:8px;">🔍</span>
+                <strong>Keress rá a településedre</strong><br>
+                Kezdd el beírni a fenti mezőbe a falu, város vagy kerület nevét.
+            </div>
+        `;
+        return;
+    }
+
+    listEl.innerHTML = `
+        <div style="padding:16px; text-align:center; color:var(--text-muted); font-size:12px;">
+            <span>⏳</span> Keresés az országos adatbázisban...
+        </div>
+    `;
+
+    clearTimeout(locationSearchDebounce);
+    locationSearchDebounce = setTimeout(async () => {
+        const results = typeof window.searchHungarianSettlementsOnline === "function" 
+            ? await window.searchHungarianSettlementsOnline(q) 
+            : [];
+
+        if (results.length === 0) {
+            listEl.innerHTML = `
+                <div style="padding:24px 16px; text-align:center; color:var(--text-muted); font-size:13px; line-height:1.4;">
+                    <span style="font-size:24px; display:block; margin-bottom:6px;">⚠️</span>
+                    Nem található magyarországi település a(z) "<strong>${q}</strong>" névre.<br>
+                    <span style="font-size:11px; opacity:0.8;">Csak Magyarország határain belüli települések választhatók.</span>
+                </div>
+            `;
+            return;
+        }
+
+        listEl.innerHTML = results.map(c => {
+            const isSelected = currentDeliveryLocation.toLowerCase() === c.name.toLowerCase();
+            const icon = c.isNationwide ? "🌍" : "📍";
+            return `
+                <div class="loc-item-row" onclick="window.selectDeliveryLocation('${c.name.replace(/'/g, "\\'")}')" style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:10px; background:${isSelected ? 'rgba(255,159,28,0.12)' : '#FFFFFF'}; border:1px solid ${isSelected ? 'var(--primary)' : '#E2E8F0'}; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="if (!${isSelected}) this.style.borderColor='#E2E8F0'">
+                    <div>
+                        <strong style="font-size:13px; color:var(--text-dark); display:block;">${icon} ${c.name}</strong>
+                        <span style="font-size:11px; color:var(--text-muted);">${c.county || 'Magyarország'}</span>
+                    </div>
+                    ${isSelected ? '<span style="color:var(--primary); font-size:14px; font-weight:800;">✓</span>' : ''}
+                </div>
+            `;
+        }).join("");
+    }, 200);
+}
+window.filterLocationPickerList = filterLocationPickerList;
+
+function selectDeliveryLocation(locationName) {
+    if (!locationName) return;
+    currentDeliveryLocation = locationName;
+    localStorage.setItem("gastrogo_delivery_location", locationName);
+    updateLocationUI();
+    closeLocationPickerModal();
+    renderRestaurants();
+}
+window.selectDeliveryLocation = selectDeliveryLocation;
+
+async function detectUserGPSLocation(autoSelect = false) {
+    const btnText = document.getElementById("gps-detect-btn-text");
+    if (btnText) btnText.textContent = "📡 Helyzet meghatározása...";
+
+    if (!navigator.geolocation) {
+        alert("A böngésződ nem támogatja a GPS helymeghatározást.");
+        if (btnText) btnText.textContent = "Saját Helyzetem Meghatározása (GPS)";
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            let settlement = "Budapest";
+            if (typeof window.getSettlementFromCoordinatesOnline === "function") {
+                settlement = await window.getSettlementFromCoordinatesOnline(lat, lng);
+            }
+            if (settlement) {
+                selectDeliveryLocation(settlement);
+                showGamificationToast("📍", "GPS Helyzet Azonosítva!", `Helyszín beállítva: ${settlement}`);
+            }
+            if (btnText) btnText.textContent = "Saját Helyzetem Meghatározása (GPS)";
+        },
+        (error) => {
+            console.warn("GPS hiba:", error);
+            alert("A GPS helymeghatározás nem sikerült vagy le lett tiltva a böngésződben. Kérlek írd be a településed nevét a keresőbe!");
+            if (btnText) btnText.textContent = "Saját Helyzetem Meghatározása (GPS)";
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+    );
+}
+window.detectUserGPSLocation = detectUserGPSLocation;
+
 // ================= CATEGORY FILTER BINDING =================
 const categoryTabsContainer = document.getElementById("category-tabs-container");
 if (categoryTabsContainer) {
@@ -1454,7 +1669,7 @@ function renderRestaurants() {
     const searchInput = document.getElementById("restaurant-search");
     const searchQuery = searchInput ? searchInput.value.toLowerCase() : "";
     
-    let filteredList = [...restaurants];
+    let filteredList = deduplicateRestaurants([...restaurants]);
 
     if (activeTab === "saved") {
         filteredList = filteredList.filter(res => savedRestaurants.includes(res.id));
@@ -1471,8 +1686,15 @@ function renderRestaurants() {
         );
     }
 
-    // Smart Sort: 1. OPEN (🟢), 2. PREORDER (⏱️), 3. CLOSED (🔴)
+    // Smart Sort: 1. Delivers to current location, 2. OPEN (🟢), 3. PREORDER (⏱️), 4. CLOSED (🔴), 5. Rating
     filteredList.sort((a, b) => {
+        const delA = (typeof window.isDeliveryAvailableForLocation === "function") 
+            ? window.isDeliveryAvailableForLocation(a, currentDeliveryLocation).available : true;
+        const delB = (typeof window.isDeliveryAvailableForLocation === "function") 
+            ? window.isDeliveryAvailableForLocation(b, currentDeliveryLocation).available : true;
+
+        if (delA !== delB) return delB ? 1 : -1;
+
         const statusA = (typeof window.getRestaurantOpenStatus === "function") ? window.getRestaurantOpenStatus(a).status : "OPEN";
         const statusB = (typeof window.getRestaurantOpenStatus === "function") ? window.getRestaurantOpenStatus(b).status : "OPEN";
 
@@ -1488,7 +1710,7 @@ function renderRestaurants() {
         container.innerHTML = `
             <div class="empty-cart-message">
                 <span class="empty-cart-icon">📍</span>
-                <p>Nem található étterem</p>
+                <p>Nem található étterem a kiválasztott szűréssel</p>
             </div>
         `;
         return;
@@ -1508,8 +1730,19 @@ function renderRestaurants() {
             ? window.getRestaurantOpenStatus(res) 
             : { status: "OPEN", badgeText: "🟢 Nyitva", isOrderable: true, isPreOrder: false };
 
+        const deliveryCheck = (typeof window.isDeliveryAvailableForLocation === "function")
+            ? window.isDeliveryAvailableForLocation(res, currentDeliveryLocation)
+            : { available: true };
+
         let deliveryBadgeText = "";
-        if (baseFee === 0) {
+        let deliveryBadgeBg = "";
+        let deliveryBadgeColor = "";
+        if (!deliveryCheck.available) {
+            deliveryBadgeText = "🚫 Ide nem szállít";
+            deliveryBadgeBg = "#64748B";
+            deliveryBadgeColor = "#FFFFFF";
+            card.style.opacity = "0.75";
+        } else if (baseFee === 0) {
             deliveryBadgeText = "Ingyenes szállítás";
         } else if (threshold > 0) {
             deliveryBadgeText = `Szállítás: ${baseFee} Ft (${threshold.toLocaleString('hu-HU')} Ft-tól ingyenes)`;
@@ -1529,11 +1762,15 @@ function renderRestaurants() {
         }
 
         let timeFooterText = `⏱ ${liveTime}`;
-        if (openStatus.status === "PREORDER") {
+        if (!deliveryCheck.available) {
+            timeFooterText = `<span style="color:#64748B; font-weight:700; font-size:11px;">🚫 Csak: ${(res.deliveryLocations || []).slice(0, 2).join(', ')}</span>`;
+        } else if (openStatus.status === "PREORDER") {
             timeFooterText = `<span style="color:#D97706; font-weight:700;">⏱️ Előrendelhető nyitásra</span>`;
         } else if (openStatus.status === "CLOSED") {
             timeFooterText = `<span style="color:#E11D48; font-weight:700;">🔴 Zárva</span>`;
         }
+
+        const deliveryBadgeStyle = deliveryBadgeBg ? `style="background:${deliveryBadgeBg}; color:${deliveryBadgeColor};"` : '';
 
         card.innerHTML = `
             <button class="fav-btn ${isSaved ? 'saved' : ''}" data-id="${res.id}">
@@ -1543,7 +1780,7 @@ function renderRestaurants() {
                 <span class="restaurant-badge" style="background:${statusBadgeBg}; color:${statusBadgeColor}; font-weight:800;">
                     ${openStatus.badgeText}
                 </span>
-                <span class="restaurant-badge badge-delivery">${deliveryBadgeText}</span>
+                <span class="restaurant-badge badge-delivery" ${deliveryBadgeStyle}>${deliveryBadgeText}</span>
             </div>
             <div class="restaurant-info">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1570,6 +1807,7 @@ function renderRestaurants() {
         container.appendChild(card);
     });
 }
+window.renderRestaurants = renderRestaurants;
 
 document.getElementById("restaurant-search")?.addEventListener("input", renderRestaurants);
 
@@ -1626,22 +1864,32 @@ function openRestaurantMenu(restaurant) {
             ? Number(resSettings.freeDeliveryThreshold)
             : (restaurant.freeDeliveryThreshold ? Number(restaurant.freeDeliveryThreshold) : 0);
 
+        const deliveryCheck = (typeof window.isDeliveryAvailableForLocation === "function")
+            ? window.isDeliveryAvailableForLocation(restaurant, currentDeliveryLocation)
+            : { available: true };
+
         const deliveryInfoEl = document.getElementById("menu-delivery-info-banner");
         if (deliveryInfoEl) {
-            if (baseFee === 0) {
-                deliveryInfoEl.innerHTML = `<span>🎉</span> Ingyenes szállítás minden rendelésre!`;
+            if (!deliveryCheck.available) {
+                deliveryInfoEl.innerHTML = `<span>⚠️</span> Ide nem szállít (${currentDeliveryLocation}) · Kiszállítási zónák: ${(restaurant.deliveryLocations || []).join(", ")}`;
+                deliveryInfoEl.style.background = "#FEF2F2";
+                deliveryInfoEl.style.borderColor = "#FECACA";
+                deliveryInfoEl.style.color = "#991B1B";
+                deliveryInfoEl.style.display = "inline-flex";
+            } else if (baseFee === 0) {
+                deliveryInfoEl.innerHTML = `<span>🎉</span> Ingyenes szállítás erre a címre (${currentDeliveryLocation})!`;
                 deliveryInfoEl.style.background = "#ECFDF5";
                 deliveryInfoEl.style.borderColor = "#A7F3D0";
                 deliveryInfoEl.style.color = "#065F46";
                 deliveryInfoEl.style.display = "inline-flex";
             } else if (threshold > 0) {
-                deliveryInfoEl.innerHTML = `<span>🚚</span> Szállítás: ${baseFee} Ft (${threshold.toLocaleString('hu-HU')} Ft-tól INGYENES)`;
+                deliveryInfoEl.innerHTML = `<span>🚚</span> Szállítás (${currentDeliveryLocation}): ${baseFee} Ft (${threshold.toLocaleString('hu-HU')} Ft-tól INGYENES)`;
                 deliveryInfoEl.style.background = "#FFFBEB";
                 deliveryInfoEl.style.borderColor = "#FDE68A";
                 deliveryInfoEl.style.color = "#92400E";
                 deliveryInfoEl.style.display = "inline-flex";
             } else {
-                deliveryInfoEl.innerHTML = `<span>🚚</span> Szállítási díj: ${baseFee} Ft`;
+                deliveryInfoEl.innerHTML = `<span>🚚</span> Szállítás (${currentDeliveryLocation}): ${baseFee} Ft`;
                 deliveryInfoEl.style.background = "#F1F5F9";
                 deliveryInfoEl.style.borderColor = "#CBD5E1";
                 deliveryInfoEl.style.color = "#334155";
@@ -3510,8 +3758,6 @@ function renderDesktopSidebarCart() {
     }
 
     let subtotal = 0;
-    const cartResId = cart[0].restaurantId;
-    const cartRes = restaurants.find(r => r.id === cartResId);
     const extraFees = cartRes && cartRes.extraFees ? cartRes.extraFees : [];
 
     const itemsHtml = cart.map(item => {
@@ -3982,6 +4228,15 @@ function submitOrder() {
         return;
     }
 
+    // Delivery Location & Zone validation
+    if (cartRes && typeof window.isDeliveryAvailableForLocation === "function") {
+        const check = window.isDeliveryAvailableForLocation(cartRes, deliveryAddress || currentDeliveryLocation);
+        if (!check.available) {
+            alert(`🚫 Kiszállítási Korlátozás:\nA(z) ${cartRes.name} erre a megadott címre/településre (${deliveryAddress || currentDeliveryLocation}) jelenleg nem vállal kiszállítást!\n\nKiszállítási zónák: ${(cartRes.deliveryLocations || []).join(", ")}`);
+            return;
+        }
+    }
+
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryFee = getRestaurantDeliveryFee(cartRes, subtotal);
     const extraFees = cartRes && cartRes.extraFees ? cartRes.extraFees : [];
@@ -4227,7 +4482,8 @@ if (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.subscribe === "functi
 
     GastroGoDB.subscribe("restaurants", updatedRestaurants => {
         if (Array.isArray(updatedRestaurants) && updatedRestaurants.length > 0) {
-            restaurants.splice(0, restaurants.length, ...updatedRestaurants);
+            const cleanList = ensureCoreRestaurants(updatedRestaurants);
+            restaurants.splice(0, restaurants.length, ...cleanList);
             renderRestaurants();
             if (activeRestaurant) {
                 const fresh = restaurants.find(r => r.id === activeRestaurant.id);
@@ -4304,9 +4560,18 @@ function initAppSession() {
 
     navigateTo("screen-home");
 
+    activeTab = "explore";
+    activeCategory = "all";
+    const searchInput = document.getElementById("restaurant-search");
+    if (searchInput) searchInput.value = "";
+    document.querySelectorAll("#category-tabs-container .category-item").forEach(item => {
+        item.classList.toggle("active", item.getAttribute("data-category") === "all");
+    });
+
     updateUserAvatarUI();
     setupAvatarHandlers();
     updateCartBadges();
+    updateLocationUI();
     renderSettingsAddresses();
     renderRestaurants();
     checkPWAInstalledState();
@@ -4317,6 +4582,7 @@ function initAppSession() {
         }
     } catch(e){}
 }
+window.initAppSession = initAppSession;
 
 // ================= PROGRESSIVE WEB APP (PWA) HOMESCREEN INSTALL CONTROLLER =================
 let deferredInstallPrompt = null;
