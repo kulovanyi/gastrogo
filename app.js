@@ -413,7 +413,7 @@ let refreshTimeLeft = 10 * 60;
 // ================= APP STATE =================
 let currentUser = null;
 let currentUserRole = "customer";
-let currentScreen = "screen-login";
+let currentScreen = "screen-home";
 let activeRestaurant = null;
 let activeTab = "explore";
 let activeCategory = "all";
@@ -478,10 +478,10 @@ function navigateTo(screenId) {
     }
 
     if (screenId === "screen-login") {
-        document.body.classList.add("auth-mode");
-    } else {
-        document.body.classList.remove("auth-mode");
+        window.location.href = "index.html";
+        return;
     }
+    document.body.classList.remove("auth-mode");
 
     // Dynamic bottom position class when viewing menu
     document.body.classList.toggle("on-screen-menu", screenId === "screen-menu");
@@ -4286,6 +4286,7 @@ function initAppSession() {
     currentUserRole = "customer";
     localStorage.setItem("gastrogo_current_user", activeUserKey);
     document.body.classList.add("user-authenticated");
+    document.body.classList.remove("auth-mode");
 
     const users = getRegisteredUsers();
     const account = users[activeUserKey] || {};
@@ -4306,7 +4307,9 @@ function initAppSession() {
     checkPWAInstalledState();
 
     try {
-        GastroGoDB.initCloudSeed(restaurants, reviews);
+        if (typeof GastroGoDB !== "undefined" && typeof GastroGoDB.initCloudSeed === "function") {
+            GastroGoDB.initCloudSeed(restaurants, reviews);
+        }
     } catch(e){}
 }
 
