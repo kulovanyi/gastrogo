@@ -871,6 +871,10 @@ function openSettingsTab() {
         userLabel.textContent = currentUser ? `${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)} felhasználó` : "Vendég felhasználó";
     }
 }
+window.openExploreTab = openExploreTab;
+window.openSavedTab = openSavedTab;
+window.openOrdersTab = openOrdersTab;
+window.openSettingsTab = openSettingsTab;
 
 // ================= ACHIEVEMENTS (SIKEREK) LOGIC =================
 function getCustomerOrders() {
@@ -1337,6 +1341,7 @@ function openAchievementsTab() {
     updateCustomerNavActiveTab("achievements");
     try { renderAchievements(); } catch (err) { console.error("renderAchievements error:", err); }
 }
+window.openAchievementsTab = openAchievementsTab;
 
 // Global delegated click handler for all customer bottom navigation tabs
 document.addEventListener("click", (e) => {
